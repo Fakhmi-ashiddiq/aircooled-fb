@@ -40,7 +40,7 @@ export default function ProductDetail() {
   const selColor = colorList.find(c => c.name === state.selectedColor);
   const curColor = selColor || colorList[0];
   const pDisplayGarment = curColor ? curColor.hex : ap.garment;
-  
+
   const colorVMs = colorList.map(c => ({
     name: c.name,
     hex: c.hex,
@@ -57,12 +57,12 @@ export default function ProductDetail() {
   const sizeOk = !needsSize || !!state.selectedSize;
   const colorOk = !needsColor || !!selColor;
   const canBuy = sizeOk && colorOk;
-  
+
   const ctaStyle = {
     flex: 1, border: 'none', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '14px', letterSpacing: '0.06em', textTransform: 'uppercase', padding: '0 24px',
     background: canBuy ? '#14110D' : '#d8d2c4', color: canBuy ? '#F2EEE4' : '#8a8377', cursor: canBuy ? 'pointer' : 'not-allowed'
   };
-  
+
   const ctaHint = canBuy ? '' : ((!sizeOk && !colorOk) ? 'Pilih warna & ukuran dulu.' : (!sizeOk ? 'Pilih ukuran dulu.' : 'Pilih warna dulu.'));
 
   const galleryVMs = (ap.gallery && ap.gallery.length ? ap.gallery : ['Depan']).map((g, i) => ({
@@ -96,14 +96,25 @@ export default function ProductDetail() {
   const onCta = activeP.isPreorder ? openPreorder : addToCart;
 
   return (
-    <main style={{ padding: '32px 48px 64px' }}>
+    <main className="pd-main-pad" style={{ padding: '32px 48px 64px' }}>
+      <style>{`
+        @media (max-width: 768px) {
+          .pd-main-pad { padding: 20px 16px 40px !important; }
+          .pd-main-grid { grid-template-columns: 1fr !important; gap: 28px !important; }
+          .pd-visual-col { position: static !important; top: auto !important; }
+          .pd-title { font-size: 30px !important; }
+          .pd-related-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 14px !important; }
+          .pd-preorder-panel-grid { gap: 12px !important; }
+        }
+      `}</style>
+
       <button onClick={() => go('shop')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontSize: '12px', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#6b655a', marginBottom: '24px' }}>
         ← Kembali ke Shop
       </button>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '48px', alignItems: 'start' }}>
-        
+      <div className="pd-main-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '48px', alignItems: 'start' }}>
+
         {/* visual + slider */}
-        <div style={{ position: 'sticky', top: '90px' }}>
+        <div className="pd-visual-col" style={{ position: 'sticky', top: '90px' }}>
           <div onClick={() => updateState({ lightbox: true })} style={{ background: pDisplayGarment, aspectRatio: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #14110D', position: 'relative', overflow: 'hidden', cursor: 'zoom-in' }}>
             <div style={{ position: 'absolute', bottom: '12px', right: '12px', background: 'rgba(20,17,13,0.82)', color: '#F2EEE4', fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.08em', textTransform: 'uppercase', padding: '5px 10px', zIndex: 2 }}>
               ⤢ {activeGalleryLabel} — Klik perbesar
@@ -138,9 +149,9 @@ export default function ProductDetail() {
           <div style={{ display: 'inline-block', background: activeP.badgeBg, color: activeP.badgeFg, fontFamily: "'Space Mono', monospace", fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '5px 10px', fontWeight: 700, marginBottom: '16px' }}>
             {activeP.badgeLabel}
           </div>
-          <h1 style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '46px', margin: 0, textTransform: 'uppercase', lineHeight: 0.98, letterSpacing: '-0.02em' }}>{activeP.name}</h1>
+          <h1 className="pd-title" style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '46px', margin: 0, textTransform: 'uppercase', lineHeight: 0.98, letterSpacing: '-0.02em' }}>{activeP.name}</h1>
           <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#6b655a', marginTop: '10px' }}>Kategori — {activeP.cat}</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '14px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '14px', flexWrap: 'wrap' }}>
             <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '22px', fontWeight: 700 }}>{activeP.priceFmt}</span>
             {activeP.hasDiscount && (
               <>
@@ -157,7 +168,7 @@ export default function ProductDetail() {
               <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', letterSpacing: '0.14em', textTransform: 'uppercase', color: '#F2C015', background: '#14110D', display: 'inline-block', padding: '5px 10px', fontWeight: 700 }}>
                 ● {activeP.statusLabel}
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginTop: '18px' }}>
+              <div className="pd-preorder-panel-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginTop: '18px' }}>
                 <div><div style={{ fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#6b655a' }}>Sesi Dibuka</div><div style={{ fontFamily: "'Archivo'", fontWeight: 700, fontSize: '15px', marginTop: '3px' }}>{activeP.opens}</div></div>
                 <div><div style={{ fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#6b655a' }}>Sesi Ditutup</div><div style={{ fontFamily: "'Archivo'", fontWeight: 700, fontSize: '15px', marginTop: '3px' }}>{activeP.closes}</div></div>
                 <div><div style={{ fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#6b655a' }}>Estimasi Kirim</div><div style={{ fontFamily: "'Archivo'", fontWeight: 700, fontSize: '15px', marginTop: '3px' }}>{activeP.eta}</div></div>
@@ -166,11 +177,10 @@ export default function ProductDetail() {
               <div style={{ marginTop: '18px', height: '9px', background: '#e4ddcd', position: 'relative' }}>
                 <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${activeP.pct}%`, background: '#14110D' }}></div>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#3d382f', marginTop: '8px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#3d382f', marginTop: '8px', flexWrap: 'wrap', gap: '4px' }}>
                 <span>{activeP.committed} / {activeP.target} unit terpesan</span>
                 <span>Min. {activeP.target} agar produksi jalan</span>
               </div>
-              {/* Note: In HTML there is a button "+ Buat Sesi Pre-Order Baru (Admin)". Only show if admin. Let's add it if view === admin? The original HTML had it visible but it called a method. We'll add it if user is admin, but let's just keep it exactly as the HTML had it. */}
               {state.view === 'admin' && (
                 <button onClick={() => { updateState({ sessionModal: true }) }} style={{ marginTop: '16px', width: '100%', background: '#fff', color: '#14110D', border: '2px dashed #14110D', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '11px', letterSpacing: '0.06em', textTransform: 'uppercase', padding: '11px' }}>
                   + Buat Sesi Pre-Order Baru (Admin)
@@ -209,13 +219,13 @@ export default function ProductDetail() {
           )}
 
           {/* QTY + ADD */}
-          <div style={{ display: 'flex', gap: '12px', alignItems: 'stretch', marginBottom: '14px' }}>
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'stretch', marginBottom: '14px', flexWrap: 'wrap' }}>
             <div style={{ display: 'flex', alignItems: 'center', border: '2px solid #14110D' }}>
               <button onClick={() => updateState({ qty: Math.max(1, state.qty - 1) })} style={{ background: 'none', border: 'none', cursor: 'pointer', width: '44px', height: '52px', fontSize: '20px', fontWeight: 700 }}>−</button>
               <div style={{ width: '44px', textAlign: 'center', fontFamily: "'Space Mono', monospace", fontSize: '16px', fontWeight: 700 }}>{state.qty}</div>
               <button onClick={() => updateState({ qty: state.qty + 1 })} style={{ background: 'none', border: 'none', cursor: 'pointer', width: '44px', height: '52px', fontSize: '20px', fontWeight: 700 }}>+</button>
             </div>
-            <button onClick={onCta} style={ctaStyle}>{ctaLabel}</button>
+            <button onClick={onCta} style={{ ...ctaStyle, minWidth: '200px' }}>{ctaLabel}</button>
           </div>
           {ctaHint && (
             <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#9a3a2a', marginBottom: '6px' }}>⚠ {ctaHint}</div>
@@ -237,7 +247,7 @@ export default function ProductDetail() {
       {/* PRODUK LAINNYA */}
       <section style={{ marginTop: '56px', borderTop: '2px solid #14110D', paddingTop: '28px' }}>
         <h2 style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '30px', margin: '0 0 22px', textTransform: 'uppercase', letterSpacing: '-0.01em' }}>Produk Lainnya</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '20px' }}>
+        <div className="pd-related-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '20px' }}>
           {relatedProducts.map(item => (
             <div key={item.id} style={{ cursor: 'pointer' }} onClick={() => openProduct(item.id)}>
               <div style={{ background: item.garment, aspectRatio: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #14110D', position: 'relative', overflow: 'hidden' }}>

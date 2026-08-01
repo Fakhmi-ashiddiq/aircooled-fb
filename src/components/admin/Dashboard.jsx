@@ -13,10 +13,7 @@ export default function Dashboard() {
   }, 0);
   const totalProfitN = totalRevenueN - totalCostN;
   const preorderProducts = data.PRODUCTS.filter(p => p.type === 'preorder');
-  const preorderCommitted = preorderProducts.reduce((s, p) => {
-    const allSess = [p.preorder].concat(p.sessionHistory || []);
-    return s + allSess.reduce((a, sess, i) => a + (i === 0 ? unitsOf(p) : (sess.committed || 0)), 0);
-  }, 0);
+  const preorderCommitted = preorderProducts.reduce((s, p) => s + unitsOf(p), 0);
 
   const kpis = [
     { label: 'Pendapatan', value: rp(totalRevenueN), delta: '▲ Total tercatat', deltaColor: '#1f7a3d' },

@@ -18,14 +18,21 @@ export default function SizeGuideModal() {
 
   return (
     <>
-      <div style={{ position: 'fixed', inset: 0, zIndex: 110, background: 'rgba(20,17,13,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px', animation: 'ascOverlayIn 0.18s ease' }} onClick={closeSizeGuide}>
-        <button onClick={closeSizeGuide} style={{ position: 'absolute', top: '24px', right: '28px', background: 'none', border: 'none', cursor: 'pointer', color: '#F2EEE4', fontSize: '34px', lineHeight: 1 }}>×</button>
+      <style>{`
+        @media (max-width: 480px) {
+          .sg-overlay { padding: 16px !important; }
+          .sg-close-btn { top: 12px !important; right: 12px !important; font-size: 28px !important; }
+          .sg-body { padding: 16px !important; }
+        }
+      `}</style>
+      <div className="sg-overlay" style={{ position: 'fixed', inset: 0, zIndex: 110, background: 'rgba(20,17,13,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px', animation: 'ascOverlayIn 0.18s ease' }} onClick={closeSizeGuide}>
+        <button className="sg-close-btn" onClick={closeSizeGuide} style={{ position: 'absolute', top: '24px', right: '28px', background: 'none', border: 'none', cursor: 'pointer', color: '#F2EEE4', fontSize: '34px', lineHeight: 1 }}>×</button>
         <div style={{ width: 'min(92vw,540px)', maxHeight: '88vh', overflowY: 'auto', background: '#F2EEE4', border: '2px solid #F2EEE4', animation: 'ascPopIn 0.24s cubic-bezier(0.22,1,0.36,1)' }} onClick={e => e.stopPropagation()}>
           <div style={{ background: '#14110D', color: '#F2EEE4', padding: '18px 22px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '22px', textTransform: 'uppercase' }}>Panduan Ukuran</div>
             <img src="/assets/logo-white.png" style={{ height: '30px', display: 'block' }} alt="Logo" />
           </div>
-          <div style={{ padding: '22px' }}>
+          <div className="sg-body" style={{ padding: '22px' }}>
             <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#6b655a', marginBottom: '12px' }}>Apparel — pengukuran datar (cm)</div>
             <div style={{ border: '2px solid #14110D' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', background: '#14110D', color: '#F2EEE4', fontFamily: "'Space Mono', monospace", fontSize: '11px', letterSpacing: '0.06em', textTransform: 'uppercase' }}>

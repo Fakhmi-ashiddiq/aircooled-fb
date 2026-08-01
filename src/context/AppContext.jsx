@@ -113,8 +113,110 @@ export const AppProvider = ({ children }) => {
     updateState({ cart });
   };
 
+  // ---- deep clone helper (aman untuk mutasi nested object lalu commit ke state) ----
+  const deepClone = (obj) => {
+    if (typeof structuredClone === 'function') return structuredClone(obj);
+    return JSON.parse(JSON.stringify(obj));
+  };
+
+  // ---- cari sesi (aktif ATAU histori) berdasar productId + sessionName ----
+  const findSession = (productId, sessionName) => {
+    const p = data.PRODUCTS.find((x) => x.id === productId);
+    if (!p) return null;
+    if (p.preorder && p.preorder.sessionName === sessionName) return { p, sess: p.preorder, active: true };
+    const h = (p.sessionHistory || []).find((s) => s.sessionName === sessionName);
+    if (h) return { p, sess: h, active: false };
+    return null;
+  };
+
+  const mutateSession = (productId, sessionName, mutator) => {
+    setData((prev) => {
+      const next = deepClone(prev);
+      const p = next.PRODUCTS.find((x) => x.id === productId);
+      if (!p) return prev;
+      const sess = (p.preorder && p.preorder.sessionName === sessionName)
+        ? p.preorder
+        : (p.sessionHistory || []).find((s) => s.sessionName === sessionName);
+      if (!sess) return prev;
+      mutator(sess);
+      return next;
+    });
+  };
+
+  const applyStageEffects = (sess) => {
+    if (stageOrder().indexOf(normStage(sess.status)) >= 1 && sess.buyers) {
+      sess.buyers.forEach((b) => { if (b.pay === 'Belum Lunas') b.pay = 'Batal'; });
+    }
+  };
+
+  const advanceSess = (productId, sessionName) => {
+    mutateSession(productId, sessionName, (sess) => {
+      const order = stageOrder();
+      const i = order.indexOf(normStage(sess.status));
+      if (i < order.length - 1) {
+        sess.status = order[i + 1];
+        applyStageEffects(sess);
+      }
+    });
+  };
+
+  const setSessStatus = (productId, sessionName, stage) => {
+    mutateSession(productId, sessionName, (sess) => {
+      sess.status = stage;
+      applyStageEffects(sess);
+    });
+  };
+
+  const toggleSplitBase = (productId, sessionName) => {
+    mutateSession(productId, sessionName, (sess) => {
+      if (sess.splitConfirmed) return;
+      if (!sess.split) sess.split = { base: 'gross' };
+      sess.split.base = sess.split.base === 'harga' ? 'gross' : 'harga';
+    });
+  };
+
+  const confirmSplit = (productId, sessionName) => {
+    mutateSession(productId, sessionName, (sess) => { sess.splitConfirmed = true; });
+  };
+
+  const unconfirmSplit = (productId, sessionName) => {
+    mutateSession(productId, sessionName, (sess) => { sess.splitConfirmed = false; });
+  };
+
+  const saveBuyerPayment = (productId, sessionName, idx, status, form) => {
+    mutateSession(productId, sessionName, (sess) => {
+      const b = sess.buyers && sess.buyers[idx];
+      if (!b) return;
+      b.pay = status;
+      if (status === 'Lunas') {
+        b.payAmount = parseInt(form.amount) || b.payAmount || 0;
+        b.payMethod = form.method;
+        b.payDate = form.date || b.payDate;
+        b.payProof = form.proof;
+      }
+    });
+  };
+
+  const saveBuyerShipping = (productId, sessionName, idx, form) => {
+    mutateSession(productId, sessionName, (sess) => {
+      const b = sess.buyers && sess.buyers[idx];
+      if (!b) return;
+      b.ship = 'Terkirim';
+      b.shipCourier = form.courier;
+      b.shipResi = form.resi;
+      b.shipProof = form.proof;
+      b.shipCost = parseInt(form.cost) || 0;
+    });
+  };
+
   return (
-    <AppContext.Provider value={{ data, setData, state, updateState, go, openProduct, committedOf, unitsOf, poAggregate, poBuyers, buyerItems, buyerQty, addToCart, changeQty }}>
+    <AppContext.Provider value={{
+      data, setData, state, updateState, go, openProduct,
+      committedOf, unitsOf, poAggregate, poBuyers, buyerItems, buyerQty,
+      addToCart, changeQty,
+      findSession, advanceSess, setSessStatus, toggleSplitBase, confirmSplit, unconfirmSplit,
+      saveBuyerPayment, saveBuyerShipping
+    }}>
       {children}
     </AppContext.Provider>
   );

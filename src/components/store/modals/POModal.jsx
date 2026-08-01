@@ -93,8 +93,30 @@ export default function POModal() {
 
   return (
     <>
+      <style>{`
+        @media (max-width: 480px) {
+          .po-modal-box { width: 94vw !important; }
+          .po-modal-body { padding: 16px !important; }
+          .po-form-grid { grid-template-columns: 1fr !important; }
+          .po-form-grid > * { grid-column: 1 / -1 !important; }
+          .po-item-row {
+            display: flex !important;
+            flex-wrap: wrap !important;
+            gap: 8px !important;
+          }
+          .po-item-row > *:nth-child(1) { flex: 0 0 16px !important; }
+          .po-item-row > *:nth-child(2) { flex: 1 1 45% !important; }
+          .po-item-row > *:nth-child(3) { flex: 1 1 45% !important; }
+          .po-item-row > *:nth-child(4) { flex: 0 0 100% !important; order: 5 !important; }
+          .po-item-row > *:nth-child(5) { flex: 0 0 auto !important; }
+        }
+      `}</style>
+
       <div style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(20,17,13,0.62)', animation: 'ascOverlayIn 0.18s ease' }} onClick={closePoModal}></div>
-      <div style={{ position: 'fixed', zIndex: 101, top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: '480px', maxWidth: '94vw', maxHeight: '90vh', overflowY: 'auto', background: '#F2EEE4', border: '2px solid #14110D', animation: 'ascModalIn 0.26s cubic-bezier(0.22,1,0.36,1)' }}>
+      <div
+        className="po-modal-box"
+        style={{ position: 'fixed', zIndex: 101, top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: '480px', maxWidth: '94vw', maxHeight: '90vh', overflowY: 'auto', background: '#F2EEE4', border: '2px solid #14110D', animation: 'ascModalIn 0.26s cubic-bezier(0.22,1,0.36,1)' }}
+      >
         <div style={{ background: '#14110D', color: '#F2EEE4', padding: '18px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', letterSpacing: '0.14em', textTransform: 'uppercase', color: '#F2C015' }}>● Form Pemesanan Pre-Order</div>
           <button onClick={closePoModal} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#F2EEE4', fontSize: '24px', lineHeight: 1 }}>×</button>
@@ -109,7 +131,7 @@ export default function POModal() {
             <button onClick={closePoModal} style={{ background: '#14110D', color: '#F2EEE4', border: 'none', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '13px', letterSpacing: '0.06em', textTransform: 'uppercase', padding: '14px 26px' }}>Selesai</button>
           </div>
         ) : (
-          <div style={{ padding: '22px 24px' }}>
+          <div className="po-modal-body" style={{ padding: '22px 24px' }}>
             {poModeGuest && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '18px', fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#6b655a' }}>
                 <span>Pesan sebagai tamu — atau</span>
@@ -141,7 +163,7 @@ export default function POModal() {
 
             {poOrderForm && (
               <>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div className="po-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                   {poModeRegister ? (
                     <input placeholder="Nama lengkap" value={authName} onChange={(e) => updateState({ authName: e.target.value })} style={{ gridColumn: '1/3', padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
                   ) : (
@@ -178,7 +200,7 @@ export default function POModal() {
                   <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#6b655a', marginBottom: '10px' }}>Sesi {poSummary.sessionName} · {poSummary.priceFmt}/unit · Est. kirim {poSummary.eta}</div>
 
                   {poItems.map((it, i) => (
-                    <div key={i} style={{ display: 'grid', gridTemplateColumns: 'auto 1fr 1fr auto auto', gap: '8px', alignItems: 'center', padding: '10px 0', borderTop: '1px solid #ddd5c4' }}>
+                    <div key={i} className="po-item-row" style={{ display: 'grid', gridTemplateColumns: 'auto 1fr 1fr auto auto', gap: '8px', alignItems: 'center', padding: '10px 0', borderTop: '1px solid #ddd5c4' }}>
                       <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#6b655a', width: '18px' }}>{i + 1}</span>
                       <select value={it.size} onChange={(e) => setPoItem(i, 'size', e.target.value)} style={{ width: '100%', height: '40px', padding: '8px', border: '2px solid #14110D', background: '#fff', fontFamily: "'Space Mono', monospace", fontSize: '13px' }}>
                         <option value="" disabled>Ukuran</option>
@@ -215,7 +237,7 @@ export default function POModal() {
                 {poModeGuest && <button onClick={submitPreorder} style={poSubmitStyle}>Kirim Pesanan Pre-Order</button>}
                 {poModeRegister && <button onClick={poRegister} style={poSubmitStyle}>Daftar &amp; Kirim Pesanan</button>}
                 {poSubmitHint && <div style={{ marginTop: '8px', fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#9a3a2a', textAlign: 'center' }}>{poSubmitHint}</div>}
-                
+
                 <p style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#6b655a', lineHeight: 1.6, margin: '12px 0 0', textAlign: 'center' }}>
                   Pembayaran penuh di muka. Produk diproduksi setelah sesi pre-order ditutup.
                 </p>

@@ -3,110 +3,225 @@ import { AppContext } from '../../context/AppContext';
 import { rp } from '../../utils/helpers';
 
 export default function Catalog() {
-  const { data, setData, state, updateState, openProduct, unitsOf } = useContext(AppContext);
-
+  const { data, state, updateState } = useContext(AppContext);
   const { catalogTab, catalogSearch, catalogCat, catalogSort } = state;
-  const readyProducts = data.PRODUCTS.filter(p => p.type === 'ready');
-  const preorderProducts = data.PRODUCTS.filter(p => p.type === 'preorder');
-  const isReady = catalogTab === 'ready';
 
-  let display = isReady ? readyProducts : preorderProducts;
+  const isReady = catalogTab !== 'preorder';
+
+  // ---- helper: replikasi logika poAggregate dari script asli ----
+  const buyerQty = (b) => {
+    const items = b.items && b.items.length ? b.items : [{ qty: b.qty || 1 }];
+    return items.reduce((a, it) => a + (it.qty || 1), 0);
+  };
+  const committedOf = (p) => {
+    const o = state.committedOverride && state.committedOverride[p.id];
+    return o != null ? o : p.preorder.committed;
+  };
+  const poAggregate = (p) => {
+    if (p.type !== 'preorder') return { committed: 0, paidIn: 0 };
+    const allSess = [p.preorder].concat(p.sessionHistory || []);
+    const committed = allSess.reduce(
+      (a, sess, i) => a + (i === 0 ? committedOf(p) : sess.committed || 0),
+      0
+    );
+    const paidIn = allSess.reduce((a, sess) => {
+      const buyers = sess.buyers || [];
+      return (
+        a +
+        buyers.reduce(
+          (x, b) =>
+            x + (b.pay === 'Lunas' ? b.payAmount || (sess.price || 0) * buyerQty(b) : 0),
+          0
+        )
+      );
+    }, 0);
+    return { committed, paidIn };
+  };
+  const unitsOf = (p) => (p.type === 'preorder' ? committedOf(p) : p.sold || 0);
+
+  // ---- filter & sort (persis logika asli: terbaru / terpopuler / terlaris) ----
+  let display = data.PRODUCTS.filter((p) => (isReady ? p.type === 'ready' : p.type === 'preorder'));
   const q = (catalogSearch || '').trim().toLowerCase();
-  if (q) display = display.filter(p => (p.name + ' ' + p.cat).toLowerCase().includes(q));
-  if (catalogCat !== 'all') display = display.filter(p => p.cat === catalogCat);
-  if (catalogSort === 'terbaru') display = [...display].sort((a, b) => b._seq - a._seq);
-  if (catalogSort === 'harga-asc') display = [...display].sort((a, b) => a.price - b.price);
-  if (catalogSort === 'harga-desc') display = [...display].sort((a, b) => b.price - a.price);
-  if (catalogSort === 'terlaris') display = [...display].sort((a, b) => unitsOf(b) - unitsOf(a));
+  if (q) display = display.filter((p) => (p.name + ' ' + p.cat).toLowerCase().includes(q));
+  if (catalogCat && catalogCat !== 'all') display = display.filter((p) => p.cat === catalogCat);
 
-  const tabBtn = (id, label) => ({
-    label,
-    style: {
-      background: catalogTab === id ? '#14110D' : '#fff',
-      color: catalogTab === id ? '#F2EEE4' : '#14110D',
-      border: '2px solid #14110D',
-      cursor: 'pointer',
-      fontFamily: "'Space Mono', monospace",
-      fontWeight: 700,
-      fontSize: '12px',
-      letterSpacing: '0.04em',
-      textTransform: 'uppercase',
-      padding: '10px 18px'
-    },
-    click: () => updateState({ catalogTab: id })
+  const sort = catalogSort || 'terbaru';
+  display = [...display].sort((a, b) => {
+    if (sort === 'terpopuler') return (b.views || 0) - (a.views || 0);
+    if (sort === 'terlaris') return unitsOf(b) - unitsOf(a);
+    return (b._seq || 0) - (a._seq || 0); // terbaru
   });
 
-  const tabs = [tabBtn('ready', `Ready Stock (${readyProducts.length})`), tabBtn('preorder', `Pre-Order (${preorderProducts.length})`)];
-
-  const addProduct = () => {
-    updateState({ prodModal: true });
-  };
-
+  // ---- actions ----
   const editProduct = (p) => {
-    updateState({ adminRoute: 'catalog-edit', adminProdId: p.id, editProd: { ...p } });
+    updateState({ adminRoute: 'catalog-edit', adminProdId: p.id, editProd: null }); // ⬅️ null, bukan {...p}
     window.scrollTo(0, 0);
   };
+  const addProduct = () => updateState({ prodModal: true });
+  const addCategory = () => updateState({ catModal: true, newCat: '' });
+
+  // ---- styles (disamakan 1:1 dengan HTML asli) ----
+  const tabStyle = (on) => ({
+    background: on ? '#14110D' : '#fff',
+    color: on ? '#F2EEE4' : '#14110D',
+    border: '2px solid #14110D',
+    cursor: 'pointer',
+    fontFamily: "'Archivo', sans-serif",
+    fontWeight: 800,
+    fontSize: '14px',
+    letterSpacing: '0.02em',
+    textTransform: 'uppercase',
+    padding: '13px 26px'
+  });
+
+  const selectStyle = (width) => ({
+    width,
+    flex: 'none',
+    padding: '13px 14px',
+    border: '2px solid #14110D',
+    background: '#fff',
+    fontFamily: "'Space Mono', monospace",
+    fontSize: '13px',
+    color: '#14110D',
+    height: '48px'
+  });
+
+  const catalogCountLabel = `${display.length} produk`;
 
   return (
     <>
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '24px' }}>
+      {/* HEADER */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
         <div>
-          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#6b655a' }}>Manajemen</div>
-          <h1 style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '40px', margin: '4px 0 0', textTransform: 'uppercase' }}>Katalog Produk</h1>
+          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#6b655a' }}>
+            Manajemen
+          </div>
+          <h1 style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '40px', margin: '4px 0 0', textTransform: 'uppercase' }}>
+            Katalog Produk
+          </h1>
         </div>
-        <button onClick={addProduct} style={{ background: '#F2C015', color: '#14110D', border: 'none', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '12px', letterSpacing: '0.06em', textTransform: 'uppercase', padding: '14px 20px', marginTop: '8px', whiteSpace: 'nowrap' }}>
-          + Produk Baru
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button
+            onClick={addCategory}
+            style={{ background: '#fff', color: '#14110D', border: '2px solid #14110D', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '12px', letterSpacing: '0.06em', textTransform: 'uppercase', padding: '11px 18px' }}
+          >
+            + Kategori
+          </button>
+          <button
+            onClick={addProduct}
+            style={{ background: '#F2C015', color: '#14110D', border: 'none', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '12px', letterSpacing: '0.06em', textTransform: 'uppercase', padding: '13px 20px' }}
+          >
+            + Produk Baru
+          </button>
+        </div>
+      </div>
+
+      {/* TABS */}
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '18px' }}>
+        <button onClick={() => updateState({ catalogTab: 'ready' })} style={tabStyle(isReady)}>
+          Ready Stock
+        </button>
+        <button onClick={() => updateState({ catalogTab: 'preorder' })} style={tabStyle(!isReady)}>
+          Pre-Order
         </button>
       </div>
 
-      <div style={{ display: 'flex', gap: 0, marginBottom: '24px' }}>
-        {tabs.map((t, i) => <button key={i} onClick={t.click} style={t.style}>{t.label}</button>)}
-      </div>
-
-      <div style={{ display: 'flex', gap: '12px', marginBottom: '20px', flexWrap: 'wrap' }}>
-        <div style={{ position: 'relative', flex: 1, minWidth: '200px' }}>
-          <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#6b655a' }}>⌕</span>
-          <input placeholder="Cari produk..." value={catalogSearch} onChange={e => updateState({ catalogSearch: e.target.value })} style={{ width: '100%', padding: '12px 12px 12px 34px', border: '2px solid #14110D', fontFamily: 'inherit', fontSize: '14px' }} />
+      {/* CONTROLS: search + kategori + sort */}
+      <div style={{ display: 'flex', gap: '12px', marginBottom: '18px', flexWrap: 'wrap', alignItems: 'center' }}>
+        <div style={{ position: 'relative', flex: 1, minWidth: '220px' }}>
+          <input
+            value={catalogSearch || ''}
+            onChange={(e) => updateState({ catalogSearch: e.target.value })}
+            placeholder="Cari produk…"
+            style={{ width: '100%', padding: '13px 14px', border: '2px solid #14110D', background: '#fff', fontFamily: "'Space Mono', monospace", fontSize: '13px' }}
+          />
         </div>
-        <select value={catalogCat} onChange={e => updateState({ catalogCat: e.target.value })} style={{ padding: '12px', border: '2px solid #14110D', fontFamily: "'Space Mono', monospace", fontSize: '13px' }}>
+        <select
+          value={catalogCat || 'all'}
+          onChange={(e) => updateState({ catalogCat: e.target.value })}
+          style={selectStyle('170px')}
+        >
           <option value="all">Semua Kategori</option>
-          {data.categories.map(c => <option key={c} value={c}>{c}</option>)}
+          {data.categories.map((c) => (
+            <option key={c} value={c}>{c}</option>
+          ))}
         </select>
-        <select value={catalogSort} onChange={e => updateState({ catalogSort: e.target.value })} style={{ padding: '12px', border: '2px solid #14110D', fontFamily: "'Space Mono', monospace", fontSize: '13px' }}>
+        <select
+          value={sort}
+          onChange={(e) => updateState({ catalogSort: e.target.value })}
+          style={selectStyle('200px')}
+        >
           <option value="terbaru">Terbaru</option>
-          <option value="harga-asc">Harga ↑</option>
-          <option value="harga-desc">Harga ↓</option>
-          <option value="terlaris">Terlaris</option>
+          <option value="terpopuler">Terpopuler (views)</option>
+          <option value="terlaris">Terlaris (terjual)</option>
         </select>
       </div>
 
+      {/* LIST PRODUK — grid 5 kolom, tanpa header row, 1 tombol Edit, row clickable */}
       <div style={{ border: '2px solid #14110D', background: '#fff' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr auto auto auto auto auto', gap: 0, padding: '12px 16px', background: '#14110D', color: '#F2EEE4', fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-          <span>Thumb</span><span>Produk</span><span style={{ textAlign: 'right', paddingRight: '16px' }}>Stok/Unit</span><span style={{ textAlign: 'right', paddingRight: '16px' }}>Terjual</span><span style={{ textAlign: 'right', paddingRight: '16px' }}>Harga</span><span style={{ textAlign: 'center', paddingRight: '16px' }}>Views</span><span>Aksi</span>
+        <div style={{ padding: '14px 20px', borderBottom: '2px solid #14110D', fontFamily: "'Archivo'", fontWeight: 800, fontSize: '16px', textTransform: 'uppercase' }}>
+          {isReady ? 'Ready Stock' : 'Pre-Order'} — {catalogCountLabel}
         </div>
-        {display.map((p) => (
-          <div key={p.id} style={{ display: 'grid', gridTemplateColumns: '80px 1fr auto auto auto auto auto', gap: 0, padding: '14px 16px', borderTop: '1px solid #ddd5c4', alignItems: 'center' }}>
-            <div style={{ width: '60px', height: '60px', background: p.garment, border: '2px solid #14110D', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-              {p.print === 'logo' && <img src="/assets/logo.png" style={{ width: '60%' }} alt="" />}
-              {p.print === 'text' && <div style={{ color: '#F2C015', fontFamily: "'Archivo'", fontWeight: 900, fontSize: '9px', lineHeight: 0.9, textAlign: 'center', textTransform: 'uppercase' }}>AC<br/>SYND</div>}
+        <div style={{ padding: '0 20px' }}>
+          {display.map((p) => {
+            const isPre = p.type === 'preorder';
+            const agg = poAggregate(p);
+            const sold = unitsOf(p);
+            const stockLabel = isPre ? `${agg.committed} terpesan` : `${p.stock || 0} stok`;
+            const revenueLabel = isPre
+              ? `Pendapatan masuk ${rp(agg.paidIn)}`
+              : `Terjual ${p.sold || 0} · ${rp(p.price * (p.sold || 0))}`;
+            const viewsLabel = `${(p.views || 0).toLocaleString('id-ID')} views`;
+            const soldShort = isPre ? `· ${sold} terpesan` : `· ${sold} terjual`;
+
+            return (
+              <div
+                key={p.id}
+                onClick={() => editProduct(p)}
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'auto 2fr auto 1fr auto',
+                  gap: '14px',
+                  alignItems: 'center',
+                  padding: '12px 0',
+                  borderBottom: '1px solid #ddd5c4',
+                  cursor: 'pointer'
+                }}
+              >
+                <div style={{ width: '48px', height: '48px', background: p.garment, border: '2px solid #14110D', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                  {p.print === 'logo' && <img src="/assets/logo.png" style={{ width: '60%' }} alt="" />}
+                  {p.print === 'text' && (
+                    <div style={{ color: '#F2C015', fontFamily: "'Archivo'", fontWeight: 900, fontSize: '9px', lineHeight: 0.9, textAlign: 'center', textTransform: 'uppercase' }}>
+                      AC<br />SYND
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <div style={{ fontFamily: "'Archivo'", fontWeight: 700, fontSize: '14px' }}>{p.name}</div>
+                  <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#6b655a', marginTop: '2px' }}>
+                    {p.cat} · {viewsLabel} {soldShort}
+                  </div>
+                </div>
+                <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '13px', fontWeight: 700 }}>{rp(p.price)}</span>
+                <div>
+                  <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#14110D', fontWeight: 700 }}>{stockLabel}</div>
+                  <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '10px', color: '#6b655a', marginTop: '2px' }}>{revenueLabel}</div>
+                </div>
+                <button
+                  onClick={(e) => { e.stopPropagation(); editProduct(p); }}
+                  style={{ background: '#fff', color: '#14110D', border: '2px solid #14110D', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '10px', letterSpacing: '0.04em', textTransform: 'uppercase', padding: '8px 14px', whiteSpace: 'nowrap' }}
+                >
+                  Edit ›
+                </button>
+              </div>
+            );
+          })}
+          {display.length === 0 && (
+            <div style={{ padding: '40px 0', textAlign: 'center', fontFamily: "'Space Mono', monospace", fontSize: '13px', color: '#6b655a' }}>
+              Tidak ada produk yang cocok dengan pencarian / filter.
             </div>
-            <div style={{ paddingLeft: '12px' }}>
-              <div style={{ fontFamily: "'Archivo'", fontWeight: 700, fontSize: '15px', textTransform: 'uppercase', lineHeight: 1.1 }}>{p.name}</div>
-              <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#6b655a', marginTop: '2px' }}>{p.cat} · {p.type === 'preorder' ? 'Pre-Order' : 'Ready Stock'}</div>
-            </div>
-            <div style={{ textAlign: 'right', paddingRight: '16px', fontFamily: "'Space Mono', monospace", fontSize: '13px' }}>{p.type === 'preorder' ? (p.preorder?.committed || 0) + ' order' : (p.stock || 0) + ' unit'}</div>
-            <div style={{ textAlign: 'right', paddingRight: '16px', fontFamily: "'Space Mono', monospace", fontSize: '13px' }}>{unitsOf(p)}</div>
-            <div style={{ textAlign: 'right', paddingRight: '16px', fontFamily: "'Space Mono', monospace", fontSize: '13px' }}>{rp(p.price)}</div>
-            <div style={{ textAlign: 'center', paddingRight: '16px', fontFamily: "'Space Mono', monospace", fontSize: '13px' }}>{(p.views || 0).toLocaleString('id-ID')}</div>
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <button onClick={() => editProduct(p)} style={{ background: '#F2C015', color: '#14110D', border: 'none', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '11px', textTransform: 'uppercase', padding: '7px 12px', whiteSpace: 'nowrap' }}>Edit</button>
-              <button onClick={() => openProduct(p.id)} style={{ background: 'none', color: '#14110D', border: '2px solid #14110D', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '11px', textTransform: 'uppercase', padding: '5px 10px' }}>Lihat</button>
-            </div>
-          </div>
-        ))}
-        {display.length === 0 && (
-          <div style={{ padding: '40px', textAlign: 'center', fontFamily: "'Space Mono', monospace", fontSize: '13px', color: '#6b655a' }}>Tidak ada produk ditemukan.</div>
-        )}
+          )}
+        </div>
       </div>
     </>
   );

@@ -4,7 +4,7 @@ import { rp } from '../../utils/helpers';
 
 export default function Checkout() {
   const { state, updateState, data, go } = useContext(AppContext);
-  
+
   const { cart, user, checkoutStep, orderId, authName, authEmail } = state;
 
   const orderPlaced = checkoutStep === 'done';
@@ -16,7 +16,7 @@ export default function Checkout() {
   const checkoutIsRegister = checkoutMode === 'register' && !user;
   const checkoutNotRegister = !(checkoutMode === 'register' && !user);
   const checkoutCtaLabel = (checkoutMode === 'register' && !user) ? 'Daftar & Buat Pesanan' : 'Buat Pesanan';
-  
+
   const checkoutName = user ? user.name : '';
   const checkoutEmail = user ? (user.email || '') : '';
 
@@ -52,7 +52,7 @@ export default function Checkout() {
     ...m,
     pick: () => updateState({ payMethod: m.id }),
     style: {
-      border: state.payMethod === m.id ? '2px solid #14110D' : '2px solid #14110D',
+      border: '2px solid #14110D',
       background: state.payMethod === m.id ? '#F2C015' : '#fff',
       cursor: 'pointer', textAlign: 'left', padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '3px'
     }
@@ -88,9 +88,20 @@ export default function Checkout() {
   };
 
   return (
-    <main style={{ padding: '48px' }}>
+    <main className="ck-main-pad" style={{ padding: '48px' }}>
+      <style>{`
+        @media (max-width: 768px) {
+          .ck-main-pad { padding: 20px 16px !important; }
+          .ck-title { font-size: 30px !important; }
+          .ck-layout-grid { grid-template-columns: 1fr !important; gap: 28px !important; }
+          .ck-form-fields { grid-template-columns: 1fr !important; }
+          .ck-summary-box { position: static !important; top: auto !important; }
+          .ck-success-box { padding: 28px 20px !important; margin: 20px auto !important; }
+        }
+      `}</style>
+
       {orderPlaced && (
-        <div style={{ maxWidth: '560px', margin: '40px auto', textAlign: 'center', border: '2px solid #14110D', background: '#fff', padding: '48px' }}>
+        <div className="ck-success-box" style={{ maxWidth: '560px', margin: '40px auto', textAlign: 'center', border: '2px solid #14110D', background: '#fff', padding: '48px' }}>
           <div style={{ width: '64px', height: '64px', background: '#F2C015', border: '2px solid #14110D', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', fontSize: '32px', fontWeight: 900 }}>✓</div>
           <h1 style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '34px', margin: 0, textTransform: 'uppercase' }}>Pesanan Diterima</h1>
           <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '14px', marginTop: '12px', color: '#3d382f' }}>No. Order {orderId}</div>
@@ -102,12 +113,12 @@ export default function Checkout() {
       )}
 
       {checkoutForm && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1.3fr 0.7fr', gap: '48px', alignItems: 'start' }}>
+        <div className="ck-layout-grid" style={{ display: 'grid', gridTemplateColumns: '1.3fr 0.7fr', gap: '48px', alignItems: 'start' }}>
           <div>
             <button onClick={() => updateState({ cartOpen: true })} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontSize: '12px', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#6b655a', marginBottom: '16px' }}>
               ← Kembali ke Keranjang
             </button>
-            <h1 style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '44px', margin: '0 0 28px', textTransform: 'uppercase' }}>Checkout</h1>
+            <h1 className="ck-title" style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '44px', margin: '0 0 28px', textTransform: 'uppercase' }}>Checkout</h1>
 
             {checkoutNotLoggedIn && (
               <div style={{ display: 'flex', gap: '10px', marginBottom: '22px', flexWrap: 'wrap' }}>
@@ -141,24 +152,24 @@ export default function Checkout() {
             {checkoutShowForm && (
               <>
                 <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', letterSpacing: '0.14em', textTransform: 'uppercase', color: '#14110D', fontWeight: 700, marginBottom: '14px' }}>01 / Kontak &amp; Pengiriman</div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '32px' }}>
+                <div className="ck-form-fields" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '32px' }}>
                   {checkoutIsRegister ? (
                     <input placeholder="Nama lengkap" value={authName} onChange={(e) => updateState({ authName: e.target.value })} style={{ gridColumn: '1/3', padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
                   ) : (
                     <input placeholder="Nama lengkap" defaultValue={checkoutName} style={{ gridColumn: '1/3', padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
                   )}
                   <input placeholder="No. Telp / WhatsApp" style={{ padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
-                  
+
                   {checkoutIsRegister ? (
                     <input placeholder="Email" value={authEmail} onChange={(e) => updateState({ authEmail: e.target.value })} style={{ padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
                   ) : (
                     <input placeholder="Email" defaultValue={checkoutEmail} style={{ padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
                   )}
-                  
+
                   <input placeholder="Alamat lengkap" style={{ gridColumn: '1/3', padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
                   <input placeholder="Kota" style={{ padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
                   <input placeholder="Kode pos" style={{ padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
-                  
+
                   {checkoutIsRegister && (
                     <input type="password" placeholder="Password (untuk akun baru)" style={{ gridColumn: '1/3', padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
                   )}
@@ -178,7 +189,7 @@ export default function Checkout() {
             )}
           </div>
 
-          <div style={{ border: '2px solid #14110D', background: '#fff', padding: '24px', position: 'sticky', top: '90px' }}>
+          <div className="ck-summary-box" style={{ border: '2px solid #14110D', background: '#fff', padding: '24px', position: 'sticky', top: '90px' }}>
             <div style={{ fontFamily: "'Archivo'", fontWeight: 800, fontSize: '18px', textTransform: 'uppercase', marginBottom: '16px' }}>Ringkasan</div>
             {cartLines.map((ln, idx) => (
               <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', padding: '7px 0', borderBottom: '1px solid #ddd5c4' }}>

@@ -14,7 +14,7 @@ export default function Shop() {
   if (state.shopFilter === 'ready') shopProducts = readyProducts;
   if (state.shopFilter === 'preorder') shopProducts = preorderProducts;
   if (state.shopCat && state.shopCat !== 'all') shopProducts = shopProducts.filter(p => p.cat === state.shopCat);
-  
+
   const q = (state.shopSearch || '').trim().toLowerCase();
   if (q) shopProducts = shopProducts.filter(p => (p.name + ' ' + p.cat).toLowerCase().includes(q));
 
@@ -28,39 +28,52 @@ export default function Shop() {
   ];
 
   return (
-    <main style={{ padding: '48px' }}>
-      <h1 style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '52px', margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: '-0.02em' }}>Shop</h1>
+    <main className="shop-main-pad" style={{ padding: '48px' }}>
+      <style>{`
+        @media (max-width: 768px) {
+          .shop-main-pad { padding: 24px 20px !important; }
+          .shop-title { font-size: 32px !important; }
+          .shop-filter-row { flex-direction: column !important; align-items: stretch !important; }
+          .shop-search-wrap { min-width: 0 !important; width: 100% !important; }
+          .shop-cat-select, .shop-type-select { width: 100% !important; }
+          .shop-products-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 14px !important; }
+        }
+      `}</style>
+
+      <h1 className="shop-title" style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '52px', margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: '-0.02em' }}>Shop</h1>
       <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '13px', color: '#6b655a', marginBottom: '24px' }}>{shopCountLabel}</div>
-      
-      <div style={{ display: 'flex', gap: '12px', marginBottom: '32px', borderBottom: '2px solid #14110D', paddingBottom: '20px', flexWrap: 'wrap', alignItems: 'center' }}>
-        <div style={{ position: 'relative', flex: 1, minWidth: '240px' }}>
+
+      <div className="shop-filter-row" style={{ display: 'flex', gap: '12px', marginBottom: '32px', borderBottom: '2px solid #14110D', paddingBottom: '20px', flexWrap: 'wrap', alignItems: 'center' }}>
+        <div className="shop-search-wrap" style={{ position: 'relative', flex: 1, minWidth: '240px' }}>
           <span style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', fontSize: '15px', color: '#6b655a', pointerEvents: 'none' }}>⌕</span>
-          <input 
-            placeholder="Cari produk…" 
-            value={state.shopSearch} 
-            onChange={(e) => updateState({ shopSearch: e.target.value })} 
-            style={{ width: '100%', padding: '13px 14px', paddingLeft: '38px', border: '2px solid #14110D', background: '#fff', fontSize: '14px', fontFamily: "'Archivo', sans-serif" }} 
+          <input
+            placeholder="Cari produk…"
+            value={state.shopSearch}
+            onChange={(e) => updateState({ shopSearch: e.target.value })}
+            style={{ width: '100%', padding: '13px 14px', paddingLeft: '38px', border: '2px solid #14110D', background: '#fff', fontSize: '14px', fontFamily: "'Archivo', sans-serif" }}
           />
         </div>
-        
-        <select 
-          value={state.shopCat} 
-          onChange={(e) => updateState({ shopCat: e.target.value })} 
+
+        <select
+          className="shop-cat-select"
+          value={state.shopCat}
+          onChange={(e) => updateState({ shopCat: e.target.value })}
           style={{ width: '180px', flex: 'none', padding: '13px', border: '2px solid #14110D', fontFamily: "'Space Mono', monospace", fontSize: '13px' }}
         >
           {shopCatOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
         </select>
 
-        <select 
-          value={state.shopFilter} 
-          onChange={(e) => updateState({ shopFilter: e.target.value })} 
+        <select
+          className="shop-type-select"
+          value={state.shopFilter}
+          onChange={(e) => updateState({ shopFilter: e.target.value })}
           style={{ width: '160px', flex: 'none', padding: '13px', border: '2px solid #14110D', fontFamily: "'Space Mono', monospace", fontSize: '13px' }}
         >
           {shopTypeOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
         </select>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '22px' }}>
+      <div className="shop-products-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '22px' }}>
         {shopProducts.map(item => (
           <div key={item.id} style={{ cursor: 'pointer' }} onClick={() => openProduct(item.id)}>
             <div style={{ background: item.garment, aspectRatio: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #14110D', position: 'relative', overflow: 'hidden' }}>

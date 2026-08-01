@@ -4,10 +4,23 @@ body {
   font-family: 'Archivo', sans-serif; 
   background: #14110D; 
   color: #14110D; 
-  -webkit-font-smoothing: antialiased; 
+  -webkit-font-smoothing: antialiased;
+  margin: 0;
+  padding: 0; 
+  background-color: #F2EEE4; /* Sesuaikan dengan warna background web Anda */
 }
 ::selection { background: #F2C015; color: #14110D; }
 input, button, select, textarea { font-family: inherit; }
+
+*, *::before, *::after {
+  box-sizing: border-box; /* WAJIB agar padding tidak merusak ukuran Grid/Flex */
+}
+
+h1, h2, h3, p {
+  margin-top: 0;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@700;800;900&family=Space+Mono:wght@400;700&display=swap');
 
 @keyframes ascDrawerIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
 @keyframes ascFade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
