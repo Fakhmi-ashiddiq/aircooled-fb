@@ -70,8 +70,17 @@ export default function ProductModal() {
 
   return (
     <>
+      <style>{`
+        @media (max-width: 640px) {
+          .prodmodal-box { width: 94vw !important; }
+          .prodmodal-body { padding: 18px !important; }
+          .prodmodal-grid-2 { grid-template-columns: 1fr !important; }
+          .prodmodal-grid-3 { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
       <div onClick={close} style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(20,17,13,0.62)' }} />
       <div
+        className="prodmodal-box"
         style={{
           position: 'fixed', zIndex: 101, top: '50%', left: '50%',
           transform: 'translate(-50%,-50%)', width: '560px', maxWidth: '94vw',
@@ -83,13 +92,13 @@ export default function ProductModal() {
           <button onClick={close} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '24px', lineHeight: 1 }}>×</button>
         </div>
 
-        <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <div className="prodmodal-body" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div>
             <div style={labelStyle}>Nama Produk</div>
             <input placeholder="mis. Targa Florio Tee" value={np.name} onChange={set('name')} style={inputStyle} />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+          <div className="prodmodal-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
             <div>
               <div style={labelStyle}>Kategori</div>
               <select value={np.cat} onChange={set('cat')} style={inputStyle}>
@@ -110,7 +119,7 @@ export default function ProductModal() {
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+          <div className="prodmodal-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
             <div>
               <div style={labelStyle}>Ukuran (pisah koma)</div>
               <input placeholder="S,M,L,XL" value={np.sizes} onChange={set('sizes')} style={inputStyle} />
@@ -123,7 +132,7 @@ export default function ProductModal() {
             )}
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+          <div className="prodmodal-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
             <div>
               <div style={labelStyle}>Warna Garment</div>
               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
@@ -151,7 +160,7 @@ export default function ProductModal() {
 
           <div style={{ borderTop: '1px solid #ddd5c4', paddingTop: '16px' }}>
             <div style={labelStyle}>Daftar Biaya per Unit</div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
+            <div className="prodmodal-grid-3" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
               <input type="number" placeholder="Produksi" value={np.produksi} onChange={set('produksi')} style={inputStyle} />
               <input type="number" placeholder="Kemasan" value={np.kemasan} onChange={set('kemasan')} style={inputStyle} />
               <input type="number" placeholder="Stiker & Aks." value={np.stiker} onChange={set('stiker')} style={inputStyle} />

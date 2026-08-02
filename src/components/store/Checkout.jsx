@@ -14,7 +14,6 @@ export default function Checkout() {
   const checkoutShowLogin = checkoutMode === 'login' && !user;
   const checkoutShowForm = !(checkoutMode === 'login' && !user);
   const checkoutIsRegister = checkoutMode === 'register' && !user;
-  const checkoutNotRegister = !(checkoutMode === 'register' && !user);
   const checkoutCtaLabel = (checkoutMode === 'register' && !user) ? 'Daftar & Buat Pesanan' : 'Buat Pesanan';
 
   const checkoutName = user ? user.name : '';
@@ -95,6 +94,7 @@ export default function Checkout() {
           .ck-title { font-size: 30px !important; }
           .ck-layout-grid { grid-template-columns: 1fr !important; gap: 28px !important; }
           .ck-form-fields { grid-template-columns: 1fr !important; }
+          .ck-span-full { grid-column: 1 / -1 !important; }
           .ck-summary-box { position: static !important; top: auto !important; }
           .ck-success-box { padding: 28px 20px !important; margin: 20px auto !important; }
         }
@@ -154,9 +154,9 @@ export default function Checkout() {
                 <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', letterSpacing: '0.14em', textTransform: 'uppercase', color: '#14110D', fontWeight: 700, marginBottom: '14px' }}>01 / Kontak &amp; Pengiriman</div>
                 <div className="ck-form-fields" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '32px' }}>
                   {checkoutIsRegister ? (
-                    <input placeholder="Nama lengkap" value={authName} onChange={(e) => updateState({ authName: e.target.value })} style={{ gridColumn: '1/3', padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
+                    <input className="ck-span-full" placeholder="Nama lengkap" value={authName} onChange={(e) => updateState({ authName: e.target.value })} style={{ gridColumn: '1/3', padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
                   ) : (
-                    <input placeholder="Nama lengkap" defaultValue={checkoutName} style={{ gridColumn: '1/3', padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
+                    <input className="ck-span-full" placeholder="Nama lengkap" defaultValue={checkoutName} style={{ gridColumn: '1/3', padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
                   )}
                   <input placeholder="No. Telp / WhatsApp" style={{ padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
 
@@ -166,14 +166,14 @@ export default function Checkout() {
                     <input placeholder="Email" defaultValue={checkoutEmail} style={{ padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
                   )}
 
-                  <input placeholder="Alamat lengkap" style={{ gridColumn: '1/3', padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
+                  <input className="ck-span-full" placeholder="Alamat lengkap" style={{ gridColumn: '1/3', padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
                   <input placeholder="Kota" style={{ padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
                   <input placeholder="Kode pos" style={{ padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
 
                   {checkoutIsRegister && (
-                    <input type="password" placeholder="Password (untuk akun baru)" style={{ gridColumn: '1/3', padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
+                    <input className="ck-span-full" type="password" placeholder="Password (untuk akun baru)" style={{ gridColumn: '1/3', padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
                   )}
-                  <textarea placeholder="Keterangan (opsional) — ukuran, warna, catatan kurir…" rows="2" style={{ gridColumn: '1/3', padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px', resize: 'vertical' }}></textarea>
+                  <textarea className="ck-span-full" placeholder="Keterangan (opsional) — ukuran, warna, catatan kurir…" rows="2" style={{ gridColumn: '1/3', padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px', resize: 'vertical' }}></textarea>
                 </div>
 
                 <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', letterSpacing: '0.14em', textTransform: 'uppercase', color: '#14110D', fontWeight: 700, marginBottom: '14px' }}>02 / Metode Pembayaran</div>

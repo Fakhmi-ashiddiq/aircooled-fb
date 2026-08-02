@@ -4,9 +4,8 @@ import { AppContext } from '../../context/AppContext';
 export default function Settings() {
   const { data, setData, state, updateState } = useContext(AppContext);
 
-  const route = state.adminRoute; // 'sizes' | 'colors' | 'roles'
+  const route = state.adminRoute;
 
-  // ==================== SIZES LOGIC ====================
   const addSizeSet = () => {
     const name = (state.newSetName || '').trim();
     if (!name) return;
@@ -34,21 +33,16 @@ export default function Settings() {
     setData(prev => ({ ...prev, sizeSets: prev.sizeSets.map(ss => ss.id === setId ? { ...ss, sizes: ss.sizes.filter(s => s !== sz) } : ss) }));
   };
 
-  // FUNGSI BARU: Upload & Preview Gambar Panduan
   const handleUploadGuide = (id, event) => {
     const file = event.target.files[0];
     if (!file) return;
-    
-    // Membuat URL sementara untuk preview gambar di browser
     const imageUrl = URL.createObjectURL(file);
-    
     setData(prev => ({
       ...prev,
       sizeSets: prev.sizeSets.map(ss => ss.id === id ? { ...ss, guideImg: imageUrl } : ss)
     }));
   };
 
-  // ==================== COLORS LOGIC ====================
   const addColor = () => {
     const name = (state.newColorName || '').trim();
     if (!name) return;
@@ -65,7 +59,6 @@ export default function Settings() {
     setData(prev => ({ ...prev, colorOptions: prev.colorOptions.filter(c => c.id !== id) }));
   };
 
-  // ==================== ROLES LOGIC ====================
   const addRole = () => {
     const name = (state.newRoleName || '').trim();
     if (!name) return;
@@ -78,12 +71,21 @@ export default function Settings() {
     setData(prev => ({ ...prev, roles: prev.roles.filter(r => r.id !== id) }));
   };
 
-  // Shared Styles
-  const inputStyle = { padding: '12px 16px', border: '2px solid #14110D', fontFamily: "'Archivo', sans-serif", fontSize: '14px', background: '#fff', flex: 1, outline: 'none' };
-  
+  const inputStyle = { padding: '12px 16px', border: '2px solid #14110D', fontFamily: "'Archivo', sans-serif", fontSize: '14px', background: '#fff', flex: 1, outline: 'none', minWidth: '140px' };
+
   return (
     <>
-      {/* ======================= UKURAN ======================= */}
+      <style>{`
+        @media (max-width: 768px) {
+          .settings-new-row { flex-wrap: wrap !important; }
+          .settings-new-row > input, .settings-new-row > button, .settings-new-row > div { width: 100% !important; }
+          .settings-sizesets-grid { grid-template-columns: 1fr !important; }
+          .settings-colors-scroll { overflow-x: auto !important; -webkit-overflow-scrolling: touch; }
+          .settings-colors-inner { min-width: 640px; }
+          .settings-role-row { flex-wrap: wrap !important; gap: 10px !important; }
+        }
+      `}</style>
+
       {route === 'sizes' && (
         <>
           <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#6b655a' }}>Pengaturan</div>
@@ -92,7 +94,7 @@ export default function Settings() {
             Buat set ukuran (mis. Regular, Oversized) — tiap set punya daftar ukuran sendiri, gambar panduan, dan status aktif. Saat membuat sesi pre-order, pilih salah satu set.
           </p>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', border: '2px solid #14110D', background: '#fff', padding: '10px 16px', marginBottom: '32px' }}>
+          <div className="settings-new-row" style={{ display: 'flex', alignItems: 'center', gap: '16px', border: '2px solid #14110D', background: '#fff', padding: '10px 16px', marginBottom: '32px' }}>
             <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#9a8f7a', letterSpacing: '0.08em', textTransform: 'uppercase', flexShrink: 0 }}>Set Baru:</span>
             <input placeholder="mis. Longsleeve" value={state.newSetName || ''} onChange={e => updateState({ newSetName: e.target.value })} style={inputStyle} />
             <button onClick={addSizeSet} style={{ background: '#F2C015', color: '#14110D', border: 'none', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '11px', textTransform: 'uppercase', padding: '14px 24px', letterSpacing: '0.06em', whiteSpace: 'nowrap' }}>
@@ -100,10 +102,10 @@ export default function Settings() {
             </button>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '24px' }}>
+          <div className="settings-sizesets-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '24px' }}>
             {data.sizeSets.map(ss => (
               <div key={ss.id} style={{ border: '2px solid #14110D', background: '#fff', display: 'flex', flexDirection: 'column' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', borderBottom: '2px solid #14110D' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', borderBottom: '2px solid #14110D', flexWrap: 'wrap', gap: '8px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <div style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '18px', textTransform: 'uppercase' }}>{ss.name}</div>
                     <span style={{ background: ss.active ? '#14110D' : '#e4ddcd', color: ss.active ? '#F2EEE4' : '#6b655a', fontFamily: "'Space Mono', monospace", fontSize: '10px', fontWeight: 700, padding: '4px 8px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
@@ -119,7 +121,7 @@ export default function Settings() {
                     </button>
                   </div>
                 </div>
-                
+
                 <div style={{ padding: '20px' }}>
                   <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '10px', color: '#9a8f7a', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '12px' }}>Ukuran</div>
                   <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '16px' }}>
@@ -130,39 +132,35 @@ export default function Settings() {
                       </div>
                     ))}
                   </div>
-                  
-                  <div style={{ display: 'flex', gap: '8px', marginBottom: '24px' }}>
-                    <input placeholder="mis. XXL" value={state.sizeInputs[ss.id] || ''} onChange={e => updateState({ sizeInputs: { ...state.sizeInputs, [ss.id]: e.target.value } })} onKeyDown={e => e.key === 'Enter' && addSizeToSet(ss.id)} style={inputStyle} />
-                    <button onClick={() => addSizeToSet(ss.id)} style={{ background: '#14110D', color: '#F2EEE4', border: 'none', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '11px', letterSpacing: '0.06em', textTransform: 'uppercase', padding: '0 20px', whiteSpace: 'nowrap' }}>
+
+                  <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', flexWrap: 'wrap' }}>
+                    <input placeholder="mis. XXL" value={state.sizeInputs[ss.id] || ''} onChange={e => updateState({ sizeInputs: { ...state.sizeInputs, [ss.id]: e.target.value } })} onKeyDown={e => e.key === 'Enter' && addSizeToSet(ss.id)} style={{ ...inputStyle, minWidth: '100px' }} />
+                    <button onClick={() => addSizeToSet(ss.id)} style={{ background: '#14110D', color: '#F2EEE4', border: 'none', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '11px', letterSpacing: '0.06em', textTransform: 'uppercase', padding: '0 20px', whiteSpace: 'nowrap', minHeight: '46px' }}>
                       + UKURAN
                     </button>
                   </div>
-                  
+
                   <div style={{ borderBottom: '1px solid #ddd5c4', marginBottom: '24px' }}></div>
-                  
+
                   <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '10px', color: '#9a8f7a', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '12px' }}>Gambar Panduan Ukuran</div>
-                  <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-                    
-                    {/* Kotak Preview Gambar */}
-                    <div style={{ width: '64px', height: '64px', border: '2px solid #14110D', background: '#e4ddcd', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Space Mono', monospace", fontSize: '10px', color: '#9a8f7a', textAlign: 'center', overflow: 'hidden' }}>
+                  <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
+                    <div style={{ width: '64px', height: '64px', border: '2px solid #14110D', background: '#e4ddcd', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Space Mono', monospace", fontSize: '10px', color: '#9a8f7a', textAlign: 'center', overflow: 'hidden', flexShrink: 0 }}>
                       {ss.guideImg ? (
                         <img src={ss.guideImg} alt={`Panduan ${ss.name}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       ) : (
                         <>Belum<br/>ada</>
                       )}
                     </div>
-                    
-                    {/* Tombol Upload (Menggunakan Label agar input file tersembunyi) */}
+
                     <label style={{ border: '2px solid #14110D', background: '#fff', color: '#14110D', fontFamily: "'Space Mono', monospace", fontSize: '11px', fontWeight: 700, padding: '10px 16px', cursor: 'pointer', letterSpacing: '0.06em', display: 'inline-block' }}>
                       UPLOAD PANDUAN
-                      <input 
-                        type="file" 
-                        accept="image/*" 
-                        style={{ display: 'none' }} 
-                        onChange={(e) => handleUploadGuide(ss.id, e)} 
+                      <input
+                        type="file"
+                        accept="image/*"
+                        style={{ display: 'none' }}
+                        onChange={(e) => handleUploadGuide(ss.id, e)}
                       />
                     </label>
-
                   </div>
                 </div>
               </div>
@@ -171,7 +169,6 @@ export default function Settings() {
         </>
       )}
 
-      {/* ======================= WARNA ======================= */}
       {route === 'colors' && (
         <>
           <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#6b655a' }}>Pengaturan</div>
@@ -180,7 +177,7 @@ export default function Settings() {
             Daftar warna yang bisa dipilih saat membuat sesi pre-order. Atur nama, kode warna, dan status aktif.
           </p>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', border: '2px solid #14110D', background: '#fff', padding: '10px 16px', marginBottom: '32px' }}>
+          <div className="settings-new-row" style={{ display: 'flex', alignItems: 'center', gap: '16px', border: '2px solid #14110D', background: '#fff', padding: '10px 16px', marginBottom: '32px' }}>
             <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#9a8f7a', letterSpacing: '0.08em', textTransform: 'uppercase', flexShrink: 0 }}>Warna Baru:</span>
             <input placeholder="Nama warna" value={state.newColorName || ''} onChange={e => updateState({ newColorName: e.target.value })} style={inputStyle} />
             <div style={{ display: 'flex', alignItems: 'center', border: '2px solid #14110D', padding: '4px', background: '#fff' }}>
@@ -192,36 +189,37 @@ export default function Settings() {
             </button>
           </div>
 
-          <div style={{ border: '2px solid #14110D', background: '#fff' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '40px 1fr 200px auto auto auto', gap: '16px', padding: '12px 20px', borderBottom: '2px solid #14110D', fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#9a8f7a', alignItems: 'center' }}>
-              <span style={{ gridColumn: '1 / 3' }}>Warna Nama</span>
-              <span>Kode</span>
-              <span style={{ gridColumn: '4 / 7', textAlign: 'right', paddingRight: '48px' }}>Status</span>
-            </div>
-            {data.colorOptions.map(c => (
-              <div key={c.id} style={{ display: 'grid', gridTemplateColumns: '40px 1fr 200px auto auto auto', gap: '16px', padding: '12px 20px', borderBottom: '1px solid #ddd5c4', alignItems: 'center' }}>
-                <div style={{ width: '40px', height: '40px', background: c.hex, border: '2px solid #14110D' }}></div>
-                <div style={{ padding: '10px 14px', border: '2px solid #14110D', fontFamily: "'Archivo'", fontSize: '14px', fontWeight: 600 }}>{c.name}</div>
-                <div style={{ padding: '10px 14px', border: '2px solid #14110D', fontFamily: "'Space Mono', monospace", fontSize: '13px' }}>{c.hex}</div>
-                
-                <span style={{ background: c.active ? '#14110D' : '#e4ddcd', color: c.active ? '#F2EEE4' : '#6b655a', padding: '6px 10px', fontFamily: "'Space Mono', monospace", fontSize: '10px', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-                  {c.active ? 'AKTIF' : 'NONAKTIF'}
-                </span>
-                
-                <button onClick={() => toggleColor(c.id)} style={{ border: '2px solid #14110D', background: '#fff', color: '#14110D', fontFamily: "'Space Mono', monospace", fontSize: '10px', fontWeight: 700, padding: '6px 12px', cursor: 'pointer', letterSpacing: '0.06em' }}>
-                  {c.active ? 'NONAKTIFKAN' : 'AKTIFKAN'}
-                </button>
-                
-                <button onClick={() => deleteColor(c.id)} style={{ background: '#14110D', color: '#F2EEE4', border: 'none', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontSize: '14px' }}>
-                  ×
-                </button>
+          <div style={{ border: '2px solid #14110D', background: '#fff' }} className="settings-colors-scroll">
+            <div className="settings-colors-inner">
+              <div style={{ display: 'grid', gridTemplateColumns: '40px 1fr 200px auto auto auto', gap: '16px', padding: '12px 20px', borderBottom: '2px solid #14110D', fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#9a8f7a', alignItems: 'center' }}>
+                <span style={{ gridColumn: '1 / 3' }}>Warna Nama</span>
+                <span>Kode</span>
+                <span style={{ gridColumn: '4 / 7', textAlign: 'right', paddingRight: '48px' }}>Status</span>
               </div>
-            ))}
+              {data.colorOptions.map(c => (
+                <div key={c.id} style={{ display: 'grid', gridTemplateColumns: '40px 1fr 200px auto auto auto', gap: '16px', padding: '12px 20px', borderBottom: '1px solid #ddd5c4', alignItems: 'center' }}>
+                  <div style={{ width: '40px', height: '40px', background: c.hex, border: '2px solid #14110D' }}></div>
+                  <div style={{ padding: '10px 14px', border: '2px solid #14110D', fontFamily: "'Archivo'", fontSize: '14px', fontWeight: 600 }}>{c.name}</div>
+                  <div style={{ padding: '10px 14px', border: '2px solid #14110D', fontFamily: "'Space Mono', monospace", fontSize: '13px' }}>{c.hex}</div>
+
+                  <span style={{ background: c.active ? '#14110D' : '#e4ddcd', color: c.active ? '#F2EEE4' : '#6b655a', padding: '6px 10px', fontFamily: "'Space Mono', monospace", fontSize: '10px', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                    {c.active ? 'AKTIF' : 'NONAKTIF'}
+                  </span>
+
+                  <button onClick={() => toggleColor(c.id)} style={{ border: '2px solid #14110D', background: '#fff', color: '#14110D', fontFamily: "'Space Mono', monospace", fontSize: '10px', fontWeight: 700, padding: '6px 12px', cursor: 'pointer', letterSpacing: '0.06em' }}>
+                    {c.active ? 'NONAKTIFKAN' : 'AKTIFKAN'}
+                  </button>
+
+                  <button onClick={() => deleteColor(c.id)} style={{ background: '#14110D', color: '#F2EEE4', border: 'none', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontSize: '14px' }}>
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
         </>
       )}
 
-      {/* ======================= PERAN ======================= */}
       {route === 'roles' && (
         <>
           <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#6b655a' }}>Pengaturan</div>
@@ -230,7 +228,7 @@ export default function Settings() {
             Daftar peran/pihak yang bisa dipilih saat mengatur pembagian profit sesi pre-order (mis. Aircooled Syndicate, pic Atot | RDPL, pic Dzikri).
           </p>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', border: '2px solid #14110D', background: '#fff', padding: '10px 16px', marginBottom: '32px' }}>
+          <div className="settings-new-row" style={{ display: 'flex', alignItems: 'center', gap: '16px', border: '2px solid #14110D', background: '#fff', padding: '10px 16px', marginBottom: '32px' }}>
             <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#9a8f7a', letterSpacing: '0.08em', textTransform: 'uppercase', flexShrink: 0 }}>Peran Baru:</span>
             <input placeholder="Nama (mis. RDPL)" value={state.newRoleName || ''} onChange={e => updateState({ newRoleName: e.target.value })} style={inputStyle} />
             <input placeholder="PIC (mis. Atot)" value={state.newRolePic || ''} onChange={e => updateState({ newRolePic: e.target.value })} style={inputStyle} />
@@ -241,8 +239,8 @@ export default function Settings() {
 
           <div style={{ border: '2px solid #14110D', background: '#fff' }}>
             {data.roles.map(r => (
-              <div key={r.id} style={{ padding: '16px 20px', borderBottom: '1px solid #ddd5c4', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div key={r.id} className="settings-role-row" style={{ padding: '16px 20px', borderBottom: '1px solid #ddd5c4', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
                   <span style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '16px' }}>{r.name}</span>
                   <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#9a8f7a', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                     PIC: <span style={{ color: '#14110D' }}>{r.pic || '—'}</span>
