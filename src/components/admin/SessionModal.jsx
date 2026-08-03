@@ -28,7 +28,6 @@ export default function SessionModal() {
   const roles = data.roles || [];
   const sizeSets = (data.sizeSets || []).filter((s) => s.active !== false);
 
-  // isi ulang default form tiap kali modal dibuka
   useEffect(() => {
     if (state.sessionModal && p) {
       const pre = p.preorder;
@@ -62,7 +61,6 @@ export default function SessionModal() {
   const inputStyle = { width: '100%', padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' };
   const labelStyle = { fontFamily: "'Space Mono', monospace", fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#6b655a', marginBottom: '7px' };
 
-  // ---- toggle warna ----
   const toggleColor = (hex, name) => {
     const cs = (ns.colors || []).slice();
     const i = cs.findIndex((c) => c.hex === hex);
@@ -71,7 +69,6 @@ export default function SessionModal() {
     setNs({ ...ns, colors: cs });
   };
 
-  // ---- hitung estimasi pembagian profit ----
   const price = parseInt(ns.price) || 0;
   const totalBiaya = (parseInt(ns.produksi) || 0) + (parseInt(ns.kemasan) || 0) + (parseInt(ns.stiker) || 0);
   const gross = price - totalBiaya;
@@ -130,7 +127,6 @@ export default function SessionModal() {
       PRODUCTS: prev.PRODUCTS.map((x) => {
         if (x.id !== p.id) return x;
         const updated = { ...x };
-        // sesi aktif lama dipindah ke histori (persis logic createSession di HTML)
         if (updated.preorder) {
           updated.sessionHistory = [
             { ...updated.preorder, status: updated.preorder.status === 'open' ? 'closed' : updated.preorder.status },
@@ -163,15 +159,31 @@ export default function SessionModal() {
       })
     }));
 
-    // reset committedOverride produk ini ke 0, lalu tutup modal
     const ov = { ...state.committedOverride, [p.id]: 0 };
     updateState({ sessionModal: false, sessionModalPid: null, committedOverride: ov });
   };
 
   return (
     <>
+      <style>{`
+        @media (max-width: 640px) {
+          .sessmodal-box { width: 94vw !important; }
+          .sessmodal-body { padding: 18px !important; }
+          .sessmodal-grid-2 { grid-template-columns: 1fr !important; }
+          .sessmodal-cost-grid { grid-template-columns: 1fr !important; }
+          .sessmodal-profit-row {
+            grid-template-columns: 1fr !important;
+            row-gap: 6px !important;
+            padding: 12px 0 !important;
+          }
+          .sessmodal-profit-head { display: none !important; }
+          .sessmodal-summary-grid { grid-template-columns: 1fr 1fr !important; }
+        }
+      `}</style>
+
       <div onClick={close} style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(20,17,13,0.62)' }} />
       <div
+        className="sessmodal-box"
         style={{
           position: 'fixed', zIndex: 101, top: '50%', left: '50%',
           transform: 'translate(-50%,-50%)', width: '720px', maxWidth: '92vw',
@@ -185,8 +197,7 @@ export default function SessionModal() {
           <button onClick={close} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '24px', lineHeight: 1 }}>×</button>
         </div>
 
-        <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          {/* pilih produk (kalau modal dibuka tanpa produk spesifik, mis. dari halaman list Sesi Pre-Order) */}
+        <div className="sessmodal-body" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div>
             <div style={labelStyle}>Produk</div>
             <select
@@ -205,7 +216,7 @@ export default function SessionModal() {
             <input placeholder="mis. DROP 04" value={ns.sessionName} onChange={set('sessionName')} style={inputStyle} />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+          <div className="sessmodal-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
             <div>
               <div style={labelStyle}>Dibuka</div>
               <input placeholder="1 Jul" value={ns.opens} onChange={set('opens')} style={inputStyle} />
@@ -216,7 +227,7 @@ export default function SessionModal() {
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+          <div className="sessmodal-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
             <div>
               <div style={labelStyle}>Target Min. (unit)</div>
               <input type="number" placeholder="40" value={ns.target} onChange={set('target')} style={inputStyle} />
@@ -231,7 +242,7 @@ export default function SessionModal() {
             Harga &amp; Varian Sesi Ini
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+          <div className="sessmodal-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
             <div>
               <div style={labelStyle}>Harga Jual (Rp)</div>
               <input type="number" placeholder="220000" value={ns.price} onChange={set('price')} style={inputStyle} />
@@ -242,7 +253,6 @@ export default function SessionModal() {
             </div>
           </div>
 
-          {/* ==== SET UKURAN (dropdown, bukan teks bebas) ==== */}
           <div>
             <div style={labelStyle}>Set Ukuran</div>
             <select value={ns.sizeSetId} onChange={set('sizeSetId')} style={inputStyle}>
@@ -252,7 +262,6 @@ export default function SessionModal() {
             </select>
           </div>
 
-          {/* ==== PILIHAN WARNA (klik untuk pilih) ==== */}
           <div>
             <div style={labelStyle}>Pilihan Warna (klik untuk pilih)</div>
             <div style={{ display: 'flex', gap: '9px', flexWrap: 'wrap', marginTop: '8px' }}>
@@ -277,14 +286,13 @@ export default function SessionModal() {
 
           <div>
             <div style={labelStyle}>Daftar Biaya per Unit</div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
+            <div className="sessmodal-cost-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
               <input type="number" placeholder="Produksi" value={ns.produksi} onChange={set('produksi')} style={inputStyle} />
               <input type="number" placeholder="Kemasan" value={ns.kemasan} onChange={set('kemasan')} style={inputStyle} />
               <input type="number" placeholder="Stiker & Aks." value={ns.stiker} onChange={set('stiker')} style={inputStyle} />
             </div>
           </div>
 
-          {/* ==== ESTIMASI PEMBAGIAN PROFIT ==== */}
           <div style={{ border: '2px solid #14110D', background: '#14110D', color: '#F2EEE4', padding: '16px' }}>
             <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#F2C015', marginBottom: '12px' }}>
               Estimasi Pembagian Profit
@@ -295,7 +303,7 @@ export default function SessionModal() {
               <button onClick={() => setNs({ ...ns, profitBase: 'gross' })} style={segStyleYellow(isGross)}>Dari Gross Profit</button>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', fontFamily: "'Space Mono', monospace", fontSize: '11px', marginBottom: '14px' }}>
+            <div className="sessmodal-summary-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', fontFamily: "'Space Mono', monospace", fontSize: '11px', marginBottom: '14px' }}>
               <div style={{ background: '#1f1c17', padding: '9px 10px' }}>
                 <div style={{ color: '#9a9384', fontSize: '9px', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Harga Jual</div>
                 <div style={{ marginTop: '3px' }}>{rp(price)}</div>
@@ -310,7 +318,7 @@ export default function SessionModal() {
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1.3fr 1.3fr 0.7fr 1fr', gap: '8px', fontFamily: "'Space Mono', monospace", fontSize: '9px', letterSpacing: '0.05em', textTransform: 'uppercase', color: '#9a9384', paddingBottom: '6px', borderBottom: '1px solid #2c2820' }}>
+            <div className="sessmodal-profit-head" style={{ display: 'grid', gridTemplateColumns: '1.3fr 1.3fr 0.7fr 1fr', gap: '8px', fontFamily: "'Space Mono', monospace", fontSize: '9px', letterSpacing: '0.05em', textTransform: 'uppercase', color: '#9a9384', paddingBottom: '6px', borderBottom: '1px solid #2c2820' }}>
               <span>Pihak</span><span>Peran</span><span style={{ textAlign: 'center' }}>%</span><span style={{ textAlign: 'right' }}>Nominal</span>
             </div>
 
@@ -318,7 +326,7 @@ export default function SessionModal() {
               const pct = Number(ns[row.pctKey]) || 0;
               const nominal = Math.round(base * pct / 100);
               return (
-                <div key={row.pctKey} style={{ display: 'grid', gridTemplateColumns: '1.3fr 1.3fr 0.7fr 1fr', gap: '8px', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid #2c2820' }}>
+                <div key={row.pctKey} className="sessmodal-profit-row" style={{ display: 'grid', gridTemplateColumns: '1.3fr 1.3fr 0.7fr 1fr', gap: '8px', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid #2c2820' }}>
                   <span style={{ fontFamily: "'Archivo'", fontWeight: 700, fontSize: '13px' }}>{row.label}</span>
                   {row.hasRole ? (
                     <select
@@ -343,7 +351,7 @@ export default function SessionModal() {
               );
             })}
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px', flexWrap: 'wrap', gap: '6px' }}>
               <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: over ? '#ff6b53' : '#6b655a' }}>
                 {over ? `Total ${totalPct}% melebihi 100% — kurangi salah satu` : `Sisa belum dialokasi: ${100 - totalPct}%`}
               </span>

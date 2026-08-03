@@ -48,24 +48,24 @@ export default function Finance() {
     setSplits(prev => ({ ...prev, [key]: isNaN(num) ? 0 : num }));
   };
 
-  const gridTable = 'minmax(200px, 1.8fr) 60px repeat(5, 1fr)';
-  const cellStyle = { padding: '14px 20px', borderBottom: '1px solid #ddd5c4', display: 'flex', alignItems: 'center', fontFamily: "'Space Mono', monospace", fontSize: '12px' };
-  const headCellStyle = { padding: '12px 20px', borderBottom: '1px solid #14110D', fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#9a8f7a', display: 'flex', alignItems: 'center' };
-  const totalCellStyle = { padding: '16px 20px', fontFamily: "'Space Mono', monospace", fontSize: '13px', fontWeight: 700, display: 'flex', alignItems: 'center' };
+  const gridTable = '1.8fr 0.8fr 1fr 1fr 1fr 1fr 1.1fr';
+  const costColor = '#9a3a2a';
+
+  const headCell = { padding: '12px 0', borderBottom: '1px solid #ddd5c4', fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.04em', textTransform: 'uppercase', color: '#6b655a', display: 'flex', alignItems: 'center' };
+  const dataCell = { padding: '12px 0', borderBottom: '1px solid #ddd5c4', display: 'flex', alignItems: 'center', fontFamily: "'Space Mono', monospace", fontSize: '12px' };
+  const totalCell = { padding: '14px 0', display: 'flex', alignItems: 'center', fontFamily: "'Space Mono', monospace", fontSize: '13px', fontWeight: 700 };
 
   return (
     <>
       <style>{`
         @media (max-width: 768px) {
-          .finance-table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-          .finance-table-grid { min-width: 760px; }
           .finance-bottom-grid { grid-template-columns: 1fr !important; }
-          .finance-left-box { padding: 24px !important; }
-          .finance-left-value { font-size: 34px !important; }
-          .finance-split-row { flex-wrap: wrap !important; row-gap: 10px !important; padding: 16px 0 !important; }
-          .finance-split-label { width: auto !important; flex: 1 1 60% !important; }
-          .finance-split-input { order: 3 !important; }
-          .finance-split-value { order: 4 !important; min-width: 0 !important; flex: 1 1 100% !important; text-align: left !important; }
+          .finance-left-box { padding: 20px !important; }
+          .finance-left-value { font-size: 32px !important; }
+          .finance-split-row { flex-wrap: wrap !important; row-gap: 8px !important; }
+          .finance-split-label { flex: 1 1 100% !important; }
+          .finance-split-input { order: 2 !important; }
+          .finance-split-value { order: 3 !important; margin-left: auto !important; }
           .finance-new-row { flex-wrap: wrap !important; }
         }
       `}</style>
@@ -74,106 +74,96 @@ export default function Finance() {
         Rekap Biaya & Bagi Hasil
       </div>
       <h1 style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '40px', margin: '4px 0 28px', textTransform: 'uppercase' }}>
-        Keuangan & Profit
+        Keuangan &amp; Profit
       </h1>
 
-      <div style={{ border: '2px solid #14110D', background: '#fff', marginBottom: '24px' }}>
-        <div style={{ padding: '16px 20px', borderBottom: '2px solid #14110D', fontFamily: "'Archivo'", fontWeight: 800, fontSize: '16px', textTransform: 'uppercase' }}>
+      {/* overflow-x:auto memang bagian dari desain asli (tabel lebar), bukan cuma penyesuaian mobile */}
+      <div style={{ border: '2px solid #14110D', background: '#fff', marginBottom: '28px', overflowX: 'auto' }}>
+        <div style={{ padding: '14px 20px', borderBottom: '2px solid #14110D', fontFamily: "'Archivo'", fontWeight: 800, fontSize: '16px', textTransform: 'uppercase' }}>
           Rekap Biaya Produksi per Produk
         </div>
+        <div style={{ padding: '0 20px', minWidth: '760px', display: 'grid', gridTemplateColumns: gridTable, columnGap: '10px' }}>
+          <div style={headCell}>Produk</div>
+          <div style={{ ...headCell, justifyContent: 'flex-end' }}>Unit</div>
+          <div style={{ ...headCell, justifyContent: 'flex-end' }}>Pendapatan</div>
+          <div style={{ ...headCell, justifyContent: 'flex-end' }}>Produksi</div>
+          <div style={{ ...headCell, justifyContent: 'flex-end' }}>Kemasan</div>
+          <div style={{ ...headCell, justifyContent: 'flex-end' }}>Stiker & Aks.</div>
+          <div style={{ ...headCell, justifyContent: 'flex-end' }}>Profit Kotor</div>
 
-        {/* ==== SATU grid container tunggal untuk header + semua baris + total ==== */}
-        <div className="finance-table-scroll">
-          <div className="finance-table-grid" style={{ display: 'grid', gridTemplateColumns: gridTable, columnGap: '16px' }}>
-            {/* header row */}
-            <div style={headCellStyle}>Produk</div>
-            <div style={{ ...headCellStyle, justifyContent: 'flex-end' }}>Unit</div>
-            <div style={{ ...headCellStyle, justifyContent: 'flex-end' }}>Pendapatan</div>
-            <div style={{ ...headCellStyle, justifyContent: 'flex-end' }}>Produksi</div>
-            <div style={{ ...headCellStyle, justifyContent: 'flex-end' }}>Kemasan</div>
-            <div style={{ ...headCellStyle, justifyContent: 'flex-end' }}>Stiker & Aks.</div>
-            <div style={{ ...headCellStyle, justifyContent: 'flex-end' }}>Profit Kotor</div>
+          {rows.map((r, i) => (
+            <React.Fragment key={i}>
+              <div style={{ ...dataCell, fontFamily: "'Archivo'", fontWeight: 700, fontSize: '14px' }}>{r.name}</div>
+              <div style={{ ...dataCell, justifyContent: 'flex-end' }}>{r.units}</div>
+              <div style={{ ...dataCell, justifyContent: 'flex-end' }}>{rp(r.gross)}</div>
+              <div style={{ ...dataCell, justifyContent: 'flex-end', color: costColor }}>{rp(r.production)}</div>
+              <div style={{ ...dataCell, justifyContent: 'flex-end', color: costColor }}>{rp(r.kemasan)}</div>
+              <div style={{ ...dataCell, justifyContent: 'flex-end', color: costColor }}>{rp(r.stiker)}</div>
+              <div style={{ ...dataCell, justifyContent: 'flex-end', fontWeight: 700 }}>{rp(r.profit)}</div>
+            </React.Fragment>
+          ))}
 
-            {/* data rows */}
-            {rows.map((r, i) => (
-              <React.Fragment key={i}>
-                <div style={{ ...cellStyle, fontFamily: "'Archivo'", fontWeight: 700, fontSize: '14px' }}>{r.name}</div>
-                <div style={{ ...cellStyle, justifyContent: 'flex-end' }}>{r.units}</div>
-                <div style={{ ...cellStyle, justifyContent: 'flex-end' }}>{r.gross === 0 ? 'Rp 0' : rp(r.gross)}</div>
-                <div style={{ ...cellStyle, justifyContent: 'flex-end', color: '#6b655a' }}>{r.production === 0 ? 'Rp 0' : rp(r.production)}</div>
-                <div style={{ ...cellStyle, justifyContent: 'flex-end', color: '#6b655a' }}>{r.kemasan === 0 ? 'Rp 0' : rp(r.kemasan)}</div>
-                <div style={{ ...cellStyle, justifyContent: 'flex-end', color: '#6b655a' }}>{r.stiker === 0 ? 'Rp 0' : rp(r.stiker)}</div>
-                <div style={{ ...cellStyle, justifyContent: 'flex-end', fontWeight: 700 }}>{r.profit === 0 ? 'Rp 0' : rp(r.profit)}</div>
-              </React.Fragment>
-            ))}
-
-            {/* total row */}
-            <div style={{ ...totalCellStyle, fontFamily: "'Archivo'", fontWeight: 900, fontSize: '15px', textTransform: 'uppercase' }}>Total</div>
-            <div style={{ ...totalCellStyle, justifyContent: 'flex-end' }}>{totalUnits}</div>
-            <div style={{ ...totalCellStyle, justifyContent: 'flex-end' }}>{rp(totalGross)}</div>
-            <div style={{ ...totalCellStyle, justifyContent: 'flex-end', color: '#6b655a' }}>{rp(totalProduction)}</div>
-            <div style={{ ...totalCellStyle, justifyContent: 'flex-end', color: '#6b655a' }}>{rp(totalKemasan)}</div>
-            <div style={{ ...totalCellStyle, justifyContent: 'flex-end', color: '#6b655a' }}>{rp(totalStiker)}</div>
-            <div style={{ ...totalCellStyle, justifyContent: 'flex-end', fontSize: '14px' }}>{rp(totalProfit)}</div>
-          </div>
+          <div style={{ ...totalCell, fontFamily: "'Archivo'", fontWeight: 900, fontSize: '15px', textTransform: 'uppercase' }}>Total</div>
+          <div style={{ ...totalCell, justifyContent: 'flex-end' }}>{totalUnits}</div>
+          <div style={{ ...totalCell, justifyContent: 'flex-end' }}>{rp(totalGross)}</div>
+          <div style={{ ...totalCell, justifyContent: 'flex-end', color: costColor }}>{rp(totalProduction)}</div>
+          <div style={{ ...totalCell, justifyContent: 'flex-end', color: costColor }}>{rp(totalKemasan)}</div>
+          <div style={{ ...totalCell, justifyContent: 'flex-end', color: costColor }}>{rp(totalStiker)}</div>
+          <div style={{ ...totalCell, justifyContent: 'flex-end', fontSize: '14px' }}>{rp(totalProfit)}</div>
         </div>
       </div>
 
-      <div className="finance-bottom-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', alignItems: 'flex-start' }}>
-        <div className="finance-left-box" style={{ background: '#14110D', color: '#F2EEE4', padding: '36px' }}>
-          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#F2C015', marginBottom: '16px' }}>
+      <div className="finance-bottom-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '24px', alignItems: 'start' }}>
+        <div className="finance-left-box" style={{ border: '2px solid #14110D', background: '#14110D', color: '#F2EEE4', padding: '24px' }}>
+          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#F2C015' }}>
             Total Profit Kotor
           </div>
-          <div className="finance-left-value" style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '48px', letterSpacing: '-0.02em', lineHeight: 1, marginBottom: '20px' }}>
+          <div className="finance-left-value" style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '42px', marginTop: '6px', letterSpacing: '-0.01em' }}>
             {rp(totalProfit)}
           </div>
-          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#cfcabd', lineHeight: 1.6 }}>
-            Dari {rp(totalGross)} pendapatan,<br/>
-            dikurangi {rp(totalBiayaKeseluruhan)} biaya.
+          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#cfcabd', marginTop: '8px', lineHeight: 1.6 }}>
+            Dari {rp(totalGross)} pendapatan,<br/>dikurangi {rp(totalBiayaKeseluruhan)} biaya.
           </div>
-
-          <div style={{ marginTop: '48px', borderTop: '1px solid #2c2820', paddingTop: '24px', fontFamily: "'Space Mono', monospace", fontSize: '11px', letterSpacing: '0.1em', fontWeight: 700, color: splitOk ? '#F2C015' : '#ff6b53', textTransform: 'uppercase' }}>
+          <div style={{ marginTop: '24px', borderTop: '1px solid #2c2820', paddingTop: '18px', fontFamily: "'Space Mono', monospace", fontSize: '11px', letterSpacing: '0.08em', textTransform: 'uppercase', color: splitOk ? '#F2C015' : '#ff6b53' }}>
             {splitOk ? 'TOTAL ALOKASI: 100% ✓' : `TOTAL ALOKASI: ${splitSum}% — HARUS 100%`}
           </div>
         </div>
 
         <div style={{ border: '2px solid #14110D', background: '#fff' }}>
-          <div style={{ padding: '20px 24px', borderBottom: '2px solid #14110D', fontFamily: "'Archivo'", fontWeight: 900, fontSize: '15px', textTransform: 'uppercase' }}>
+          <div style={{ padding: '14px 20px', borderBottom: '2px solid #14110D', fontFamily: "'Archivo'", fontWeight: 800, fontSize: '16px', textTransform: 'uppercase' }}>
             Pembagian Profit
           </div>
 
-          <div style={{ padding: '0 24px' }}>
-            {splitDefs.map((sp, idx) => (
-              <div key={sp.key} className="finance-split-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 0', borderBottom: idx !== splitDefs.length - 1 ? '1px solid #ddd5c4' : 'none' }}>
+          <div style={{ padding: '8px 20px 18px' }}>
+            {splitDefs.map((sp) => (
+              <div key={sp.key} className="finance-split-row" style={{ display: 'grid', gridTemplateColumns: '1.4fr auto 1.2fr', gap: '14px', alignItems: 'center', padding: '13px 0', borderBottom: '1px solid #ddd5c4' }}>
 
-                <div className="finance-split-label" style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '220px' }}>
-                  <div style={{ width: '12px', height: '12px', background: sp.color, flexShrink: 0 }}></div>
-                  <span style={{ fontFamily: "'Archivo'", fontWeight: 700, fontSize: '15px' }}>{sp.label}</span>
+                <div className="finance-split-label" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span style={{ width: '12px', height: '12px', background: sp.color, display: 'inline-block', flexShrink: 0 }}></span>
+                  <span style={{ fontFamily: "'Archivo'", fontWeight: 700, fontSize: '14px' }}>{sp.label}</span>
                 </div>
 
-                <div className="finance-split-input" style={{ display: 'flex', alignItems: 'center', border: '2px solid #14110D', width: '86px', background: '#fff', flexShrink: 0 }}>
+                <div className="finance-split-input" style={{ display: 'flex', alignItems: 'center', border: '2px solid #14110D' }}>
                   <input
                     type="number"
                     value={splits[sp.key] === 0 ? '' : splits[sp.key]}
                     onChange={(e) => handleSplitChange(sp.key, e.target.value)}
-                    style={{ flex: 1, minWidth: 0, padding: '10px 0 10px 14px', border: 'none', fontFamily: "'Space Mono', monospace", fontSize: '13px', textAlign: 'center', outline: 'none' }}
+                    style={{ width: '56px', border: 'none', padding: '8px', fontFamily: "'Space Mono', monospace", fontSize: '14px', textAlign: 'right', background: '#fff', outline: 'none' }}
                   />
-                  <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', paddingRight: '14px', color: '#14110D' }}>%</span>
+                  <span style={{ padding: '0 9px', fontFamily: "'Space Mono', monospace", fontSize: '13px', color: '#6b655a' }}>%</span>
                 </div>
 
-                <div className="finance-split-value" style={{ fontFamily: "'Space Mono', monospace", fontSize: '14px', fontWeight: 700, textAlign: 'right', minWidth: '140px' }}>
+                <span className="finance-split-value" style={{ fontFamily: "'Space Mono', monospace", fontSize: '15px', fontWeight: 700, textAlign: 'right' }}>
                   {rp(Math.round(totalProfit * (splits[sp.key] / 100)))}
-                </div>
+                </span>
 
               </div>
             ))}
-          </div>
-
-          <div style={{ padding: '16px 24px', borderTop: '1px solid #ddd5c4', fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#6b655a' }}>
-            Ubah persentase untuk simulasi bagi hasil secara langsung.
+            <div style={{ marginTop: '10px', fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#6b655a' }}>
+              Ubah persentase untuk simulasi bagi hasil secara langsung.
+            </div>
           </div>
         </div>
-
       </div>
     </>
   );

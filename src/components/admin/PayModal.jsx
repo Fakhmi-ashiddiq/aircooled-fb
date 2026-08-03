@@ -3,7 +3,7 @@ import { AppContext } from '../../context/AppContext';
 import { rp } from '../../utils/helpers';
 
 export default function PayModal() {
-  const { data, state, updateState, findSession, buyerItems, buyerQty, saveBuyerPayment } = useContext(AppContext);
+  const { state, updateState, findSession, buyerItems, buyerQty, saveBuyerPayment } = useContext(AppContext);
 
   const m = state.payModal;
   if (!m) return null;
@@ -36,8 +36,22 @@ export default function PayModal() {
 
   return (
     <>
+      <style>{`
+        @media (max-width: 480px) {
+          .paymodal-box { width: 94vw !important; }
+          .paymodal-body { padding: 18px !important; }
+          .paymodal-input-grid { grid-template-columns: 1fr !important; }
+          .paymodal-input-grid > * { grid-column: 1 / -1 !important; }
+          .paymodal-status-row { flex-wrap: wrap !important; }
+          .paymodal-status-row > button { flex: 1 1 100% !important; min-width: 0 !important; }
+        }
+      `}</style>
+
       <div onClick={close} style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(20,17,13,0.62)' }} />
-      <div style={{ position: 'fixed', zIndex: 101, top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: '480px', maxWidth: '94vw', maxHeight: '90vh', overflowY: 'auto', background: '#F2EEE4', border: '2px solid #14110D' }}>
+      <div
+        className="paymodal-box"
+        style={{ position: 'fixed', zIndex: 101, top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: '480px', maxWidth: '94vw', maxHeight: '90vh', overflowY: 'auto', background: '#F2EEE4', border: '2px solid #14110D' }}
+      >
         <div style={{ padding: '18px 24px', borderBottom: '2px solid #14110D', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <div style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '20px', textTransform: 'uppercase', lineHeight: 1 }}>Pembayaran</div>
@@ -46,7 +60,7 @@ export default function PayModal() {
           <button onClick={close} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '24px', lineHeight: 1 }}>×</button>
         </div>
 
-        <div style={{ padding: '22px 24px' }}>
+        <div className="paymodal-body" style={{ padding: '22px 24px' }}>
           <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#6b655a', marginBottom: '10px' }}>Detail Pesanan</div>
           <div style={{ border: '2px solid #14110D', background: '#fff' }}>
             {items.map((it, i) => (
@@ -70,7 +84,7 @@ export default function PayModal() {
           </div>
 
           <div style={{ ...labelStyle, margin: '20px 0 10px' }}>Input Pembayaran</div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+          <div className="paymodal-input-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
             <div style={{ gridColumn: '1/3' }}>
               <label style={labelStyle}>Total Bayar (Rp)</label>
               <input type="number" value={state.payForm.amount} onChange={setField('amount')} placeholder="0" style={{ ...inputStyle, marginTop: '5px' }} />
@@ -87,7 +101,7 @@ export default function PayModal() {
             </div>
             <div style={{ gridColumn: '1/3' }}>
               <label style={labelStyle}>Bukti Bayar</label>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '5px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '5px', flexWrap: 'wrap' }}>
                 <label style={{ cursor: 'pointer', background: '#14110D', color: '#F2EEE4', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '11px', letterSpacing: '0.04em', textTransform: 'uppercase', padding: '11px 16px', whiteSpace: 'nowrap' }}>
                   Upload File
                   <input type="file" accept="image/*" onChange={onProof} style={{ display: 'none' }} />
@@ -98,7 +112,7 @@ export default function PayModal() {
           </div>
 
           <div style={{ ...labelStyle, margin: '22px 0 10px' }}>Ubah Status</div>
-          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+          <div className="paymodal-status-row" style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
             <button onClick={() => save('Lunas')} style={{ flex: 1, minWidth: '130px', background: '#14110D', color: '#F2EEE4', border: 'none', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '12px', letterSpacing: '0.05em', textTransform: 'uppercase', padding: '14px' }}>
               Lunas
             </button>

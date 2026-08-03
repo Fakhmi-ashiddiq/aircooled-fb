@@ -53,7 +53,6 @@ export default function ProdSessionModal() {
   const inputStyle = { width: '100%', padding: '12px', border: '2px solid #14110D', background: '#fff', fontFamily: "'Space Mono', monospace", fontSize: '14px' };
   const labelStyle = { fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.06em', textTransform: 'uppercase', color: '#6b655a', marginBottom: '5px', display: 'block' };
 
-  // ---- toggle warna ----
   const toggleColor = (hex, name) => {
     const cs = (nps.colors || []).slice();
     const i = cs.findIndex((c) => c.hex === hex);
@@ -62,7 +61,6 @@ export default function ProdSessionModal() {
     setNps({ ...nps, colors: cs });
   };
 
-  // ---- hitung estimasi pembagian profit ----
   const price = parseInt(nps.price) || 0;
   const totalBiaya = (parseInt(nps.produksi) || 0) + (parseInt(nps.kemasan) || 0) + (parseInt(nps.stiker) || 0);
   const gross = price - totalBiaya;
@@ -149,8 +147,25 @@ export default function ProdSessionModal() {
 
   return (
     <>
+      <style>{`
+        @media (max-width: 640px) {
+          .prodsess-box { width: 94vw !important; }
+          .prodsess-body { padding: 18px !important; }
+          .prodsess-grid-2 { grid-template-columns: 1fr !important; }
+          .prodsess-cost-grid { grid-template-columns: 1fr !important; }
+          .prodsess-profit-row {
+            grid-template-columns: 1fr !important;
+            row-gap: 6px !important;
+            padding: 12px 0 !important;
+          }
+          .prodsess-profit-head { display: none !important; }
+          .prodsess-summary-grid { grid-template-columns: 1fr 1fr !important; }
+        }
+      `}</style>
+
       <div onClick={close} style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(20,17,13,0.62)' }} />
       <div
+        className="prodsess-box"
         style={{
           position: 'fixed', zIndex: 101, top: '50%', left: '50%',
           transform: 'translate(-50%,-50%)', width: '720px', maxWidth: '94vw',
@@ -164,8 +179,8 @@ export default function ProdSessionModal() {
           <button onClick={close} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '24px', lineHeight: 1 }}>×</button>
         </div>
 
-        <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+        <div className="prodsess-body" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div className="prodsess-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
             <div>
               <label style={labelStyle}>Nama Batch</label>
               <input value={nps.name} onChange={set('name')} placeholder="PRODUKSI 02" style={inputStyle} />
@@ -181,7 +196,7 @@ export default function ProdSessionModal() {
             <input type="number" value={nps.qty} onChange={set('qty')} placeholder="0" style={inputStyle} />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+          <div className="prodsess-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
             <div>
               <label style={labelStyle}>Harga Jual (Rp)</label>
               <input type="number" value={nps.price} onChange={set('price')} placeholder="0" style={inputStyle} />
@@ -197,7 +212,6 @@ export default function ProdSessionModal() {
             <input value={nps.sizes} onChange={set('sizes')} placeholder="S,M,L,XL" style={inputStyle} />
           </div>
 
-          {/* ==== PILIHAN WARNA (klik untuk pilih) ==== */}
           <div>
             <label style={labelStyle}>Pilihan Warna (klik untuk pilih)</label>
             <div style={{ display: 'flex', gap: '9px', flexWrap: 'wrap', marginTop: '8px' }}>
@@ -223,7 +237,7 @@ export default function ProdSessionModal() {
           <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#6b655a' }}>
             Biaya per Unit
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
+          <div className="prodsess-cost-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
             <div>
               <label style={labelStyle}>Produksi</label>
               <input type="number" value={nps.produksi} onChange={set('produksi')} placeholder="0" style={inputStyle} />
@@ -242,7 +256,6 @@ export default function ProdSessionModal() {
             Batch baru akan ditandai AKTIF dan menambah stok produk sebanyak jumlah produksi.
           </div>
 
-          {/* ==== ESTIMASI PEMBAGIAN PROFIT ==== */}
           <div style={{ border: '2px solid #14110D', background: '#14110D', color: '#F2EEE4', padding: '16px' }}>
             <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#F2C015', marginBottom: '12px' }}>
               Estimasi Pembagian Profit
@@ -253,7 +266,7 @@ export default function ProdSessionModal() {
               <button onClick={() => setNps({ ...nps, profitBase: 'gross' })} style={segStyleYellow(isGross)}>Dari Gross Profit</button>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', fontFamily: "'Space Mono', monospace", fontSize: '11px', marginBottom: '14px' }}>
+            <div className="prodsess-summary-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', fontFamily: "'Space Mono', monospace", fontSize: '11px', marginBottom: '14px' }}>
               <div style={{ background: '#1f1c17', padding: '9px 10px' }}>
                 <div style={{ color: '#9a9384', fontSize: '9px', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Harga Jual</div>
                 <div style={{ marginTop: '3px' }}>{rp(price)}</div>
@@ -268,7 +281,7 @@ export default function ProdSessionModal() {
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1.3fr 1.3fr 0.7fr 1fr', gap: '8px', fontFamily: "'Space Mono', monospace", fontSize: '9px', letterSpacing: '0.05em', textTransform: 'uppercase', color: '#9a9384', paddingBottom: '6px', borderBottom: '1px solid #2c2820' }}>
+            <div className="prodsess-profit-head" style={{ display: 'grid', gridTemplateColumns: '1.3fr 1.3fr 0.7fr 1fr', gap: '8px', fontFamily: "'Space Mono', monospace", fontSize: '9px', letterSpacing: '0.05em', textTransform: 'uppercase', color: '#9a9384', paddingBottom: '6px', borderBottom: '1px solid #2c2820' }}>
               <span>Pihak</span><span>Peran</span><span style={{ textAlign: 'center' }}>%</span><span style={{ textAlign: 'right' }}>Nominal</span>
             </div>
 
@@ -276,7 +289,7 @@ export default function ProdSessionModal() {
               const pct = Number(nps[row.pctKey]) || 0;
               const nominal = Math.round(base * pct / 100);
               return (
-                <div key={row.pctKey} style={{ display: 'grid', gridTemplateColumns: '1.3fr 1.3fr 0.7fr 1fr', gap: '8px', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid #2c2820' }}>
+                <div key={row.pctKey} className="prodsess-profit-row" style={{ display: 'grid', gridTemplateColumns: '1.3fr 1.3fr 0.7fr 1fr', gap: '8px', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid #2c2820' }}>
                   <span style={{ fontFamily: "'Archivo'", fontWeight: 700, fontSize: '13px' }}>{row.label}</span>
                   {row.hasRole ? (
                     <select
@@ -301,7 +314,7 @@ export default function ProdSessionModal() {
               );
             })}
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px', flexWrap: 'wrap', gap: '6px' }}>
               <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: over ? '#ff6b53' : '#6b655a' }}>
                 {over ? `Total ${totalPct}% melebihi 100% — kurangi salah satu` : `Sisa belum dialokasi: ${100 - totalPct}%`}
               </span>

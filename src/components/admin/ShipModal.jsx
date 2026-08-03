@@ -31,8 +31,20 @@ export default function ShipModal() {
 
   return (
     <>
+      <style>{`
+        @media (max-width: 480px) {
+          .shipmodal-box { width: 94vw !important; }
+          .shipmodal-body { padding: 18px !important; }
+          .shipmodal-input-grid { grid-template-columns: 1fr !important; }
+          .shipmodal-input-grid > * { grid-column: 1 / -1 !important; }
+        }
+      `}</style>
+
       <div onClick={close} style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(20,17,13,0.62)' }} />
-      <div style={{ position: 'fixed', zIndex: 101, top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: '440px', maxWidth: '94vw', maxHeight: '90vh', overflowY: 'auto', background: '#F2EEE4', border: '2px solid #14110D' }}>
+      <div
+        className="shipmodal-box"
+        style={{ position: 'fixed', zIndex: 101, top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: '440px', maxWidth: '94vw', maxHeight: '90vh', overflowY: 'auto', background: '#F2EEE4', border: '2px solid #14110D' }}
+      >
         <div style={{ padding: '18px 24px', borderBottom: '2px solid #14110D', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <div style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '20px', textTransform: 'uppercase', lineHeight: 1 }}>Pengiriman</div>
@@ -41,8 +53,8 @@ export default function ShipModal() {
           <button onClick={close} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '24px', lineHeight: 1 }}>×</button>
         </div>
 
-        <div style={{ padding: '22px 24px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+        <div className="shipmodal-body" style={{ padding: '22px 24px' }}>
+          <div className="shipmodal-input-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
             <div>
               <label style={labelStyle}>Kurir</label>
               <select value={state.shipForm.courier} onChange={setField('courier')} style={{ ...inputStyle, marginTop: '5px' }}>
@@ -59,7 +71,7 @@ export default function ShipModal() {
             </div>
             <div style={{ gridColumn: '1/3' }}>
               <label style={labelStyle}>Bukti Pengiriman</label>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '5px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '5px', flexWrap: 'wrap' }}>
                 <label style={{ cursor: 'pointer', background: '#14110D', color: '#F2EEE4', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '11px', letterSpacing: '0.04em', textTransform: 'uppercase', padding: '11px 16px', whiteSpace: 'nowrap' }}>
                   Upload File
                   <input type="file" accept="image/*" onChange={onProof} style={{ display: 'none' }} />
