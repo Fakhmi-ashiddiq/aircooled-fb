@@ -15,10 +15,26 @@ export default function AdminSidebar() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Tentukan "section" yang sedang aktif, supaya highlight tetap menyala
+  // walau kita sudah masuk ke sub-halaman (catalog-edit, sessdetail).
+  const activeSection = (() => {
+    const r = state.adminRoute;
+    if (r === 'catalog' || r === 'catalog-edit') return 'catalog';
+    if (r === 'sessdetail') return state.sessView?.backTo === 'sessions' ? 'sessions' : 'catalog';
+    return r;
+  })();
+
+  const allNavIds = ['dashboard', 'catalog', 'sales', 'sessions', 'podone', 'finance', 'sizes', 'colors', 'roles'];
+  const currentLabel = {
+    dashboard: 'Dashboard', catalog: 'Katalog Produk', sales: 'Penjualan & Pesanan',
+    sessions: 'Sesi Pre-Order', podone: 'Pre-Order Selesai', finance: 'Keuangan & Profit',
+    sizes: 'Ukuran', colors: 'Warna', roles: 'Peran'
+  }[activeSection] || '';
+
   const navStyle = (id, sub) => ({
-    background: state.adminRoute === id ? '#F2C015' : 'none',
-    color: state.adminRoute === id ? '#14110D' : '#cfcabd',
-    borderLeft: state.adminRoute === id ? '4px solid #F2C015' : '4px solid transparent',
+    background: activeSection === id ? '#F2C015' : 'none',
+    color: activeSection === id ? '#14110D' : '#cfcabd',
+    borderLeft: activeSection === id ? '4px solid #F2C015' : '4px solid transparent',
     width: '100%',
     textAlign: 'left',
     cursor: 'pointer',
@@ -33,7 +49,7 @@ export default function AdminSidebar() {
   const mkNav = ([id, label]) => ({
     id, label,
     go: () => {
-      updateState({ adminRoute: id });
+      updateState({ adminRoute: id, adminProdId: null, editProd: null, sessView: null });
       window.scrollTo(0, 0);
       if (window.innerWidth <= 768) setIsOpen(false);
     },
@@ -52,7 +68,7 @@ export default function AdminSidebar() {
     style: navStyle(id, true)
   }));
 
-  const settingsActive = ['sizes', 'colors', 'roles'].includes(state.adminRoute);
+  const settingsActive = ['sizes', 'colors', 'roles'].includes(activeSection);
 
   const settingsHeaderStyle = {
     color: settingsActive ? '#F2C015' : '#cfcabd',
@@ -75,26 +91,19 @@ export default function AdminSidebar() {
 
   return (
     <>
-      {!isOpen && (
-        <button
-          onClick={() => setIsOpen(true)}
-          style={{
-            position: 'fixed', top: '20px', left: '20px', zIndex: 999,
-            background: '#14110D', color: '#F2C015', border: '2px solid #F2C015',
-            cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700,
-            fontSize: '14px', padding: '10px 14px', boxShadow: '4px 4px 0 #14110D',
-            display: 'flex', alignItems: 'center', gap: '8px'
-          }}
-        >
-          <span>☰</span> MENU
+      {/* BAR MOBILE — menempel di atas, bukan tombol mengambang */}
+      <div className="admin-mobile-topbar">
+        <button onClick={() => setIsOpen(true)} className="admin-mobile-hamburger">
+          <span>☰</span>
         </button>
-      )}
+        <span className="admin-mobile-title">{currentLabel}</span>
+      </div>
 
       {isOpen && <div className="sidebar-overlay" onClick={() => setIsOpen(false)} />}
 
       <style>{`
-        /* DESKTOP (default): lebar mengikuti kolom grid parent (220px), TIDAK di-hardcode di sini
-           supaya tidak nabrak gridTemplateColumns di AdminLayout.jsx */
+        .admin-mobile-topbar { display: none; }
+
         .admin-sidebar-container {
           width: 100%;
           height: 100vh;
@@ -110,9 +119,39 @@ export default function AdminSidebar() {
           flex-shrink: 0;
         }
         .sidebar-overlay { display: none; }
-        .sidebar-close-btn { display: none; } /* tersembunyi di desktop, HTML asli tidak punya tombol ini */
+        .sidebar-close-btn { display: none; }
 
         @media (max-width: 768px) {
+          .admin-mobile-topbar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: sticky;
+            top: 0;
+            z-index: 998;
+            background: #14110D;
+            color: #F2EEE4;
+            padding: 14px 16px;
+            border-bottom: 2px solid #F2C015;
+          }
+          .admin-mobile-hamburger {
+            background: none;
+            border: 2px solid #F2C015;
+            color: #F2C015;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 6px 10px;
+            line-height: 1;
+            flex: none;
+          }
+          .admin-mobile-title {
+            font-family: 'Space Mono', monospace;
+            font-size: 12px;
+            letterSpacing: 0.08em;
+            text-transform: uppercase;
+            color: #F2C015;
+          }
+
           .admin-sidebar-container {
             width: min(82vw, 280px);
             position: fixed;

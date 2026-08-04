@@ -51,6 +51,8 @@ export default function Finance() {
   const gridTable = '1.8fr 0.8fr 1fr 1fr 1fr 1fr 1.1fr';
   const costColor = '#9a3a2a';
 
+  // Tanpa columnGap — jarak antar kolom dibuat via paddingRight per sel,
+  // supaya borderBottom antar kolom saling menyambung (tidak putus-putus).
   const headCell = { padding: '12px 10px 12px 0', borderBottom: '1px solid #ddd5c4', fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.04em', textTransform: 'uppercase', color: '#6b655a', display: 'flex', alignItems: 'center' };
   const dataCell = { padding: '12px 10px 12px 0', borderBottom: '1px solid #ddd5c4', display: 'flex', alignItems: 'center', fontFamily: "'Space Mono', monospace", fontSize: '12px' };
   const totalCell = { padding: '14px 10px 14px 0', display: 'flex', alignItems: 'center', fontFamily: "'Space Mono', monospace", fontSize: '13px', fontWeight: 700 };
@@ -59,6 +61,8 @@ export default function Finance() {
     <>
       <style>{`
         @media (max-width: 768px) {
+          .finance-table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+          .finance-table-grid { min-width: 760px; }
           .finance-bottom-grid { grid-template-columns: 1fr !important; }
           .finance-left-box { padding: 20px !important; }
           .finance-left-value { font-size: 32px !important; }
@@ -77,39 +81,40 @@ export default function Finance() {
         Keuangan &amp; Profit
       </h1>
 
-      {/* overflow-x:auto memang bagian dari desain asli (tabel lebar), bukan cuma penyesuaian mobile */}
-      <div style={{ border: '2px solid #14110D', background: '#fff', marginBottom: '28px', overflowX: 'auto' }}>
+      <div style={{ border: '2px solid #14110D', background: '#fff', marginBottom: '28px' }}>
         <div style={{ padding: '14px 20px', borderBottom: '2px solid #14110D', fontFamily: "'Archivo'", fontWeight: 800, fontSize: '16px', textTransform: 'uppercase' }}>
           Rekap Biaya Produksi per Produk
         </div>
-        <div style={{ padding: '0 20px', minWidth: '760px', display: 'grid', gridTemplateColumns: gridTable,}}>
-          <div style={headCell}>Produk</div>
-          <div style={{ ...headCell, justifyContent: 'flex-end' }}>Unit</div>
-          <div style={{ ...headCell, justifyContent: 'flex-end' }}>Pendapatan</div>
-          <div style={{ ...headCell, justifyContent: 'flex-end' }}>Produksi</div>
-          <div style={{ ...headCell, justifyContent: 'flex-end' }}>Kemasan</div>
-          <div style={{ ...headCell, justifyContent: 'flex-end' }}>Stiker & Aks.</div>
-          <div style={{ ...headCell, justifyContent: 'flex-end' }}>Profit Kotor</div>
+        <div className="finance-table-scroll">
+          <div className="finance-table-grid" style={{ padding: '0 20px', display: 'grid', gridTemplateColumns: gridTable }}>
+            <div style={headCell}>Produk</div>
+            <div style={{ ...headCell, justifyContent: 'flex-end' }}>Unit</div>
+            <div style={{ ...headCell, justifyContent: 'flex-end' }}>Pendapatan</div>
+            <div style={{ ...headCell, justifyContent: 'flex-end' }}>Produksi</div>
+            <div style={{ ...headCell, justifyContent: 'flex-end' }}>Kemasan</div>
+            <div style={{ ...headCell, justifyContent: 'flex-end' }}>Stiker & Aks.</div>
+            <div style={{ ...headCell, justifyContent: 'flex-end', paddingRight: 0 }}>Profit Kotor</div>
 
-          {rows.map((r, i) => (
-            <React.Fragment key={i}>
-              <div style={{ ...dataCell, fontFamily: "'Archivo'", fontWeight: 700, fontSize: '14px' }}>{r.name}</div>
-              <div style={{ ...dataCell, justifyContent: 'flex-end' }}>{r.units}</div>
-              <div style={{ ...dataCell, justifyContent: 'flex-end' }}>{rp(r.gross)}</div>
-              <div style={{ ...dataCell, justifyContent: 'flex-end', color: costColor }}>{rp(r.production)}</div>
-              <div style={{ ...dataCell, justifyContent: 'flex-end', color: costColor }}>{rp(r.kemasan)}</div>
-              <div style={{ ...dataCell, justifyContent: 'flex-end', color: costColor }}>{rp(r.stiker)}</div>
-              <div style={{ ...dataCell, justifyContent: 'flex-end', fontWeight: 700 }}>{rp(r.profit)}</div>
-            </React.Fragment>
-          ))}
+            {rows.map((r, i) => (
+              <React.Fragment key={i}>
+                <div style={{ ...dataCell, fontFamily: "'Archivo'", fontWeight: 700, fontSize: '14px' }}>{r.name}</div>
+                <div style={{ ...dataCell, justifyContent: 'flex-end' }}>{r.units}</div>
+                <div style={{ ...dataCell, justifyContent: 'flex-end' }}>{rp(r.gross)}</div>
+                <div style={{ ...dataCell, justifyContent: 'flex-end', color: costColor }}>{rp(r.production)}</div>
+                <div style={{ ...dataCell, justifyContent: 'flex-end', color: costColor }}>{rp(r.kemasan)}</div>
+                <div style={{ ...dataCell, justifyContent: 'flex-end', color: costColor }}>{rp(r.stiker)}</div>
+                <div style={{ ...dataCell, justifyContent: 'flex-end', fontWeight: 700, paddingRight: 0 }}>{rp(r.profit)}</div>
+              </React.Fragment>
+            ))}
 
-          <div style={{ ...totalCell, fontFamily: "'Archivo'", fontWeight: 900, fontSize: '15px', textTransform: 'uppercase' }}>Total</div>
-          <div style={{ ...totalCell, justifyContent: 'flex-end' }}>{totalUnits}</div>
-          <div style={{ ...totalCell, justifyContent: 'flex-end' }}>{rp(totalGross)}</div>
-          <div style={{ ...totalCell, justifyContent: 'flex-end', color: costColor }}>{rp(totalProduction)}</div>
-          <div style={{ ...totalCell, justifyContent: 'flex-end', color: costColor }}>{rp(totalKemasan)}</div>
-          <div style={{ ...totalCell, justifyContent: 'flex-end', color: costColor }}>{rp(totalStiker)}</div>
-          <div style={{ ...totalCell, justifyContent: 'flex-end', fontSize: '14px' }}>{rp(totalProfit)}</div>
+            <div style={{ ...totalCell, fontFamily: "'Archivo'", fontWeight: 900, fontSize: '15px', textTransform: 'uppercase' }}>Total</div>
+            <div style={{ ...totalCell, justifyContent: 'flex-end' }}>{totalUnits}</div>
+            <div style={{ ...totalCell, justifyContent: 'flex-end' }}>{rp(totalGross)}</div>
+            <div style={{ ...totalCell, justifyContent: 'flex-end', color: costColor }}>{rp(totalProduction)}</div>
+            <div style={{ ...totalCell, justifyContent: 'flex-end', color: costColor }}>{rp(totalKemasan)}</div>
+            <div style={{ ...totalCell, justifyContent: 'flex-end', color: costColor }}>{rp(totalStiker)}</div>
+            <div style={{ ...totalCell, justifyContent: 'flex-end', fontSize: '14px', paddingRight: 0 }}>{rp(totalProfit)}</div>
+          </div>
         </div>
       </div>
 
