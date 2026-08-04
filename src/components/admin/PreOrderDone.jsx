@@ -50,6 +50,14 @@ export default function PreOrderDone() {
     `}</style>
   );
 
+  // sel & header tanpa columnGap — jarak antar kolom dipindah ke paddingRight
+  // supaya borderBottom antar kolom saling menyambung (fix garis putus-putus)
+  const listHead = { padding: '12px 12px 12px 0', borderBottom: '2px solid #14110D', fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.06em', textTransform: 'uppercase', color: '#6b655a', display: 'flex', alignItems: 'center' };
+  const listCell = { padding: '14px 12px 14px 0', borderBottom: '1px solid #ddd5c4', display: 'flex', alignItems: 'center' };
+
+  const buyerHead = { padding: '11px 10px 11px 0', borderBottom: '1px solid #ddd5c4', fontFamily: "'Space Mono', monospace", fontSize: '9px', letterSpacing: '0.05em', textTransform: 'uppercase', color: '#6b655a', display: 'flex', alignItems: 'center' };
+  const buyerCell = { padding: '11px 10px 11px 0', borderBottom: '1px solid #ddd5c4', display: 'flex', alignItems: 'center' };
+
   if (selEntry) {
     const { prod: p, sess } = selEntry;
     const buyers = poBuyers(sess);
@@ -149,22 +157,29 @@ export default function PreOrderDone() {
               Daftar Pemesan ({buyers.length})
             </div>
             <div className="pod-buyer-scroll">
-              <div className="pod-buyer-inner" style={{ padding: '0 20px' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1.6fr 1.2fr auto auto auto', gap: '10px', padding: '11px 0', borderBottom: '1px solid #ddd5c4', fontFamily: "'Space Mono', monospace", fontSize: '9px', letterSpacing: '0.05em', textTransform: 'uppercase', color: '#6b655a' }}>
-                  <span>Nama</span><span>Varian</span><span style={{ textAlign: 'center' }}>Qty</span><span style={{ textAlign: 'center' }}>Bayar</span><span style={{ textAlign: 'center' }}>Kirim</span>
-                </div>
+              <div className="pod-buyer-inner" style={{ padding: '0 20px', display: 'grid', gridTemplateColumns: '1.6fr 1.2fr auto auto auto' }}>
+                <div style={buyerHead}>Nama</div>
+                <div style={buyerHead}>Varian</div>
+                <div style={{ ...buyerHead, justifyContent: 'center' }}>Qty</div>
+                <div style={{ ...buyerHead, justifyContent: 'center' }}>Bayar</div>
+                <div style={{ ...buyerHead, justifyContent: 'center', paddingRight: 0 }}>Kirim</div>
+
                 {buyers.map((b, i) => {
                   const its = buyerItems(b);
                   const q = buyerQty(b);
                   const variant = its.length > 1 ? its.length + ' item' : `${its[0].size} · ${its[0].color}`;
                   return (
-                    <div key={i} style={{ display: 'grid', gridTemplateColumns: '1.6fr 1.2fr auto auto auto', gap: '10px', alignItems: 'center', padding: '11px 0', borderBottom: '1px solid #ddd5c4' }}>
-                      <span style={{ fontSize: '13px', fontWeight: 600 }}>{b.name}</span>
-                      <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#6b655a' }}>{variant}</span>
-                      <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', textAlign: 'center' }}>{q}</span>
-                      <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '9px', letterSpacing: '0.04em', textTransform: 'uppercase', fontWeight: 700, padding: '3px 7px', textAlign: 'center', ...payColor(b.pay) }}>{b.pay}</span>
-                      <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '9px', letterSpacing: '0.04em', textTransform: 'uppercase', fontWeight: 700, padding: '3px 7px', textAlign: 'center', ...shipColor(b.ship) }}>{b.ship}</span>
-                    </div>
+                    <React.Fragment key={i}>
+                      <div style={{ ...buyerCell, fontSize: '13px', fontWeight: 600 }}>{b.name}</div>
+                      <div style={{ ...buyerCell, fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#6b655a' }}>{variant}</div>
+                      <div style={{ ...buyerCell, justifyContent: 'center', fontFamily: "'Space Mono', monospace", fontSize: '12px' }}>{q}</div>
+                      <div style={{ ...buyerCell, justifyContent: 'center' }}>
+                        <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '9px', letterSpacing: '0.04em', textTransform: 'uppercase', fontWeight: 700, padding: '3px 7px', ...payColor(b.pay) }}>{b.pay}</span>
+                      </div>
+                      <div style={{ ...buyerCell, justifyContent: 'center', paddingRight: 0 }}>
+                        <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '9px', letterSpacing: '0.04em', textTransform: 'uppercase', fontWeight: 700, padding: '3px 7px', ...shipColor(b.ship) }}>{b.ship}</span>
+                      </div>
+                    </React.Fragment>
                   );
                 })}
               </div>
@@ -211,46 +226,46 @@ export default function PreOrderDone() {
 
       <div style={{ border: '2px solid #14110D', background: '#fff' }}>
         <div className="pod-list-scroll">
-          <div className="pod-list-inner">
-            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1.3fr 1.3fr auto 1fr auto', gap: '14px', padding: '12px 20px', borderBottom: '2px solid #14110D', fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.06em', textTransform: 'uppercase', color: '#6b655a' }}>
-              <span>Produk</span><span>Sesi</span><span>Periode</span><span style={{ textAlign: 'right' }}>Unit</span><span style={{ textAlign: 'right' }}>Pendapatan</span><span></span>
-            </div>
-            <div style={{ padding: '0 20px' }}>
-              {completed.map(({ prod: p, sess }, i) => {
-                const buyers = poBuyers(sess);
-                const units = buyers.reduce((a, b) => a + buyerQty(b), 0) || sess.committed || 0;
-                const revenue = (sess.price || 0) * units;
-                return (
-                  <div
-                    key={i}
-                    onClick={() => openPO(p.id, sess.sessionName)}
-                    style={{ display: 'grid', gridTemplateColumns: '2fr 1.3fr 1.3fr auto 1fr auto', gap: '14px', alignItems: 'center', padding: '14px 0', borderBottom: '1px solid #ddd5c4', cursor: 'pointer' }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '9px', letterSpacing: '0.05em', textTransform: 'uppercase', fontWeight: 700, padding: '3px 8px', ...statusStyle(sess.status) }}>
-                        {statusLabel(sess.status)}
-                      </span>
-                      <span style={{ fontFamily: "'Archivo'", fontWeight: 700, fontSize: '14px' }}>{p.name}</span>
-                    </div>
-                    <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '13px' }}>{sess.sessionName}</span>
-                    <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#6b655a' }}>{sess.opens} → {sess.closes}</span>
-                    <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '13px', textAlign: 'right' }}>{units}</span>
-                    <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '13px', fontWeight: 700, textAlign: 'right' }}>{rp(revenue)}</span>
+          <div className="pod-list-inner" style={{ padding: '0 20px', display: 'grid', gridTemplateColumns: '2fr 1.3fr 1.3fr auto 1fr auto' }}>
+            <div style={listHead}>Produk</div>
+            <div style={listHead}>Sesi</div>
+            <div style={listHead}>Periode</div>
+            <div style={{ ...listHead, justifyContent: 'flex-end' }}>Unit</div>
+            <div style={{ ...listHead, justifyContent: 'flex-end' }}>Pendapatan</div>
+            <div style={{ ...listHead, paddingRight: 0 }}></div>
+
+            {completed.map(({ prod: p, sess }, i) => {
+              const buyers = poBuyers(sess);
+              const units = buyers.reduce((a, b) => a + buyerQty(b), 0) || sess.committed || 0;
+              const revenue = (sess.price || 0) * units;
+              return (
+                <React.Fragment key={i}>
+                  <div style={{ ...listCell, display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }} onClick={() => openPO(p.id, sess.sessionName)}>
+                    <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '9px', letterSpacing: '0.05em', textTransform: 'uppercase', fontWeight: 700, padding: '3px 8px', ...statusStyle(sess.status) }}>
+                      {statusLabel(sess.status)}
+                    </span>
+                    <span style={{ fontFamily: "'Archivo'", fontWeight: 700, fontSize: '14px' }}>{p.name}</span>
+                  </div>
+                  <div style={{ ...listCell, fontFamily: "'Space Mono', monospace", fontSize: '13px', cursor: 'pointer' }} onClick={() => openPO(p.id, sess.sessionName)}>{sess.sessionName}</div>
+                  <div style={{ ...listCell, fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#6b655a', cursor: 'pointer' }} onClick={() => openPO(p.id, sess.sessionName)}>{sess.opens} → {sess.closes}</div>
+                  <div style={{ ...listCell, justifyContent: 'flex-end', fontFamily: "'Space Mono', monospace", fontSize: '13px', cursor: 'pointer' }} onClick={() => openPO(p.id, sess.sessionName)}>{units}</div>
+                  <div style={{ ...listCell, justifyContent: 'flex-end', fontFamily: "'Space Mono', monospace", fontSize: '13px', fontWeight: 700, cursor: 'pointer' }} onClick={() => openPO(p.id, sess.sessionName)}>{rp(revenue)}</div>
+                  <div style={{ ...listCell, paddingRight: 0 }}>
                     <button
-                      onClick={(ev) => { ev.stopPropagation(); openPO(p.id, sess.sessionName); }}
+                      onClick={() => openPO(p.id, sess.sessionName)}
                       style={{ background: '#fff', color: '#14110D', border: '2px solid #14110D', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '10px', letterSpacing: '0.04em', textTransform: 'uppercase', padding: '8px 12px', whiteSpace: 'nowrap' }}
                     >
                       Detail ›
                     </button>
                   </div>
-                );
-              })}
-              {completed.length === 0 && (
-                <div style={{ padding: '40px 0', textAlign: 'center', fontFamily: "'Space Mono', monospace", fontSize: '13px', color: '#6b655a' }}>
-                  Belum ada sesi pre-order yang selesai.
-                </div>
-              )}
-            </div>
+                </React.Fragment>
+              );
+            })}
+            {completed.length === 0 && (
+              <div style={{ gridColumn: '1 / -1', padding: '40px 0', textAlign: 'center', fontFamily: "'Space Mono', monospace", fontSize: '13px', color: '#6b655a' }}>
+                Belum ada sesi pre-order yang selesai.
+              </div>
+            )}
           </div>
         </div>
       </div>

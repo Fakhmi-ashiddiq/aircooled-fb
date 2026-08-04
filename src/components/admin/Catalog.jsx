@@ -91,8 +91,22 @@ export default function Catalog() {
           .cat-header-row { flex-wrap: wrap !important; gap: 12px !important; }
           .cat-controls-row { flex-direction: column !important; align-items: stretch !important; }
           .cat-controls-row select { width: 100% !important; }
-          .cat-row-grid { grid-template-columns: 48px 1fr auto !important; }
-          .cat-row-meta, .cat-row-price { display: none !important; }
+
+          /* baris produk: dari grid 5-kolom sejajar menjadi grid dengan area bertumpuk,
+             SEMUA info (harga, terpesan/pendapatan) tetap tampil, hanya posisinya berubah */
+          .cat-row-grid {
+            grid-template-columns: 48px 1fr auto !important;
+            grid-template-areas:
+              "thumb info edit"
+              "thumb price price"
+              "thumb meta meta" !important;
+            row-gap: 4px !important;
+          }
+          .cat-row-thumb { grid-area: thumb !important; }
+          .cat-row-info { grid-area: info !important; }
+          .cat-row-price { grid-area: price !important; }
+          .cat-row-meta { grid-area: meta !important; }
+          .cat-row-edit { grid-area: edit !important; align-self: start !important; }
         }
       `}</style>
 
@@ -191,7 +205,7 @@ export default function Catalog() {
                   cursor: 'pointer'
                 }}
               >
-                <div style={{ width: '48px', height: '48px', background: p.garment, border: '2px solid #14110D', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                <div className="cat-row-thumb" style={{ width: '48px', height: '48px', background: p.garment, border: '2px solid #14110D', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
                   {p.print === 'logo' && <img src="/assets/logo.png" style={{ width: '60%' }} alt="" />}
                   {p.print === 'text' && (
                     <div style={{ color: '#F2C015', fontFamily: "'Archivo'", fontWeight: 900, fontSize: '9px', lineHeight: 0.9, textAlign: 'center', textTransform: 'uppercase' }}>
@@ -199,7 +213,7 @@ export default function Catalog() {
                     </div>
                   )}
                 </div>
-                <div>
+                <div className="cat-row-info">
                   <div style={{ fontFamily: "'Archivo'", fontWeight: 700, fontSize: '14px' }}>{p.name}</div>
                   <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#6b655a', marginTop: '2px' }}>
                     {p.cat} · {viewsLabel} {soldShort}
@@ -211,6 +225,7 @@ export default function Catalog() {
                   <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '10px', color: '#6b655a', marginTop: '2px' }}>{revenueLabel}</div>
                 </div>
                 <button
+                  className="cat-row-edit"
                   onClick={(e) => { e.stopPropagation(); editProduct(p); }}
                   style={{ background: '#fff', color: '#14110D', border: '2px solid #14110D', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '10px', letterSpacing: '0.04em', textTransform: 'uppercase', padding: '8px 14px', whiteSpace: 'nowrap' }}
                 >

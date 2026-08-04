@@ -1,9 +1,9 @@
 import React, { useContext } from 'react';
 import { AppContext } from '../../context/AppContext';
-import { rp } from '../../utils/helpers';
+import { rp, normStage, stageOrder } from '../../utils/helpers';
 
 export default function PreOrderSessions() {
-  const { data, state, updateState, committedOf } = useContext(AppContext);
+  const { data, state, updateState, committedOf, advanceSess } = useContext(AppContext);
 
   const poProducts = data.PRODUCTS.filter((p) => p.type === 'preorder');
 
@@ -13,12 +13,22 @@ export default function PreOrderSessions() {
     updateState({ committedOverride: ov });
   };
 
-  const statusLabel = (status) => (status === 'open' ? 'OPEN' : status === 'production' ? 'PRODUKSI' : 'DITUTUP');
+  const statusLabel = (status) => (status === 'open' ? 'OPEN' : status === 'production' ? 'PRODUKSI' : status === 'shipping' ? 'PENGIRIMAN' : 'DITUTUP');
   const statusStyle = (status) => ({
-    background: status === 'open' ? '#F2C015' : status === 'production' ? '#14110D' : '#fff',
-    color: status === 'open' ? '#14110D' : status === 'production' ? '#F2EEE4' : '#14110D',
-    border: status === 'production' || status === 'open' ? 'none' : '1px solid #14110D'
+    background: status === 'open' ? '#F2C015' : status === 'production' ? '#14110D' : status === 'shipping' ? '#2a5fb0' : '#fff',
+    color: status === 'open' || status === 'production' || status === 'shipping' ? (status === 'open' ? '#14110D' : '#F2EEE4') : '#14110D',
+    border: status === 'closed' || status === 'done' ? '1px solid #14110D' : 'none'
   });
+
+  // label & aksi tombol cepat ubah status — mengikuti tahap 4-langkah yang sama dengan SessionDetail
+  const advanceLabel = (status) => {
+    const cur = normStage(status);
+    if (cur === 'open') return 'Tutup Sesi → Produksi';
+    if (cur === 'production') return 'Lanjut ke Pengiriman';
+    if (cur === 'shipping') return 'Tandai Selesai';
+    return 'Sesi Selesai';
+  };
+  const canAdvance = (status) => normStage(status) !== 'done';
 
   const labelStyle = { fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#6b655a' };
 
@@ -35,6 +45,7 @@ export default function PreOrderSessions() {
           .pos-header-row { flex-wrap: wrap !important; gap: 12px !important; }
           .pos-card-head { flex-wrap: wrap !important; gap: 8px !important; }
           .pos-card-stats-grid { grid-template-columns: 1fr 1fr !important; }
+          .pos-actions-row { flex-direction: column !important; }
         }
       `}</style>
 
@@ -108,10 +119,18 @@ export default function PreOrderSessions() {
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', gap: '10px', marginTop: '18px' }}>
+                <div className="pos-actions-row" style={{ display: 'flex', gap: '10px', marginTop: '18px' }}>
+                  {canAdvance(sess.status) && (
+                    <button
+                      onClick={() => advanceSess(p.id, sess.sessionName)}
+                      style={{ flex: 1, background: '#14110D', color: '#F2EEE4', border: 'none', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '11px', letterSpacing: '0.06em', textTransform: 'uppercase', padding: '11px' }}
+                    >
+                      {advanceLabel(sess.status)}
+                    </button>
+                  )}
                   <button
                     onClick={() => addOne(p)}
-                    style={{ flex: 1, background: '#fff', color: '#14110D', border: '2px solid #14110D', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '11px', letterSpacing: '0.06em', textTransform: 'uppercase', padding: '11px' }}
+                    style={{ background: '#fff', color: '#14110D', border: '2px solid #14110D', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '11px', letterSpacing: '0.06em', textTransform: 'uppercase', padding: '9px 14px' }}
                   >
                     + Pesanan
                   </button>
