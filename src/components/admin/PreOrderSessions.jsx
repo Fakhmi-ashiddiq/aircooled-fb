@@ -7,21 +7,10 @@ export default function PreOrderSessions() {
 
   const poProducts = data.PRODUCTS.filter((p) => p.type === 'preorder');
 
-  const advance = (p) => {
-    // reuse fungsi context advanceSess agar konsisten dengan SessionDetail
-    const { advanceSess } = require ? {} : {}; // no-op placeholder (advanceSess diambil lewat context di bawah)
-  };
-
   const addOne = (p) => {
     const ov = { ...state.committedOverride };
     ov[p.id] = committedOf(p) + 1;
     updateState({ committedOverride: ov });
-  };
-
-  const advanceLabel = (status) => {
-    if (status === 'open') return 'Tutup Sesi → Produksi';
-    if (status === 'production') return 'Tandai Selesai';
-    return 'Dibuka Ulang';
   };
 
   const statusLabel = (status) => (status === 'open' ? 'OPEN' : status === 'production' ? 'PRODUKSI' : 'DITUTUP');
@@ -40,10 +29,19 @@ export default function PreOrderSessions() {
 
   return (
     <>
+      <style>{`
+        @media (max-width: 768px) {
+          .pos-cards-grid { grid-template-columns: 1fr !important; }
+          .pos-header-row { flex-wrap: wrap !important; gap: 12px !important; }
+          .pos-card-head { flex-wrap: wrap !important; gap: 8px !important; }
+          .pos-card-stats-grid { grid-template-columns: 1fr 1fr !important; }
+        }
+      `}</style>
+
       <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#6b655a' }}>
         Manajemen Drop
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '4px 0 28px' }}>
+      <div className="pos-header-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '4px 0 28px' }}>
         <h1 style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '40px', margin: 0, textTransform: 'uppercase' }}>
           Sesi Pre-Order
         </h1>
@@ -55,7 +53,7 @@ export default function PreOrderSessions() {
         </button>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: '20px' }}>
+      <div className="pos-cards-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: '20px' }}>
         {poProducts.map((p) => {
           const sess = p.preorder;
           const committed = committedOf(p);
@@ -64,7 +62,7 @@ export default function PreOrderSessions() {
 
           return (
             <div key={p.id} style={{ border: '2px solid #14110D', background: '#fff' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', borderBottom: '2px solid #14110D' }}>
+              <div className="pos-card-head" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', borderBottom: '2px solid #14110D' }}>
                 <div style={{ fontFamily: "'Archivo'", fontWeight: 800, fontSize: '17px', textTransform: 'uppercase', lineHeight: 1.05 }}>
                   {p.name}
                 </div>
@@ -97,7 +95,7 @@ export default function PreOrderSessions() {
                   <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${pct}%`, background: reached ? '#1f7a3d' : '#14110D' }} />
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginTop: '18px' }}>
+                <div className="pos-card-stats-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginTop: '18px' }}>
                   <div>
                     <div style={labelStyle}>Estimasi Kirim</div>
                     <div style={{ fontWeight: 700, fontSize: '14px', marginTop: '3px' }}>{sess.eta}</div>

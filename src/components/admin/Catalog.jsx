@@ -8,7 +8,6 @@ export default function Catalog() {
 
   const isReady = catalogTab !== 'preorder';
 
-  // ---- helper: replikasi logika poAggregate dari script asli ----
   const buyerQty = (b) => {
     const items = b.items && b.items.length ? b.items : [{ qty: b.qty || 1 }];
     return items.reduce((a, it) => a + (it.qty || 1), 0);
@@ -39,7 +38,6 @@ export default function Catalog() {
   };
   const unitsOf = (p) => (p.type === 'preorder' ? committedOf(p) : p.sold || 0);
 
-  // ---- filter & sort (persis logika asli: terbaru / terpopuler / terlaris) ----
   let display = data.PRODUCTS.filter((p) => (isReady ? p.type === 'ready' : p.type === 'preorder'));
   const q = (catalogSearch || '').trim().toLowerCase();
   if (q) display = display.filter((p) => (p.name + ' ' + p.cat).toLowerCase().includes(q));
@@ -49,18 +47,16 @@ export default function Catalog() {
   display = [...display].sort((a, b) => {
     if (sort === 'terpopuler') return (b.views || 0) - (a.views || 0);
     if (sort === 'terlaris') return unitsOf(b) - unitsOf(a);
-    return (b._seq || 0) - (a._seq || 0); // terbaru
+    return (b._seq || 0) - (a._seq || 0);
   });
 
-  // ---- actions ----
   const editProduct = (p) => {
-    updateState({ adminRoute: 'catalog-edit', adminProdId: p.id, editProd: null }); // ⬅️ null, bukan {...p}
+    updateState({ adminRoute: 'catalog-edit', adminProdId: p.id, editProd: null });
     window.scrollTo(0, 0);
   };
   const addProduct = () => updateState({ prodModal: true });
   const addCategory = () => updateState({ catModal: true, newCat: '' });
 
-  // ---- styles (disamakan 1:1 dengan HTML asli) ----
   const tabStyle = (on) => ({
     background: on ? '#14110D' : '#fff',
     color: on ? '#F2EEE4' : '#14110D',
@@ -90,8 +86,17 @@ export default function Catalog() {
 
   return (
     <>
-      {/* HEADER */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+      <style>{`
+        @media (max-width: 768px) {
+          .cat-header-row { flex-wrap: wrap !important; gap: 12px !important; }
+          .cat-controls-row { flex-direction: column !important; align-items: stretch !important; }
+          .cat-controls-row select { width: 100% !important; }
+          .cat-row-grid { grid-template-columns: 48px 1fr auto !important; }
+          .cat-row-meta, .cat-row-price { display: none !important; }
+        }
+      `}</style>
+
+      <div className="cat-header-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
         <div>
           <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#6b655a' }}>
             Manajemen
@@ -116,7 +121,6 @@ export default function Catalog() {
         </div>
       </div>
 
-      {/* TABS */}
       <div style={{ display: 'flex', gap: '10px', marginBottom: '18px' }}>
         <button onClick={() => updateState({ catalogTab: 'ready' })} style={tabStyle(isReady)}>
           Ready Stock
@@ -126,8 +130,7 @@ export default function Catalog() {
         </button>
       </div>
 
-      {/* CONTROLS: search + kategori + sort */}
-      <div style={{ display: 'flex', gap: '12px', marginBottom: '18px', flexWrap: 'wrap', alignItems: 'center' }}>
+      <div className="cat-controls-row" style={{ display: 'flex', gap: '12px', marginBottom: '18px', flexWrap: 'wrap', alignItems: 'center' }}>
         <div style={{ position: 'relative', flex: 1, minWidth: '220px' }}>
           <input
             value={catalogSearch || ''}
@@ -157,7 +160,6 @@ export default function Catalog() {
         </select>
       </div>
 
-      {/* LIST PRODUK — grid 5 kolom, tanpa header row, 1 tombol Edit, row clickable */}
       <div style={{ border: '2px solid #14110D', background: '#fff' }}>
         <div style={{ padding: '14px 20px', borderBottom: '2px solid #14110D', fontFamily: "'Archivo'", fontWeight: 800, fontSize: '16px', textTransform: 'uppercase' }}>
           {isReady ? 'Ready Stock' : 'Pre-Order'} — {catalogCountLabel}
@@ -178,6 +180,7 @@ export default function Catalog() {
               <div
                 key={p.id}
                 onClick={() => editProduct(p)}
+                className="cat-row-grid"
                 style={{
                   display: 'grid',
                   gridTemplateColumns: 'auto 2fr auto 1fr auto',
@@ -202,8 +205,8 @@ export default function Catalog() {
                     {p.cat} · {viewsLabel} {soldShort}
                   </div>
                 </div>
-                <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '13px', fontWeight: 700 }}>{rp(p.price)}</span>
-                <div>
+                <span className="cat-row-price" style={{ fontFamily: "'Space Mono', monospace", fontSize: '13px', fontWeight: 700 }}>{rp(p.price)}</span>
+                <div className="cat-row-meta">
                   <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#14110D', fontWeight: 700 }}>{stockLabel}</div>
                   <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '10px', color: '#6b655a', marginTop: '2px' }}>{revenueLabel}</div>
                 </div>

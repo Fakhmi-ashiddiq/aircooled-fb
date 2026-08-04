@@ -5,7 +5,6 @@ import { rp } from '../../utils/helpers';
 export default function Dashboard() {
   const { data, unitsOf } = useContext(AppContext);
 
-  // Compute KPIs
   const totalRevenueN = data.PRODUCTS.reduce((s, p) => s + p.price * unitsOf(p), 0);
   const totalCostN = data.PRODUCTS.reduce((s, p) => {
     const units = unitsOf(p);
@@ -36,10 +35,19 @@ export default function Dashboard() {
 
   return (
     <>
+      <style>{`
+        @media (max-width: 768px) {
+          .dash-kpi-grid { grid-template-columns: repeat(2,1fr) !important; gap: 12px !important; }
+          .dash-bottom-grid { grid-template-columns: 1fr !important; gap: 20px !important; }
+          .dash-order-row { grid-template-columns: auto 1fr !important; row-gap: 6px !important; }
+          .dash-order-total, .dash-order-status { grid-column: 2 / 3 !important; justify-self: start !important; }
+        }
+      `}</style>
+
       <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#6b655a' }}>Ringkasan</div>
       <h1 style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '40px', margin: '4px 0 28px', textTransform: 'uppercase' }}>Dashboard</h1>
-      
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '16px', marginBottom: '32px' }}>
+
+      <div className="dash-kpi-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '16px', marginBottom: '32px' }}>
         {kpis.map((k, idx) => (
           <div key={idx} style={{ border: '2px solid #14110D', background: '#fff', padding: '20px' }}>
             <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#6b655a' }}>{k.label}</div>
@@ -49,21 +57,21 @@ export default function Dashboard() {
         ))}
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: '24px' }}>
+      <div className="dash-bottom-grid" style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: '24px' }}>
         <div style={{ border: '2px solid #14110D', background: '#fff' }}>
           <div style={{ padding: '16px 20px', borderBottom: '2px solid #14110D', fontFamily: "'Archivo'", fontWeight: 800, fontSize: '16px', textTransform: 'uppercase' }}>Pesanan Terbaru</div>
           <div style={{ padding: '8px 20px' }}>
             {orders.map((o, idx) => (
-              <div key={idx} style={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto auto', gap: '12px', alignItems: 'center', padding: '11px 0', borderBottom: '1px solid #ddd5c4' }}>
+              <div key={idx} className="dash-order-row" style={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto auto', gap: '12px', alignItems: 'center', padding: '11px 0', borderBottom: '1px solid #ddd5c4' }}>
                 <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#6b655a' }}>{o.id}</span>
                 <span style={{ fontSize: '13px' }}>{o.customer} — {o.items}</span>
-                <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', fontWeight: 700 }}>{o.totalFmt}</span>
-                <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.06em', textTransform: 'uppercase', padding: '3px 8px', ...o.statusStyle }}>{o.status}</span>
+                <span className="dash-order-total" style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', fontWeight: 700 }}>{o.totalFmt}</span>
+                <span className="dash-order-status" style={{ fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.06em', textTransform: 'uppercase', padding: '3px 8px', ...o.statusStyle }}>{o.status}</span>
               </div>
             ))}
           </div>
         </div>
-        
+
         <div style={{ border: '2px solid #14110D', background: '#fff' }}>
           <div style={{ padding: '16px 20px', borderBottom: '2px solid #14110D', fontFamily: "'Archivo'", fontWeight: 800, fontSize: '16px', textTransform: 'uppercase' }}>Produk Terlaris</div>
           <div style={{ padding: '8px 20px' }}>

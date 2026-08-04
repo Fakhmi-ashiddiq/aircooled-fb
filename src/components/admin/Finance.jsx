@@ -51,9 +51,9 @@ export default function Finance() {
   const gridTable = '1.8fr 0.8fr 1fr 1fr 1fr 1fr 1.1fr';
   const costColor = '#9a3a2a';
 
-  const headCell = { padding: '12px 0', borderBottom: '1px solid #ddd5c4', fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.04em', textTransform: 'uppercase', color: '#6b655a', display: 'flex', alignItems: 'center' };
-  const dataCell = { padding: '12px 0', borderBottom: '1px solid #ddd5c4', display: 'flex', alignItems: 'center', fontFamily: "'Space Mono', monospace", fontSize: '12px' };
-  const totalCell = { padding: '14px 0', display: 'flex', alignItems: 'center', fontFamily: "'Space Mono', monospace", fontSize: '13px', fontWeight: 700 };
+  const headCell = { padding: '12px 10px 12px 0', borderBottom: '1px solid #ddd5c4', fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.04em', textTransform: 'uppercase', color: '#6b655a', display: 'flex', alignItems: 'center' };
+  const dataCell = { padding: '12px 10px 12px 0', borderBottom: '1px solid #ddd5c4', display: 'flex', alignItems: 'center', fontFamily: "'Space Mono', monospace", fontSize: '12px' };
+  const totalCell = { padding: '14px 10px 14px 0', display: 'flex', alignItems: 'center', fontFamily: "'Space Mono', monospace", fontSize: '13px', fontWeight: 700 };
 
   return (
     <>
@@ -82,7 +82,7 @@ export default function Finance() {
         <div style={{ padding: '14px 20px', borderBottom: '2px solid #14110D', fontFamily: "'Archivo'", fontWeight: 800, fontSize: '16px', textTransform: 'uppercase' }}>
           Rekap Biaya Produksi per Produk
         </div>
-        <div style={{ padding: '0 20px', minWidth: '760px', display: 'grid', gridTemplateColumns: gridTable, columnGap: '10px' }}>
+        <div style={{ padding: '0 20px', minWidth: '760px', display: 'grid', gridTemplateColumns: gridTable,}}>
           <div style={headCell}>Produk</div>
           <div style={{ ...headCell, justifyContent: 'flex-end' }}>Unit</div>
           <div style={{ ...headCell, justifyContent: 'flex-end' }}>Pendapatan</div>

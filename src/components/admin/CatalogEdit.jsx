@@ -100,7 +100,6 @@ export default function CatalogEdit() {
   const labelStyle = { fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#6b655a', marginBottom: '7px' };
   const inputStyle = { width: '100%', padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' };
 
-  // ==== STATS: untuk pre-order, gunakan AGREGAT semua sesi (aktif + histori) ====
   const agg = isPre ? poAggregate(p) : null;
   const soldUnits = isPre ? agg.committed : unitsOf(p);
   const revenue = isPre ? rp(agg.paidIn) : rp(p.price * (p.sold || 0));
@@ -125,6 +124,20 @@ export default function CatalogEdit() {
 
   return (
     <>
+      <style>{`
+        @media (max-width: 768px) {
+          .ce-header-row { flex-wrap: wrap !important; gap: 16px !important; }
+          .ce-stats-grid { grid-template-columns: 1fr !important; }
+          .ce-form-grid-2 { grid-template-columns: 1fr !important; }
+          .ce-form-grid-4 { grid-template-columns: 1fr 1fr !important; }
+          .ce-images-grid { grid-template-columns: repeat(3,1fr) !important; }
+          .ce-session-header { flex-wrap: wrap !important; gap: 10px !important; }
+          .ce-session-stats-grid { grid-template-columns: 1fr 1fr !important; }
+          .ce-cost-grid { grid-template-columns: 1fr !important; }
+          .ce-prod-stats-grid { grid-template-columns: 1fr 1fr !important; }
+        }
+      `}</style>
+
       <button
         onClick={cancel}
         style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontSize: '12px', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#6b655a', marginBottom: '18px' }}
@@ -132,8 +145,7 @@ export default function CatalogEdit() {
         ← Kembali ke Katalog
       </button>
 
-      {/* HEADER */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '20px', marginBottom: '28px', flexWrap: 'wrap' }}>
+      <div className="ce-header-row" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '20px', marginBottom: '28px', flexWrap: 'wrap' }}>
         <div style={{ display: 'flex', gap: '18px', alignItems: 'center' }}>
           <div style={{ width: '84px', height: '84px', background: p.garment, border: '2px solid #14110D', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flex: 'none' }}>
             {p.heroImg ? (
@@ -164,8 +176,7 @@ export default function CatalogEdit() {
         </button>
       </div>
 
-      {/* STATS */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '16px', marginBottom: '24px' }}>
+      <div className="ce-stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '16px', marginBottom: '24px' }}>
         <div style={{ border: '2px solid #14110D', background: '#fff', padding: '18px' }}>
           <div style={labelStyle}>{isPre ? 'Unit Terpesan' : 'Unit Terjual'}</div>
           <div style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '28px', marginTop: '6px' }}>{soldUnits}</div>
@@ -183,13 +194,12 @@ export default function CatalogEdit() {
         </div>
       </div>
 
-      {/* EDIT FORM */}
       <div style={{ border: '2px solid #14110D', background: '#fff' }}>
         <div style={{ padding: '14px 20px', borderBottom: '2px solid #14110D', fontFamily: "'Archivo'", fontWeight: 800, fontSize: '16px', textTransform: 'uppercase' }}>
           Edit Detail Produk
         </div>
         <div style={{ padding: '22px 20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '14px' }}>
+          <div className="ce-form-grid-2" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '14px' }}>
             <div>
               <div style={labelStyle}>Nama Produk</div>
               <input value={e.name} onChange={(ev) => setEdit({ name: ev.target.value })} style={inputStyle} />
@@ -206,7 +216,7 @@ export default function CatalogEdit() {
           </div>
 
           {!isPre && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '14px' }}>
+            <div className="ce-form-grid-4" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '14px' }}>
               <div>
                 <div style={labelStyle}>Harga Jual (Rp)</div>
                 <input type="number" value={e.price} onChange={(ev) => setEdit({ price: ev.target.value })} style={inputStyle} />
@@ -239,7 +249,7 @@ export default function CatalogEdit() {
           {!isPre && (
             <div style={{ borderTop: '1px solid #ddd5c4', paddingTop: '16px' }}>
               <div style={labelStyle}>Biaya per Unit</div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
+              <div className="ce-cost-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
                 <input type="number" placeholder="Produksi" value={e.produksi} onChange={(ev) => setEdit({ produksi: ev.target.value })} style={inputStyle} />
                 <input type="number" placeholder="Kemasan" value={e.kemasan} onChange={(ev) => setEdit({ kemasan: ev.target.value })} style={inputStyle} />
                 <input type="number" placeholder="Stiker & Aks." value={e.stiker} onChange={(ev) => setEdit({ stiker: ev.target.value })} style={inputStyle} />
@@ -247,7 +257,6 @@ export default function CatalogEdit() {
             </div>
           )}
 
-          {/* IMAGE GALLERY */}
           <div style={{ borderTop: '1px solid #ddd5c4', paddingTop: '16px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
               <div style={labelStyle}>Gambar Produk — klik gambar untuk jadikan default</div>
@@ -256,7 +265,7 @@ export default function CatalogEdit() {
                 <input type="file" accept="image/*" multiple onChange={onUpload} style={{ display: 'none' }} />
               </label>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: '12px' }}>
+            <div className="ce-images-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: '12px' }}>
               {(e.images || []).map((im, i) => {
                 const isDefault = i === (e.defaultImg || 0);
                 return (
@@ -314,10 +323,9 @@ export default function CatalogEdit() {
         </div>
       </div>
 
-      {/* SESI PRE-ORDER */}
       {isPre && (
         <div style={{ border: '2px solid #14110D', background: '#fff', marginTop: '24px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px', borderBottom: '2px solid #14110D', gap: '14px', flexWrap: 'wrap' }}>
+          <div className="ce-session-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px', borderBottom: '2px solid #14110D', gap: '14px', flexWrap: 'wrap' }}>
             <div style={{ fontFamily: "'Archivo'", fontWeight: 800, fontSize: '16px', textTransform: 'uppercase' }}>Sesi Pre-Order</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
               {activeOpen && (
@@ -355,7 +363,7 @@ export default function CatalogEdit() {
               const hasCompare = s.compareAt && s.compareAt > s.price;
               return (
                 <div key={i} style={{ border: `2px solid ${s.active ? '#14110D' : '#ddd5c4'}`, background: '#fff' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 16px', borderBottom: '1px solid #ddd5c4', background: s.active ? '#F2EEE4' : '#fff' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 16px', borderBottom: '1px solid #ddd5c4', background: s.active ? '#F2EEE4' : '#fff', flexWrap: 'wrap', gap: '8px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                       <span style={{ fontFamily: "'Archivo'", fontWeight: 800, fontSize: '15px', textTransform: 'uppercase' }}>{s.sessionName}</span>
                       {s.active && (
@@ -373,7 +381,7 @@ export default function CatalogEdit() {
                     </div>
                   </div>
                   <div style={{ padding: '14px 16px' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '14px' }}>
+                    <div className="ce-session-stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '14px' }}>
                       <div><div style={labelStyle}>Periode</div><div style={{ fontFamily: "'Space Mono', monospace", fontSize: '13px', marginTop: '3px' }}>{s.opens} → {s.closes}</div></div>
                       <div><div style={labelStyle}>Estimasi Kirim</div><div style={{ fontFamily: "'Space Mono', monospace", fontSize: '13px', marginTop: '3px' }}>{s.eta}</div></div>
                       <div>
@@ -408,10 +416,9 @@ export default function CatalogEdit() {
         </div>
       )}
 
-      {/* SESI PRODUKSI (ready stock) */}
       {!isPre && (
         <div style={{ border: '2px solid #14110D', background: '#fff', marginTop: '24px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px', borderBottom: '2px solid #14110D', gap: '14px', flexWrap: 'wrap' }}>
+          <div className="ce-session-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px', borderBottom: '2px solid #14110D', gap: '14px', flexWrap: 'wrap' }}>
             <div>
               <div style={{ fontFamily: "'Archivo'", fontWeight: 800, fontSize: '16px', textTransform: 'uppercase' }}>Sesi Produksi</div>
               <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#6b655a', marginTop: '2px' }}>
@@ -436,7 +443,7 @@ export default function CatalogEdit() {
               const sizesLabel = (s.sizes && s.sizes.length ? s.sizes : p.sizes || []).join(', ');
               return (
                 <div key={i} style={{ border: `2px solid ${active ? '#14110D' : '#ddd5c4'}`, background: '#fff' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 16px', borderBottom: '1px solid #ddd5c4', background: active ? '#F2EEE4' : '#fff' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 16px', borderBottom: '1px solid #ddd5c4', background: active ? '#F2EEE4' : '#fff', flexWrap: 'wrap', gap: '8px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                       <span style={{ fontFamily: "'Archivo'", fontWeight: 800, fontSize: '15px', textTransform: 'uppercase' }}>{s.name}</span>
                       {active && (
@@ -448,13 +455,13 @@ export default function CatalogEdit() {
                     </span>
                   </div>
                   <div style={{ padding: '14px 16px' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '14px' }}>
+                    <div className="ce-prod-stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '14px' }}>
                       <div><div style={labelStyle}>Tanggal Produksi</div><div style={{ fontFamily: "'Space Mono', monospace", fontSize: '13px', marginTop: '3px' }}>{s.date}</div></div>
                       <div><div style={labelStyle}>Jumlah Produksi</div><div style={{ fontFamily: "'Space Mono', monospace", fontSize: '13px', marginTop: '3px', fontWeight: 700 }}>{qty} unit</div></div>
                       <div><div style={labelStyle}>Biaya / Unit</div><div style={{ fontFamily: "'Space Mono', monospace", fontSize: '13px', marginTop: '3px' }}>{rp(unitCost)}</div></div>
                       <div><div style={labelStyle}>Total Biaya</div><div style={{ fontFamily: "'Space Mono', monospace", fontSize: '13px', marginTop: '3px' }}>{rp(unitCost * qty)}</div></div>
                     </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '14px', marginTop: '12px' }}>
+                    <div className="ce-prod-stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '14px', marginTop: '12px' }}>
                       <div>
                         <div style={labelStyle}>Harga Jual</div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '3px' }}>

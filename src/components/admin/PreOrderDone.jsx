@@ -5,7 +5,6 @@ import { rp } from '../../utils/helpers';
 export default function PreOrderDone() {
   const { data, state, updateState, poBuyers, buyerItems, buyerQty } = useContext(AppContext);
 
-  // ==== kumpulkan SEMUA sesi yang bukan 'open' — aktif (production/closed/done) + histori ====
   const completed = [];
   data.PRODUCTS.filter((p) => p.type === 'preorder').forEach((p) => {
     if (p.preorder && p.preorder.status !== 'open') {
@@ -37,7 +36,20 @@ export default function PreOrderDone() {
 
   const labelStyle = { fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#6b655a' };
 
-  // ==================== DETAIL VIEW ====================
+  const globalStyle = (
+    <style>{`
+      @media (max-width: 768px) {
+        .pod-list-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .pod-list-inner { min-width: 680px; }
+        .pod-detail-header { flex-wrap: wrap !important; }
+        .pod-recap-grid { grid-template-columns: repeat(2,1fr) !important; }
+        .pod-detail-grid { grid-template-columns: 1fr !important; }
+        .pod-buyer-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .pod-buyer-inner { min-width: 560px; }
+      }
+    `}</style>
+  );
+
   if (selEntry) {
     const { prod: p, sess } = selEntry;
     const buyers = poBuyers(sess);
@@ -84,11 +96,12 @@ export default function PreOrderDone() {
 
     return (
       <>
+        {globalStyle}
         <button onClick={closePO} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontSize: '12px', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#6b655a', marginBottom: '18px' }}>
           ← Kembali ke Pre-Order Selesai
         </button>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '18px', marginBottom: '26px' }}>
+        <div className="pod-detail-header" style={{ display: 'flex', alignItems: 'center', gap: '18px', marginBottom: '26px' }}>
           <div style={{ width: '72px', height: '72px', background: p.garment, border: '2px solid #14110D', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flex: 'none' }}>
             {p.heroImg ? (
               <img src={p.heroImg} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
@@ -99,7 +112,7 @@ export default function PreOrderDone() {
             )}
           </div>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
               <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.06em', textTransform: 'uppercase', fontWeight: 700, padding: '4px 9px', ...statusStyle(sess.status) }}>
                 {statusLabel(sess.status)}
               </span>
@@ -109,8 +122,7 @@ export default function PreOrderDone() {
           </div>
         </div>
 
-        {/* RECAP STATS */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '16px', marginBottom: '24px' }}>
+        <div className="pod-recap-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '16px', marginBottom: '24px' }}>
           <div style={{ border: '2px solid #14110D', background: '#fff', padding: '18px' }}>
             <div style={labelStyle}>Total Pesanan</div>
             <div style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '26px', marginTop: '6px' }}>{units} unit</div>
@@ -131,34 +143,34 @@ export default function PreOrderDone() {
           </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '24px', alignItems: 'start' }}>
-          {/* DAFTAR PEMESAN */}
+        <div className="pod-detail-grid" style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '24px', alignItems: 'start' }}>
           <div style={{ border: '2px solid #14110D', background: '#fff' }}>
             <div style={{ padding: '14px 20px', borderBottom: '2px solid #14110D', fontFamily: "'Archivo'", fontWeight: 800, fontSize: '16px', textTransform: 'uppercase' }}>
               Daftar Pemesan ({buyers.length})
             </div>
-            <div style={{ padding: '0 20px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1.6fr 1.2fr auto auto auto', gap: '10px', padding: '11px 0', borderBottom: '1px solid #ddd5c4', fontFamily: "'Space Mono', monospace", fontSize: '9px', letterSpacing: '0.05em', textTransform: 'uppercase', color: '#6b655a' }}>
-                <span>Nama</span><span>Varian</span><span style={{ textAlign: 'center' }}>Qty</span><span style={{ textAlign: 'center' }}>Bayar</span><span style={{ textAlign: 'center' }}>Kirim</span>
+            <div className="pod-buyer-scroll">
+              <div className="pod-buyer-inner" style={{ padding: '0 20px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1.6fr 1.2fr auto auto auto', gap: '10px', padding: '11px 0', borderBottom: '1px solid #ddd5c4', fontFamily: "'Space Mono', monospace", fontSize: '9px', letterSpacing: '0.05em', textTransform: 'uppercase', color: '#6b655a' }}>
+                  <span>Nama</span><span>Varian</span><span style={{ textAlign: 'center' }}>Qty</span><span style={{ textAlign: 'center' }}>Bayar</span><span style={{ textAlign: 'center' }}>Kirim</span>
+                </div>
+                {buyers.map((b, i) => {
+                  const its = buyerItems(b);
+                  const q = buyerQty(b);
+                  const variant = its.length > 1 ? its.length + ' item' : `${its[0].size} · ${its[0].color}`;
+                  return (
+                    <div key={i} style={{ display: 'grid', gridTemplateColumns: '1.6fr 1.2fr auto auto auto', gap: '10px', alignItems: 'center', padding: '11px 0', borderBottom: '1px solid #ddd5c4' }}>
+                      <span style={{ fontSize: '13px', fontWeight: 600 }}>{b.name}</span>
+                      <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#6b655a' }}>{variant}</span>
+                      <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', textAlign: 'center' }}>{q}</span>
+                      <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '9px', letterSpacing: '0.04em', textTransform: 'uppercase', fontWeight: 700, padding: '3px 7px', textAlign: 'center', ...payColor(b.pay) }}>{b.pay}</span>
+                      <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '9px', letterSpacing: '0.04em', textTransform: 'uppercase', fontWeight: 700, padding: '3px 7px', textAlign: 'center', ...shipColor(b.ship) }}>{b.ship}</span>
+                    </div>
+                  );
+                })}
               </div>
-              {buyers.map((b, i) => {
-                const its = buyerItems(b);
-                const q = buyerQty(b);
-                const variant = its.length > 1 ? its.length + ' item' : `${its[0].size} · ${its[0].color}`;
-                return (
-                  <div key={i} style={{ display: 'grid', gridTemplateColumns: '1.6fr 1.2fr auto auto auto', gap: '10px', alignItems: 'center', padding: '11px 0', borderBottom: '1px solid #ddd5c4' }}>
-                    <span style={{ fontSize: '13px', fontWeight: 600 }}>{b.name}</span>
-                    <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#6b655a' }}>{variant}</span>
-                    <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', textAlign: 'center' }}>{q}</span>
-                    <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '9px', letterSpacing: '0.04em', textTransform: 'uppercase', fontWeight: 700, padding: '3px 7px', textAlign: 'center', ...payColor(b.pay) }}>{b.pay}</span>
-                    <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '9px', letterSpacing: '0.04em', textTransform: 'uppercase', fontWeight: 700, padding: '3px 7px', textAlign: 'center', ...shipColor(b.ship) }}>{b.ship}</span>
-                  </div>
-                );
-              })}
             </div>
           </div>
 
-          {/* PEMBAGIAN HASIL */}
           <div style={{ border: '2px solid #14110D', background: '#fff' }}>
             <div style={{ padding: '14px 20px', borderBottom: '2px solid #14110D', fontFamily: "'Archivo'", fontWeight: 800, fontSize: '16px', textTransform: 'uppercase' }}>
               Pembagian Hasil
@@ -188,9 +200,9 @@ export default function PreOrderDone() {
     );
   }
 
-  // ==================== LIST VIEW ====================
   return (
     <>
+      {globalStyle}
       <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#6b655a' }}>Arsip</div>
       <h1 style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '40px', margin: '4px 0 8px', textTransform: 'uppercase' }}>Pre-Order Selesai</h1>
       <p style={{ fontSize: '14px', color: '#6b655a', maxWidth: '560px', margin: '0 0 26px' }}>
@@ -198,44 +210,48 @@ export default function PreOrderDone() {
       </p>
 
       <div style={{ border: '2px solid #14110D', background: '#fff' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1.3fr 1.3fr auto 1fr auto', gap: '14px', padding: '12px 20px', borderBottom: '2px solid #14110D', fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.06em', textTransform: 'uppercase', color: '#6b655a' }}>
-          <span>Produk</span><span>Sesi</span><span>Periode</span><span style={{ textAlign: 'right' }}>Unit</span><span style={{ textAlign: 'right' }}>Pendapatan</span><span></span>
-        </div>
-        <div style={{ padding: '0 20px' }}>
-          {completed.map(({ prod: p, sess }, i) => {
-            const buyers = poBuyers(sess);
-            const units = buyers.reduce((a, b) => a + buyerQty(b), 0) || sess.committed || 0;
-            const revenue = (sess.price || 0) * units;
-            return (
-              <div
-                key={i}
-                onClick={() => openPO(p.id, sess.sessionName)}
-                style={{ display: 'grid', gridTemplateColumns: '2fr 1.3fr 1.3fr auto 1fr auto', gap: '14px', alignItems: 'center', padding: '14px 0', borderBottom: '1px solid #ddd5c4', cursor: 'pointer' }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '9px', letterSpacing: '0.05em', textTransform: 'uppercase', fontWeight: 700, padding: '3px 8px', ...statusStyle(sess.status) }}>
-                    {statusLabel(sess.status)}
-                  </span>
-                  <span style={{ fontFamily: "'Archivo'", fontWeight: 700, fontSize: '14px' }}>{p.name}</span>
-                </div>
-                <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '13px' }}>{sess.sessionName}</span>
-                <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#6b655a' }}>{sess.opens} → {sess.closes}</span>
-                <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '13px', textAlign: 'right' }}>{units}</span>
-                <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '13px', fontWeight: 700, textAlign: 'right' }}>{rp(revenue)}</span>
-                <button
-                  onClick={(ev) => { ev.stopPropagation(); openPO(p.id, sess.sessionName); }}
-                  style={{ background: '#fff', color: '#14110D', border: '2px solid #14110D', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '10px', letterSpacing: '0.04em', textTransform: 'uppercase', padding: '8px 12px', whiteSpace: 'nowrap' }}
-                >
-                  Detail ›
-                </button>
-              </div>
-            );
-          })}
-          {completed.length === 0 && (
-            <div style={{ padding: '40px 0', textAlign: 'center', fontFamily: "'Space Mono', monospace", fontSize: '13px', color: '#6b655a' }}>
-              Belum ada sesi pre-order yang selesai.
+        <div className="pod-list-scroll">
+          <div className="pod-list-inner">
+            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1.3fr 1.3fr auto 1fr auto', gap: '14px', padding: '12px 20px', borderBottom: '2px solid #14110D', fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.06em', textTransform: 'uppercase', color: '#6b655a' }}>
+              <span>Produk</span><span>Sesi</span><span>Periode</span><span style={{ textAlign: 'right' }}>Unit</span><span style={{ textAlign: 'right' }}>Pendapatan</span><span></span>
             </div>
-          )}
+            <div style={{ padding: '0 20px' }}>
+              {completed.map(({ prod: p, sess }, i) => {
+                const buyers = poBuyers(sess);
+                const units = buyers.reduce((a, b) => a + buyerQty(b), 0) || sess.committed || 0;
+                const revenue = (sess.price || 0) * units;
+                return (
+                  <div
+                    key={i}
+                    onClick={() => openPO(p.id, sess.sessionName)}
+                    style={{ display: 'grid', gridTemplateColumns: '2fr 1.3fr 1.3fr auto 1fr auto', gap: '14px', alignItems: 'center', padding: '14px 0', borderBottom: '1px solid #ddd5c4', cursor: 'pointer' }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '9px', letterSpacing: '0.05em', textTransform: 'uppercase', fontWeight: 700, padding: '3px 8px', ...statusStyle(sess.status) }}>
+                        {statusLabel(sess.status)}
+                      </span>
+                      <span style={{ fontFamily: "'Archivo'", fontWeight: 700, fontSize: '14px' }}>{p.name}</span>
+                    </div>
+                    <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '13px' }}>{sess.sessionName}</span>
+                    <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#6b655a' }}>{sess.opens} → {sess.closes}</span>
+                    <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '13px', textAlign: 'right' }}>{units}</span>
+                    <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '13px', fontWeight: 700, textAlign: 'right' }}>{rp(revenue)}</span>
+                    <button
+                      onClick={(ev) => { ev.stopPropagation(); openPO(p.id, sess.sessionName); }}
+                      style={{ background: '#fff', color: '#14110D', border: '2px solid #14110D', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '10px', letterSpacing: '0.04em', textTransform: 'uppercase', padding: '8px 12px', whiteSpace: 'nowrap' }}
+                    >
+                      Detail ›
+                    </button>
+                  </div>
+                );
+              })}
+              {completed.length === 0 && (
+                <div style={{ padding: '40px 0', textAlign: 'center', fontFamily: "'Space Mono', monospace", fontSize: '13px', color: '#6b655a' }}>
+                  Belum ada sesi pre-order yang selesai.
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </>
