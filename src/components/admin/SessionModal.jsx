@@ -190,7 +190,9 @@ export default function SessionModal() {
           maxHeight: '90vh', overflowY: 'auto', background: '#F2EEE4', border: '2px solid #14110D'
         }}
       >
-        <div style={{ padding: '18px 24px', borderBottom: '2px solid #14110D', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        {/* FIX: header sekarang sticky di dalam kotak modal, tidak ikut ter-scroll ke atas
+            bersama konten — sama seperti pola di ProductModal.jsx */}
+        <div style={{ padding: '18px 24px', borderBottom: '2px solid #14110D', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, background: '#F2EEE4', zIndex: 1 }}>
           <div style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '20px', textTransform: 'uppercase' }}>
             Sesi Pre-Order Baru
           </div>

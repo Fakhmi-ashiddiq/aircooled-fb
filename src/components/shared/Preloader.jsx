@@ -1,23 +1,16 @@
 import React, { useEffect, useState } from 'react';
 
-// Ditampilkan sekali per sesi browser (pakai sessionStorage) — supaya kalau
-// komponen ini ke-mount lebih dari sekali (misal ada di StoreLayout & AdminLayout),
-// preloader tidak muncul berulang tiap kali user pindah mode Store/Admin.
 export default function Preloader() {
-  const alreadyShown = typeof window !== 'undefined' && sessionStorage.getItem('asc_preloaded') === '1';
-  const [visible, setVisible] = useState(!alreadyShown);
+  const [visible, setVisible] = useState(true);
   const [fadeOut, setFadeOut] = useState(false);
 
   useEffect(() => {
-    if (alreadyShown) return;
-    sessionStorage.setItem('asc_preloaded', '1');
     const fadeTimer = setTimeout(() => setFadeOut(true), 900);
     const removeTimer = setTimeout(() => setVisible(false), 1300);
     return () => {
       clearTimeout(fadeTimer);
       clearTimeout(removeTimer);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (!visible) return null;
@@ -41,7 +34,7 @@ export default function Preloader() {
           pointerEvents: fadeOut ? 'none' : 'auto'
         }}
       >
-        <img src="/assets/logo.png" alt="Aircooled Syndicate" className="preloader-logo" style={{ height: '64px' }} />
+        <img src="/assets/logo-white.png" alt="Aircooled Syndicate" className="preloader-logo" style={{ height: '64px' }} />
       </div>
     </>
   );

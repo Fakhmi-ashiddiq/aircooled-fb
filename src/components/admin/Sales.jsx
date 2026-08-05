@@ -28,13 +28,17 @@ export default function Sales() {
     return { ...baseStyle, background: '#fff', color: '#14110D', border: '1px solid #14110D' };
   };
 
-  const gridTable1 = '2fr 1fr 1fr 1fr 1fr';
+  // FIX: kolom Terjual diberi lebar lebih (0.7fr) + paddingRight lebih besar (24px)
+  // supaya ada jarak yang jelas dari kolom Harga di sebelahnya (yang juga rata kanan).
+  const gridTable1 = '2fr 0.9fr 0.7fr 1fr 1fr';
   const gridTable2 = 'auto 1.6fr 1fr auto auto';
 
-  // columnGap DIHAPUS — jarak antar kolom dibuat via paddingRight per sel,
-  // supaya borderBottom antar kolom saling menyambung (tidak putus di celah gap).
   const cell1 = { padding: '13px 12px 13px 0', borderBottom: '1px solid #ddd5c4', display: 'flex', alignItems: 'center' };
   const head1 = { padding: '12px 12px 12px 0', borderBottom: '1px solid #ddd5c4', fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.06em', textTransform: 'uppercase', color: '#6b655a', display: 'flex', alignItems: 'center' };
+  // sel & header khusus kolom Terjual — jarak kanan diperbesar jadi 24px
+  const cellTerjual = { ...cell1, padding: '13px 24px 13px 0' };
+  const headTerjual = { ...head1, padding: '12px 24px 12px 0' };
+
   const cell2 = { padding: '13px 14px 13px 0', borderBottom: '1px solid #ddd5c4', display: 'flex', alignItems: 'center' };
 
   return (
@@ -42,7 +46,7 @@ export default function Sales() {
       <style>{`
         @media (max-width: 768px) {
           .sales-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-          .sales-inner-1 { min-width: 560px; }
+          .sales-inner-1 { min-width: 600px; }
           .sales-inner-2 { min-width: 620px; }
         }
       `}</style>
@@ -58,7 +62,7 @@ export default function Sales() {
           <div className="sales-inner-1" style={{ padding: '0 20px', display: 'grid', gridTemplateColumns: gridTable1 }}>
             <div style={head1}>Produk</div>
             <div style={head1}>Tipe</div>
-            <div style={{ ...head1, justifyContent: 'flex-end' }}>Terjual</div>
+            <div style={{ ...headTerjual, justifyContent: 'flex-end' }}>Terjual</div>
             <div style={{ ...head1, justifyContent: 'flex-end' }}>Harga</div>
             <div style={{ ...head1, justifyContent: 'flex-end', paddingRight: 0 }}>Pendapatan</div>
 
@@ -66,7 +70,7 @@ export default function Sales() {
               <React.Fragment key={idx}>
                 <div style={{ ...cell1, fontSize: '14px', fontWeight: 600 }}>{r.name}</div>
                 <div style={{ ...cell1, fontFamily: "'Space Mono', monospace", fontSize: '11px', color: r.typeColor }}>{r.type}</div>
-                <div style={{ ...cell1, justifyContent: 'flex-end', fontFamily: "'Space Mono', monospace", fontSize: '13px' }}>{r.units}</div>
+                <div style={{ ...cellTerjual, justifyContent: 'flex-end', fontFamily: "'Space Mono', monospace", fontSize: '13px' }}>{r.units}</div>
                 <div style={{ ...cell1, justifyContent: 'flex-end', fontFamily: "'Space Mono', monospace", fontSize: '13px' }}>{rp(r.price)}</div>
                 <div style={{ ...cell1, justifyContent: 'flex-end', fontFamily: "'Space Mono', monospace", fontSize: '13px', fontWeight: 700, paddingRight: 0 }}>{rp(r.revenue)}</div>
               </React.Fragment>
@@ -74,7 +78,7 @@ export default function Sales() {
 
             <div style={{ padding: '14px 12px 14px 0', fontFamily: "'Archivo'", textTransform: 'uppercase', fontWeight: 800 }}>Total</div>
             <div style={{ padding: '14px 12px 14px 0' }}></div>
-            <div style={{ padding: '14px 12px 14px 0', textAlign: 'right', fontFamily: "'Space Mono', monospace", fontSize: '13px', fontWeight: 800 }}>{totalUnits}</div>
+            <div style={{ padding: '14px 24px 14px 0', textAlign: 'right', fontFamily: "'Space Mono', monospace", fontSize: '13px', fontWeight: 800 }}>{totalUnits}</div>
             <div style={{ padding: '14px 12px 14px 0' }}></div>
             <div style={{ padding: '14px 0', textAlign: 'right', fontFamily: "'Space Mono', monospace", fontSize: '14px', fontWeight: 800 }}>{rp(totalRevenue)}</div>
           </div>
