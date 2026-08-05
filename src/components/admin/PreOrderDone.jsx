@@ -50,8 +50,6 @@ export default function PreOrderDone() {
     `}</style>
   );
 
-  // sel & header tanpa columnGap — jarak antar kolom dipindah ke paddingRight
-  // supaya borderBottom antar kolom saling menyambung (fix garis putus-putus)
   const listHead = { padding: '12px 12px 12px 0', borderBottom: '2px solid #14110D', fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.06em', textTransform: 'uppercase', color: '#6b655a', display: 'flex', alignItems: 'center' };
   const listCell = { padding: '14px 12px 14px 0', borderBottom: '1px solid #ddd5c4', display: 'flex', alignItems: 'center' };
 
@@ -151,8 +149,12 @@ export default function PreOrderDone() {
           </div>
         </div>
 
+        {/* FIX: minWidth: 0 di kedua kartu — supaya CSS Grid boleh menyusutkan
+            kartu ini sesuai lebar kolom, bukan memaksa halaman melebar mengikuti
+            tabel internal yang lebar (560px). Tanpa ini, seluruh HALAMAN ikut
+            bisa di-scroll ke samping, bukan cuma tabelnya. */}
         <div className="pod-detail-grid" style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '24px', alignItems: 'start' }}>
-          <div style={{ border: '2px solid #14110D', background: '#fff' }}>
+          <div style={{ border: '2px solid #14110D', background: '#fff', minWidth: 0 }}>
             <div style={{ padding: '14px 20px', borderBottom: '2px solid #14110D', fontFamily: "'Archivo'", fontWeight: 800, fontSize: '16px', textTransform: 'uppercase' }}>
               Daftar Pemesan ({buyers.length})
             </div>
@@ -186,7 +188,7 @@ export default function PreOrderDone() {
             </div>
           </div>
 
-          <div style={{ border: '2px solid #14110D', background: '#fff' }}>
+          <div style={{ border: '2px solid #14110D', background: '#fff', minWidth: 0 }}>
             <div style={{ padding: '14px 20px', borderBottom: '2px solid #14110D', fontFamily: "'Archivo'", fontWeight: 800, fontSize: '16px', textTransform: 'uppercase' }}>
               Pembagian Hasil
             </div>
@@ -196,17 +198,17 @@ export default function PreOrderDone() {
               </div>
               {splitRows.map((sp2, i) => (
                 <div key={i} style={{ padding: '11px 0', borderBottom: '1px solid #ddd5c4' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                    <span style={{ fontFamily: "'Archivo'", fontWeight: 700, fontSize: '14px' }}>{sp2.label}</span>
-                    <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '14px', fontWeight: 700 }}>{rp(sp2.nominal)}</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: '8px', paddingRight: '2px' }}>
+                    <span style={{ fontFamily: "'Archivo'", fontWeight: 700, fontSize: '14px', minWidth: 0 }}>{sp2.label}</span>
+                    <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '14px', fontWeight: 700, minWidth: 0 }}>{rp(sp2.nominal)}</span>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '3px', fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#6b655a' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '3px', fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#6b655a', flexWrap: 'wrap', gap: '8px', paddingRight: '2px' }}>
                     <span>{sp2.role}</span><span>{sp2.pct}%</span>
                   </div>
                 </div>
               ))}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', paddingTop: '12px', fontFamily: "'Archivo'", fontWeight: 800, fontSize: '16px' }}>
-                <span>Total {totalPct}%</span><span style={{ fontFamily: "'Space Mono', monospace" }}>{rp(splitTotal)}</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', paddingTop: '12px', fontFamily: "'Archivo'", fontWeight: 800, fontSize: '16px', flexWrap: 'wrap', gap: '8px', paddingRight: '2px' }}>
+                <span style={{ minWidth: 0 }}>Total {totalPct}%</span><span style={{ fontFamily: "'Space Mono', monospace", minWidth: 0 }}>{rp(splitTotal)}</span>
               </div>
             </div>
           </div>

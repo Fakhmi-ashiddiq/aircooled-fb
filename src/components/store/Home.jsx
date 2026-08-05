@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useRef, useState, useEffect } from 'react';
 import { AppContext } from '../../context/AppContext';
 import useProductVM from '../../hooks/useProductVM';
 
@@ -13,19 +13,65 @@ export default function Home() {
 
   const marquee = 'PORSCHE 911 ◦ VW BEETLE ◦ KARMANN GHIA ◦ TYPE 2 BUS ◦ 356 SPEEDSTER ◦ KEEP THEM COOL ◦ AIR-COOLED FOREVER ◦';
 
-  const goShop = () => {
-    updateState({ shopFilter: 'all', route: 'shop' });
-    window.scrollTo(0, 0);
-  };
+  // ---- Marquee: ukur lebar KONTAINER & lebar TEKS asli via ref, supaya jarak
+  // tempuh animasi = (lebar kontainer + lebar teks) — bukan 2x lebar kontainer seperti
+  // sebelumnya. Efeknya: begitu teks habis di kiri, langsung "portal" muncul dari kanan
+  // tanpa jeda kosong di layar lebar, dan di HP teks tetap lewat penuh sebelum mengulang.
+  const marqueeOuterRef = useRef(null);
+  const marqueeTextRef = useRef(null);
+  const [marqueeVars, setMarqueeVars] = useState({});
 
-  const goShopPreorder = () => {
-    updateState({ shopFilter: 'preorder', route: 'shop' });
-    window.scrollTo(0, 0);
+  useEffect(() => {
+    const measure = () => {
+      const cw = marqueeOuterRef.current?.offsetWidth || 0;
+      const tw = marqueeTextRef.current?.offsetWidth || 0;
+      if (!cw || !tw) return;
+      const speedPxPerSec = 90; // kecepatan gerak konstan di semua ukuran layar
+      const distance = cw + tw;
+      const duration = distance / speedPxPerSec;
+      setMarqueeVars({
+        '--marquee-start': `${cw}px`,
+        '--marquee-end': `-${tw}px`,
+        animationDuration: `${duration}s`
+      });
+    };
+    measure();
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, []);
+
+  const goShop = () => { 
+    updateState({ shopFilter: 'all', route: 'shop' }); 
+    window.scrollTo(0, 0); 
+  };
+  
+  const goShopPreorder = () => { 
+    updateState({ shopFilter: 'preorder', route: 'shop' }); 
+    window.scrollTo(0, 0); 
   };
 
   return (
     <main>
       <style>{`
+        .home-marquee-outer {
+          position: relative;
+          overflow: hidden;
+          height: 34px;
+        }
+        .home-marquee-track {
+          position: absolute;
+          top: 50%;
+          transform: translateY(-50%);
+          white-space: nowrap;
+          left: var(--marquee-start, 100%);
+          animation-name: homeMarqueeMove;
+          animation-timing-function: linear;
+          animation-iteration-count: infinite;
+        }
+        @keyframes homeMarqueeMove {
+          from { left: var(--marquee-start, 100%); }
+          to { left: var(--marquee-end, -100%); }
+        }
         @media (max-width: 768px) {
           .home-hero-grid { grid-template-columns: 1fr !important; }
           .home-hero-copy { padding: 40px 24px 32px !important; }
@@ -35,7 +81,6 @@ export default function Home() {
           .home-section-preorder { padding: 0 20px 40px !important; }
           .home-ready-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 14px !important; }
           .home-preorder-grid { grid-template-columns: 1fr !important; }
-          .home-marquee-text { font-size: 11px !important; }
           .home-section-heading { font-size: 26px !important; }
         }
         @media (max-width: 420px) {
@@ -57,21 +102,21 @@ export default function Home() {
               Merchandise resmi dari Aircooled Syndicate — e-magazine untuk pemuja Porsche &amp; Volkswagen berpendingin udara. Apparel ready stock &amp; drop pre-order edisi terbatas.
             </p>
             <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
-              <button
-                onClick={goShop}
+              <button 
+                onClick={goShop} 
                 style={{ background: '#F2C015', color: '#14110D', border: 'none', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '13px', letterSpacing: '0.06em', textTransform: 'uppercase', padding: '16px 28px' }}
               >
                 Belanja Sekarang →
               </button>
-              <button
-                onClick={goShopPreorder}
+              <button 
+                onClick={goShopPreorder} 
                 style={{ background: 'none', color: '#F2EEE4', border: '2px solid #4a443a', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '13px', letterSpacing: '0.06em', textTransform: 'uppercase', padding: '14px 26px' }}
               >
                 Lihat Pre-Order
               </button>
             </div>
           </div>
-
+          
           {featured && (
             <div className="home-hero-featured" style={{ borderLeft: '2px solid #2c2820', padding: '40px', display: 'flex', flexDirection: 'column', justifyContent: 'center', background: '#1a1712' }}>
               <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', letterSpacing: '0.16em', color: '#F2C015', textTransform: 'uppercase', marginBottom: '16px' }}>
@@ -99,8 +144,8 @@ export default function Home() {
                   <span>{featured.committed} / {featured.target} TERPESAN</span>
                   <span>{featured.pct}%</span>
                 </div>
-                <button
-                  onClick={() => openProduct(featured.id)}
+                <button 
+                  onClick={() => openProduct(featured.id)} 
                   style={{ marginTop: '16px', width: '100%', background: '#F2EEE4', color: '#14110D', border: 'none', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '12px', letterSpacing: '0.06em', textTransform: 'uppercase', padding: '13px' }}
                 >
                   Pesan / Detail Drop
@@ -111,11 +156,13 @@ export default function Home() {
         </div>
       </section>
 
-      {/* MARQUEE STRIP */}
-      <div style={{ background: '#F2C015', color: '#14110D', overflow: 'hidden', borderBottom: '2px solid #14110D', padding: '11px 0', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '13px', letterSpacing: '0.16em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
-        <div style={{ display: 'flex', gap: '40px', justifyContent: 'center' }}>
-          <span className="home-marquee-text">{marquee}</span>
-        </div>
+      {/* MARQUEE STRIP — satu salinan teks, jarak animasi dihitung dari lebar teks asli */}
+      <div
+        className="home-marquee-outer"
+        ref={marqueeOuterRef}
+        style={{ background: '#F2C015', color: '#14110D', borderBottom: '2px solid #14110D', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '13px', letterSpacing: '0.16em', textTransform: 'uppercase' }}
+      >
+        <span className="home-marquee-track" ref={marqueeTextRef} style={marqueeVars}>{marquee}</span>
       </div>
 
       {/* READY STOCK */}
