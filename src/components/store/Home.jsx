@@ -1,6 +1,13 @@
 import React, { useContext, useRef, useState, useEffect } from 'react';
 import { AppContext } from '../../context/AppContext';
 import useProductVM from '../../hooks/useProductVM';
+import useCountUp from '../../hooks/useCountUp';
+import PingDot from '../shared/PingDot';
+
+function AnimatedNumber({ value, format }) {
+  const animated = useCountUp(value);
+  return <>{format ? format(animated) : animated}</>;
+}
 
 export default function Home() {
   const { data, updateState, openProduct } = useContext(AppContext);
@@ -13,10 +20,6 @@ export default function Home() {
 
   const marquee = 'PORSCHE 911 ◦ VW BEETLE ◦ KARMANN GHIA ◦ TYPE 2 BUS ◦ 356 SPEEDSTER ◦ KEEP THEM COOL ◦ AIR-COOLED FOREVER ◦';
 
-  // ---- Marquee: ukur lebar KONTAINER & lebar TEKS asli via ref, supaya jarak
-  // tempuh animasi = (lebar kontainer + lebar teks) — bukan 2x lebar kontainer seperti
-  // sebelumnya. Efeknya: begitu teks habis di kiri, langsung "portal" muncul dari kanan
-  // tanpa jeda kosong di layar lebar, dan di HP teks tetap lewat penuh sebelum mengulang.
   const marqueeOuterRef = useRef(null);
   const marqueeTextRef = useRef(null);
   const [marqueeVars, setMarqueeVars] = useState({});
@@ -26,7 +29,7 @@ export default function Home() {
       const cw = marqueeOuterRef.current?.offsetWidth || 0;
       const tw = marqueeTextRef.current?.offsetWidth || 0;
       if (!cw || !tw) return;
-      const speedPxPerSec = 90; // kecepatan gerak konstan di semua ukuran layar
+      const speedPxPerSec = 90;
       const distance = cw + tw;
       const duration = distance / speedPxPerSec;
       setMarqueeVars({
@@ -40,14 +43,14 @@ export default function Home() {
     return () => window.removeEventListener('resize', measure);
   }, []);
 
-  const goShop = () => { 
-    updateState({ shopFilter: 'all', route: 'shop' }); 
-    window.scrollTo(0, 0); 
+  const goShop = () => {
+    updateState({ shopFilter: 'all', route: 'shop' });
+    window.scrollTo(0, 0);
   };
-  
-  const goShopPreorder = () => { 
-    updateState({ shopFilter: 'preorder', route: 'shop' }); 
-    window.scrollTo(0, 0); 
+
+  const goShopPreorder = () => {
+    updateState({ shopFilter: 'preorder', route: 'shop' });
+    window.scrollTo(0, 0);
   };
 
   return (
@@ -80,7 +83,8 @@ export default function Home() {
           .home-section-ready { padding: 36px 20px !important; }
           .home-section-preorder { padding: 0 20px 40px !important; }
           .home-ready-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 14px !important; }
-          .home-preorder-grid { grid-template-columns: 1fr !important; }
+          .home-preorder-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 14px !important; }
+          .home-preorder-img { aspect-ratio: 1 / 1 !important; }
           .home-section-heading { font-size: 26px !important; }
         }
         @media (max-width: 420px) {
@@ -102,25 +106,26 @@ export default function Home() {
               Merchandise resmi dari Aircooled Syndicate — e-magazine untuk pemuja Porsche &amp; Volkswagen berpendingin udara. Apparel ready stock &amp; drop pre-order edisi terbatas.
             </p>
             <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
-              <button 
-                onClick={goShop} 
+              <button
+                onClick={goShop}
                 style={{ background: '#F2C015', color: '#14110D', border: 'none', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '13px', letterSpacing: '0.06em', textTransform: 'uppercase', padding: '16px 28px' }}
               >
                 Belanja Sekarang →
               </button>
-              <button 
-                onClick={goShopPreorder} 
+              <button
+                onClick={goShopPreorder}
                 style={{ background: 'none', color: '#F2EEE4', border: '2px solid #4a443a', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '13px', letterSpacing: '0.06em', textTransform: 'uppercase', padding: '14px 26px' }}
               >
                 Lihat Pre-Order
               </button>
             </div>
           </div>
-          
+
           {featured && (
             <div className="home-hero-featured" style={{ borderLeft: '2px solid #2c2820', padding: '40px', display: 'flex', flexDirection: 'column', justifyContent: 'center', background: '#1a1712' }}>
-              <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', letterSpacing: '0.16em', color: '#F2C015', textTransform: 'uppercase', marginBottom: '16px' }}>
-                ● {featured.statusLabel}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontFamily: "'Space Mono', monospace", fontSize: '11px', letterSpacing: '0.16em', color: '#F2C015', textTransform: 'uppercase', marginBottom: '16px' }}>
+                <PingDot />
+                {featured.statusLabel}
               </div>
               <div style={{ background: featured.garment, aspectRatio: '4/3', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #14110D', position: 'relative', overflow: 'hidden' }}>
                 {featured.printLogo && <img src="/assets/logo.png" alt="Featured Logo" style={{ width: '48%', opacity: 0.95 }} />}
@@ -141,11 +146,11 @@ export default function Home() {
                   <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${featured.pct}%`, background: '#F2C015' }}></div>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#cfcabd', marginTop: '7px' }}>
-                  <span>{featured.committed} / {featured.target} TERPESAN</span>
+                  <span><AnimatedNumber value={featured.committed} /> / {featured.target} TERPESAN</span>
                   <span>{featured.pct}%</span>
                 </div>
-                <button 
-                  onClick={() => openProduct(featured.id)} 
+                <button
+                  onClick={() => openProduct(featured.id)}
                   style={{ marginTop: '16px', width: '100%', background: '#F2EEE4', color: '#14110D', border: 'none', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '12px', letterSpacing: '0.06em', textTransform: 'uppercase', padding: '13px' }}
                 >
                   Pesan / Detail Drop
@@ -156,7 +161,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* MARQUEE STRIP — satu salinan teks, jarak animasi dihitung dari lebar teks asli */}
+      {/* MARQUEE STRIP */}
       <div
         className="home-marquee-outer"
         ref={marqueeOuterRef}
@@ -223,7 +228,7 @@ export default function Home() {
         <div className="home-preorder-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
           {preorderProducts.slice(0, 3).map(item => (
             <div key={item.id} onClick={() => openProduct(item.id)} style={{ cursor: 'pointer', border: '2px solid #14110D', background: '#fff', display: 'flex', flexDirection: 'column' }}>
-              <div style={{ background: item.garment, aspectRatio: '4/3', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', borderBottom: '2px solid #14110D' }}>
+              <div className="home-preorder-img" style={{ background: item.garment, aspectRatio: '4/3', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', borderBottom: '2px solid #14110D' }}>
                 <div style={{ position: 'absolute', top: '10px', left: '10px', background: '#F2C015', color: '#14110D', fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '4px 8px', fontWeight: 700 }}>
                   {item.statusLabel}
                 </div>

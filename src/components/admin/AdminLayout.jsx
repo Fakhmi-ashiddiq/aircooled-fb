@@ -18,6 +18,8 @@ import SessionModal from './SessionModal';
 import ProdSessionModal from './ProdSessionModal';
 import PayModal from './PayModal';
 import ShipModal from './ShipModal';
+import Preloader from '../shared/Preloader';
+import ScrollToTop from '../shared/ScrollToTop';
 
 export default function AdminLayout() {
   const { state } = useContext(AppContext);
@@ -26,30 +28,11 @@ export default function AdminLayout() {
 
   return (
     <div style={{ background: '#F2EEE4', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <Preloader />
       <UtilityBar />
-      <style>{`
-        .admin-body-grid {
-          display: grid;
-          grid-template-columns: 220px 1fr; /* sama persis seperti sebelumnya di desktop */
-          flex: 1;
-          min-height: calc(100vh - 45px);
-        }
-        .admin-main {
-          padding: 40px 48px;
-          overflow-y: auto;
-        }
-        @media (max-width: 768px) {
-          .admin-body-grid {
-            grid-template-columns: 1fr; /* sidebar jadi overlay, tidak makan ruang kolom lagi */
-          }
-          .admin-main {
-            padding: 20px 16px; /* konten mepet lebar penuh di layar kecil */
-          }
-        }
-      `}</style>
-      <div className="admin-body-grid">
+      <div className="admin-body-grid" style={{ display: 'grid', gridTemplateColumns: '220px 1fr', flex: 1, minHeight: 'calc(100vh - 45px)' }}>
         <AdminSidebar />
-        <main className="admin-main">
+        <main className="admin-main" style={{ padding: '40px 48px', overflowY: 'auto' }}>
           {route === 'dashboard' && <Dashboard />}
           {route === 'catalog' && <Catalog />}
           {isEditingProduct && <CatalogEdit />}
@@ -61,12 +44,19 @@ export default function AdminLayout() {
           {(route === 'sizes' || route === 'colors' || route === 'roles') && <Settings />}
         </main>
       </div>
+      <style>{`
+        @media (max-width: 768px) {
+          .admin-body-grid { grid-template-columns: 1fr !important; }
+          .admin-main { padding: 20px 16px !important; }
+        }
+      `}</style>
       <CategoryModal />
       <ProductModal />
       <SessionModal />
       <ProdSessionModal />
       <PayModal />
       <ShipModal />
+      <ScrollToTop />
     </div>
   );
 }

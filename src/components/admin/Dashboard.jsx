@@ -1,6 +1,12 @@
 import React, { useContext } from 'react';
 import { AppContext } from '../../context/AppContext';
 import { rp } from '../../utils/helpers';
+import useCountUp from '../../hooks/useCountUp';
+
+function AnimatedNumber({ value, format }) {
+  const animated = useCountUp(value);
+  return <>{format ? format(animated) : animated}</>;
+}
 
 export default function Dashboard() {
   const { data, unitsOf } = useContext(AppContext);
@@ -13,12 +19,13 @@ export default function Dashboard() {
   const totalProfitN = totalRevenueN - totalCostN;
   const preorderProducts = data.PRODUCTS.filter(p => p.type === 'preorder');
   const preorderCommitted = preorderProducts.reduce((s, p) => s + unitsOf(p), 0);
+  const totalOrdersN = data.orders.length + 18;
 
   const kpis = [
-    { label: 'Pendapatan', value: rp(totalRevenueN), delta: '▲ Total tercatat', deltaColor: '#1f7a3d' },
-    { label: 'Total Pesanan', value: String(data.orders.length + 18), delta: '▲ 6 minggu ini', deltaColor: '#1f7a3d' },
-    { label: 'Pre-Order Terpesan', value: String(preorderCommitted) + ' unit', delta: `Lintas ${preorderProducts.length} drop`, deltaColor: '#6b655a' },
-    { label: 'Profit Kotor', value: rp(totalProfitN), delta: 'Setelah biaya', deltaColor: '#6b655a' }
+    { label: 'Pendapatan', value: totalRevenueN, format: (v) => rp(v), delta: '▲ Total tercatat', deltaColor: '#1f7a3d' },
+    { label: 'Total Pesanan', value: totalOrdersN, format: (v) => String(v), delta: '▲ 6 minggu ini', deltaColor: '#1f7a3d' },
+    { label: 'Pre-Order Terpesan', value: preorderCommitted, format: (v) => String(v) + ' unit', delta: `Lintas ${preorderProducts.length} drop`, deltaColor: '#6b655a' },
+    { label: 'Profit Kotor', value: totalProfitN, format: (v) => rp(v), delta: 'Setelah biaya', deltaColor: '#6b655a' }
   ];
 
   const statusStyleOf = (st) => {
@@ -53,7 +60,9 @@ export default function Dashboard() {
         {kpis.map((k, idx) => (
           <div key={idx} className="dash-kpi-box" style={{ border: '2px solid #14110D', background: '#fff', padding: '20px', minWidth: 0 }}>
             <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#6b655a' }}>{k.label}</div>
-            <div className="dash-kpi-value" style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '30px', marginTop: '8px', letterSpacing: '-0.01em' }}>{k.value}</div>
+            <div className="dash-kpi-value" style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '30px', marginTop: '8px', letterSpacing: '-0.01em' }}>
+              <AnimatedNumber value={k.value} format={k.format} />
+            </div>
             <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: k.deltaColor, marginTop: '4px' }}>{k.delta}</div>
           </div>
         ))}

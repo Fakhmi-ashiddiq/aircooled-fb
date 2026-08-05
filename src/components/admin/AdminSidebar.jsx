@@ -15,8 +15,6 @@ export default function AdminSidebar() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Tentukan "section" yang sedang aktif, supaya highlight tetap menyala
-  // walau kita sudah masuk ke sub-halaman (catalog-edit, sessdetail).
   const activeSection = (() => {
     const r = state.adminRoute;
     if (r === 'catalog' || r === 'catalog-edit') return 'catalog';
@@ -24,7 +22,6 @@ export default function AdminSidebar() {
     return r;
   })();
 
-  const allNavIds = ['dashboard', 'catalog', 'sales', 'sessions', 'podone', 'finance', 'sizes', 'colors', 'roles'];
   const currentLabel = {
     dashboard: 'Dashboard', catalog: 'Katalog Produk', sales: 'Penjualan & Pesanan',
     sessions: 'Sesi Pre-Order', podone: 'Pre-Order Selesai', finance: 'Keuangan & Profit',
@@ -91,7 +88,6 @@ export default function AdminSidebar() {
 
   return (
     <>
-      {/* BAR MOBILE — menempel di atas, bukan tombol mengambang */}
       <div className="admin-mobile-topbar">
         <button onClick={() => setIsOpen(true)} className="admin-mobile-hamburger">
           <span>☰</span>
@@ -114,7 +110,7 @@ export default function AdminSidebar() {
           display: ${isOpen ? 'flex' : 'none'};
           flex-direction: column;
           border-right: 2px solid #14110D;
-          z-index: 1000;
+          z-index: 40;
           overflow-y: auto;
           flex-shrink: 0;
         }
@@ -128,7 +124,7 @@ export default function AdminSidebar() {
             gap: 12px;
             position: sticky;
             top: 0;
-            z-index: 998;
+            z-index: 38;
             background: #14110D;
             color: #F2EEE4;
             padding: 14px 16px;
@@ -147,7 +143,7 @@ export default function AdminSidebar() {
           .admin-mobile-title {
             font-family: 'Space Mono', monospace;
             font-size: 12px;
-            letterSpacing: 0.08em;
+            letter-spacing: 0.08em;
             text-transform: uppercase;
             color: #F2C015;
           }
@@ -156,13 +152,14 @@ export default function AdminSidebar() {
             width: min(82vw, 280px);
             position: fixed;
             left: 0; top: 0; bottom: 0;
+            z-index: 40;
           }
           .sidebar-overlay {
             display: block;
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0,0,0,0.7);
-            z-index: 999;
+            z-index: 39;
           }
           .sidebar-close-btn { display: block; }
         }

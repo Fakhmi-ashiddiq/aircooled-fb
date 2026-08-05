@@ -1,5 +1,6 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { AppContext } from '../../context/AppContext';
+import PingDot from '../shared/PingDot';
 
 export default function StoreHeader() {
   const { state, updateState, go } = useContext(AppContext);
@@ -41,7 +42,6 @@ export default function StoreHeader() {
         }
       `}</style>
 
-      {/* overlay & panel di-mount HANYA saat menuOpen true — tidak digantung ke CSS lagi */}
       {menuOpen && (
         <>
           <div
@@ -62,7 +62,7 @@ export default function StoreHeader() {
             <button onClick={goAnd(() => { updateState({ shopFilter: 'ready' }); go('shop'); })} style={{ ...navBtnStyle, textAlign: 'left', padding: '14px 4px', borderBottom: '1px solid #ddd5c4' }}>Ready Stock</button>
             <button onClick={goAnd(() => { updateState({ shopFilter: 'preorder' }); go('shop'); })} style={{ ...navBtnStyle, textAlign: 'left', padding: '14px 4px', borderBottom: '1px solid #ddd5c4' }}>Pre-Order</button>
             <button onClick={goAnd(onAuthClick)} style={{ ...navBtnStyle, textAlign: 'left', padding: '14px 4px', display: 'flex', alignItems: 'center', gap: '7px' }}>
-              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#F2C015', display: 'inline-block' }}></span>
+              <PingDot />
               {authLabel}
             </button>
           </div>
@@ -84,13 +84,12 @@ export default function StoreHeader() {
           <img src="/assets/logo.png" alt="Aircooled Syndicate" style={{ height: '42px', display: 'block' }} />
         </button>
 
-        {/* NAV DESKTOP — persis sama seperti sebelumnya, disembunyikan lewat CSS di HP */}
         <nav className="store-nav-desktop">
           <button onClick={() => { updateState({ shopFilter: 'all' }); go('shop'); }} style={{ ...navBtnStyle, fontWeight: 700 }}>Shop</button>
           <button onClick={() => { updateState({ shopFilter: 'ready' }); go('shop'); }} style={navBtnStyle}>Ready Stock</button>
           <button onClick={() => { updateState({ shopFilter: 'preorder' }); go('shop'); }} style={navBtnStyle}>Pre-Order</button>
           <button onClick={onAuthClick} style={{ ...navBtnStyle, display: 'flex', alignItems: 'center', gap: '7px', letterSpacing: '0.1em' }}>
-            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#F2C015', display: 'inline-block' }}></span>
+            <PingDot />
             {authLabel}
           </button>
           <button
@@ -109,7 +108,6 @@ export default function StoreHeader() {
           </button>
         </nav>
 
-        {/* MOBILE: keranjang tetap terlihat + tombol hamburger */}
         <div className="store-hamburger-btn" style={{ alignItems: 'center', gap: '12px' }}>
           <button
             onClick={() => updateState({ cartOpen: !state.cartOpen })}
