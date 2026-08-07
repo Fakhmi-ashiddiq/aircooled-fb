@@ -7,6 +7,7 @@ export const AppContext = createContext();
 export const AppProvider = ({ children }) => {
   const [data, setData] = useState(() => getInitialData());
   const [state, setState] = useState({
+    appReady: false,
     view: 'store', route: 'home', adminRoute: 'dashboard', adminProdId: null, editProd: null, poView: null, sessView: null,
     activeId: 'lemans-tee', qty: 1, selectedSize: null, selectedColor: null, activeImg: 0, lightbox: false, sizeGuideOpen: false,
     cart: [], cartOpen: false, shopFilter: 'all', shopCat: 'all', shopSearch: '',

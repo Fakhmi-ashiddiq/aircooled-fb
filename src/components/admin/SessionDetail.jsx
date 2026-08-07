@@ -1,6 +1,12 @@
 import React, { useContext } from 'react';
 import { AppContext } from '../../context/AppContext';
 import { rp, normStage, stageOrder } from '../../utils/helpers';
+import useCountUp from '../../hooks/useCountUp';
+
+function AnimatedNumber({ value, format, start }) {
+  const animated = useCountUp(value, 1200, start);
+  return <>{format ? format(animated) : animated}</>;
+}
 
 const STAGE_LABELS = [['open', 'Dibuka'], ['production', 'Produksi'], ['shipping', 'Pengiriman'], ['done', 'Selesai']];
 
@@ -196,20 +202,26 @@ export default function SessionDetail() {
         </div>
       </div>
 
-      {/* RECAP STATS */}
+      {/* RECAP STATS — CountUp diterapkan di sini */}
       <div className="sd-recap-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '16px', marginBottom: '24px' }}>
         <div style={{ border: '2px solid #14110D', background: '#fff', padding: '18px' }}>
           <div style={labelStyle}>Terpesan</div>
-          <div style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '26px', marginTop: '6px' }}>{committed} / {sess.target}</div>
+          <div style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '26px', marginTop: '6px' }}>
+            <AnimatedNumber value={committed} start={state.appReady} /> / {sess.target}
+          </div>
           <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#6b655a', marginTop: '2px' }}>{Math.min(100, Math.round((committed / (sess.target || 1)) * 100))}% target</div>
         </div>
         <div style={{ border: '2px solid #14110D', background: '#fff', padding: '18px' }}>
           <div style={labelStyle}>Nilai Pesanan</div>
-          <div style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '22px', marginTop: '6px' }}>{rp(orderValue)}</div>
+          <div style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '22px', marginTop: '6px' }}>
+            <AnimatedNumber value={orderValue} format={(v) => rp(v)} start={state.appReady} />
+          </div>
         </div>
         <div style={{ border: '2px solid #14110D', background: '#fff', padding: '18px' }}>
           <div style={labelStyle}>Pembayaran Masuk</div>
-          <div style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '22px', marginTop: '6px' }}>{rp(paid)}</div>
+          <div style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '22px', marginTop: '6px' }}>
+            <AnimatedNumber value={paid} format={(v) => rp(v)} start={state.appReady} />
+          </div>
           <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#9a3a2a', marginTop: '2px' }}>Sisa {rp(orderValue - paid)}</div>
         </div>
         <div style={{ border: '2px solid #14110D', background: '#14110D', color: '#F2EEE4', padding: '18px' }}>

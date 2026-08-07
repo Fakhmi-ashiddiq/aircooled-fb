@@ -1,9 +1,15 @@
 import React, { useContext, useState } from 'react';
 import { AppContext } from '../../context/AppContext';
 import { rp } from '../../utils/helpers';
+import useCountUp from '../../hooks/useCountUp';
+
+function AnimatedNumber({ value, format, start }) {
+  const animated = useCountUp(value, 1200, start);
+  return <>{format ? format(animated) : animated}</>;
+}
 
 export default function Finance() {
-  const { data, unitsOf } = useContext(AppContext);
+  const { data, state, unitsOf } = useContext(AppContext);
   const products = data.PRODUCTS;
 
   const [splits, setSplits] = useState({
@@ -51,8 +57,6 @@ export default function Finance() {
   const gridTable = '1.8fr 0.8fr 1fr 1fr 1fr 1fr 1.1fr';
   const costColor = '#9a3a2a';
 
-  // Tanpa columnGap — jarak antar kolom dibuat via paddingRight per sel,
-  // supaya borderBottom antar kolom saling menyambung (tidak putus-putus).
   const headCell = { padding: '12px 10px 12px 0', borderBottom: '1px solid #ddd5c4', fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.04em', textTransform: 'uppercase', color: '#6b655a', display: 'flex', alignItems: 'center' };
   const dataCell = { padding: '12px 10px 12px 0', borderBottom: '1px solid #ddd5c4', display: 'flex', alignItems: 'center', fontFamily: "'Space Mono', monospace", fontSize: '12px' };
   const totalCell = { padding: '14px 10px 14px 0', display: 'flex', alignItems: 'center', fontFamily: "'Space Mono', monospace", fontSize: '13px', fontWeight: 700 };
@@ -124,7 +128,7 @@ export default function Finance() {
             Total Profit Kotor
           </div>
           <div className="finance-left-value" style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '42px', marginTop: '6px', letterSpacing: '-0.01em' }}>
-            {rp(totalProfit)}
+            <AnimatedNumber value={totalProfit} format={(v) => rp(v)} start={state.appReady} />
           </div>
           <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#cfcabd', marginTop: '8px', lineHeight: 1.6 }}>
             Dari {rp(totalGross)} pendapatan,<br/>dikurangi {rp(totalBiayaKeseluruhan)} biaya.

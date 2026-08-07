@@ -1,6 +1,7 @@
 import React, { useContext } from 'react';
 import { AppContext } from '../../context/AppContext';
 import useProductVM from '../../hooks/useProductVM';
+import Reveal from '../shared/Reveal';
 
 export default function Shop() {
   const { state, updateState, data, openProduct } = useContext(AppContext);
@@ -74,35 +75,37 @@ export default function Shop() {
       </div>
 
       <div className="shop-products-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '22px' }}>
-        {shopProducts.map(item => (
-          <div key={item.id} style={{ cursor: 'pointer' }} onClick={() => openProduct(item.id)}>
-            <div style={{ background: item.garment, aspectRatio: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #14110D', position: 'relative', overflow: 'hidden' }}>
-              <div style={{ position: 'absolute', top: '10px', left: '10px', background: item.badgeBg, color: item.badgeFg, fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '4px 8px', fontWeight: 700 }}>
-                {item.badgeLabel}
-              </div>
-              {item.hasDiscount && (
-                <div style={{ position: 'absolute', top: '10px', right: '10px', background: '#F2C015', color: '#14110D', fontFamily: "'Space Mono', monospace", fontSize: '11px', fontWeight: 700, padding: '4px 8px' }}>
-                  −{item.discountPct}%
+        {shopProducts.map((item, idx) => (
+          <Reveal key={item.id} delay={(idx % 4) * 0.06}>
+            <div style={{ cursor: 'pointer' }} onClick={() => openProduct(item.id)}>
+              <div style={{ background: item.garment, aspectRatio: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #14110D', position: 'relative', overflow: 'hidden' }}>
+                <div style={{ position: 'absolute', top: '10px', left: '10px', background: item.badgeBg, color: item.badgeFg, fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '4px 8px', fontWeight: 700 }}>
+                  {item.badgeLabel}
                 </div>
-              )}
-              {item.printLogo && <img src="/assets/logo.png" style={{ width: '52%' }} />}
-              {item.printText && (
-                <div style={{ color: '#F2C015', fontFamily: "'Archivo'", fontWeight: 900, fontSize: '24px', lineHeight: 0.9, textAlign: 'center', textTransform: 'uppercase' }}>
-                  Aircooled<br/>Syndicate
-                </div>
-              )}
-            </div>
-            <div style={{ paddingTop: '12px' }}>
-              <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#6b655a' }}>{item.cat}</div>
-              <div style={{ fontFamily: "'Archivo'", fontWeight: 700, fontSize: '16px', textTransform: 'uppercase', lineHeight: 1.05, marginTop: '3px' }}>{item.name}</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '5px' }}>
-                <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '13px', fontWeight: 700 }}>{item.priceFmt}</span>
                 {item.hasDiscount && (
-                  <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#9a8f7a', textDecoration: 'line-through' }}>{item.compareFmt}</span>
+                  <div style={{ position: 'absolute', top: '10px', right: '10px', background: '#F2C015', color: '#14110D', fontFamily: "'Space Mono', monospace", fontSize: '11px', fontWeight: 700, padding: '4px 8px' }}>
+                    −{item.discountPct}%
+                  </div>
+                )}
+                {item.printLogo && <img src="/assets/logo.png" style={{ width: '52%' }} />}
+                {item.printText && (
+                  <div style={{ color: '#F2C015', fontFamily: "'Archivo'", fontWeight: 900, fontSize: '24px', lineHeight: 0.9, textAlign: 'center', textTransform: 'uppercase' }}>
+                    Aircooled<br/>Syndicate
+                  </div>
                 )}
               </div>
+              <div style={{ paddingTop: '12px' }}>
+                <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#6b655a' }}>{item.cat}</div>
+                <div style={{ fontFamily: "'Archivo'", fontWeight: 700, fontSize: '16px', textTransform: 'uppercase', lineHeight: 1.05, marginTop: '3px' }}>{item.name}</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '5px' }}>
+                  <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '13px', fontWeight: 700 }}>{item.priceFmt}</span>
+                  {item.hasDiscount && (
+                    <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#9a8f7a', textDecoration: 'line-through' }}>{item.compareFmt}</span>
+                  )}
+                </div>
+              </div>
             </div>
-          </div>
+          </Reveal>
         ))}
       </div>
 

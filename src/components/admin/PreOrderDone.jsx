@@ -1,6 +1,12 @@
 import React, { useContext } from 'react';
 import { AppContext } from '../../context/AppContext';
 import { rp } from '../../utils/helpers';
+import useCountUp from '../../hooks/useCountUp';
+
+function AnimatedNumber({ value, format, start }) {
+  const animated = useCountUp(value, 1200, start);
+  return <>{format ? format(animated) : animated}</>;
+}
 
 export default function PreOrderDone() {
   const { data, state, updateState, poBuyers, buyerItems, buyerQty } = useContext(AppContext);
@@ -128,31 +134,36 @@ export default function PreOrderDone() {
           </div>
         </div>
 
+        {/* RECAP STATS — CountUp diterapkan di sini */}
         <div className="pod-recap-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '16px', marginBottom: '24px' }}>
           <div style={{ border: '2px solid #14110D', background: '#fff', padding: '18px' }}>
             <div style={labelStyle}>Total Pesanan</div>
-            <div style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '26px', marginTop: '6px' }}>{units} unit</div>
+            <div style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '26px', marginTop: '6px' }}>
+              <AnimatedNumber value={units} start={state.appReady} /> unit
+            </div>
             <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#6b655a', marginTop: '2px' }}>{rp(orderValue)}</div>
           </div>
           <div style={{ border: '2px solid #14110D', background: '#fff', padding: '18px' }}>
             <div style={labelStyle}>Total Pembayaran</div>
-            <div style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '24px', marginTop: '6px' }}>{rp(paid)}</div>
+            <div style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '24px', marginTop: '6px' }}>
+              <AnimatedNumber value={paid} format={(v) => rp(v)} start={state.appReady} />
+            </div>
             <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#9a3a2a', marginTop: '2px' }}>Sisa {rp(orderValue - paid)}</div>
           </div>
           <div style={{ border: '2px solid #14110D', background: '#fff', padding: '18px' }}>
             <div style={labelStyle}>Total Biaya</div>
-            <div style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '24px', marginTop: '6px' }}>{rp(totalCost)}</div>
+            <div style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '24px', marginTop: '6px' }}>
+              <AnimatedNumber value={totalCost} format={(v) => rp(v)} start={state.appReady} />
+            </div>
           </div>
           <div style={{ border: '2px solid #14110D', background: '#14110D', color: '#F2EEE4', padding: '18px' }}>
             <div style={{ ...labelStyle, color: '#F2C015' }}>Profit Kotor</div>
-            <div style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '24px', marginTop: '6px' }}>{rp(profit)}</div>
+            <div style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '24px', marginTop: '6px' }}>
+              <AnimatedNumber value={profit} format={(v) => rp(v)} start={state.appReady} />
+            </div>
           </div>
         </div>
 
-        {/* FIX: minWidth: 0 di kedua kartu — supaya CSS Grid boleh menyusutkan
-            kartu ini sesuai lebar kolom, bukan memaksa halaman melebar mengikuti
-            tabel internal yang lebar (560px). Tanpa ini, seluruh HALAMAN ikut
-            bisa di-scroll ke samping, bukan cuma tabelnya. */}
         <div className="pod-detail-grid" style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '24px', alignItems: 'start' }}>
           <div style={{ border: '2px solid #14110D', background: '#fff', minWidth: 0 }}>
             <div style={{ padding: '14px 20px', borderBottom: '2px solid #14110D', fontFamily: "'Archivo'", fontWeight: 800, fontSize: '16px', textTransform: 'uppercase' }}>

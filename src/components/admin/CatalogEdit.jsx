@@ -1,6 +1,12 @@
 import React, { useContext } from 'react';
 import { AppContext } from '../../context/AppContext';
 import { rp } from '../../utils/helpers';
+import useCountUp from '../../hooks/useCountUp';
+
+function AnimatedNumber({ value, format, start }) {
+  const animated = useCountUp(value, 1200, start);
+  return <>{format ? format(animated) : animated}</>;
+}
 
 export default function CatalogEdit() {
   const { data, setData, state, updateState, unitsOf, committedOf, openProduct, poAggregate } = useContext(AppContext);
@@ -102,9 +108,10 @@ export default function CatalogEdit() {
 
   const agg = isPre ? poAggregate(p) : null;
   const soldUnits = isPre ? agg.committed : unitsOf(p);
-  const revenue = isPre ? rp(agg.paidIn) : rp(p.price * (p.sold || 0));
+  const revenueN = isPre ? agg.paidIn : p.price * (p.sold || 0);
   const stockMetaLabel = isPre ? 'Target Sesi' : 'Sisa Stok';
-  const stockMetaValue = isPre ? `${agg.target} unit` : `${p.stock || 0} unit`;
+  const stockMetaValueN = isPre ? agg.target : (p.stock || 0);
+  const stockMetaFormat = isPre ? (v) => `${v} unit` : (v) => `${v} unit`;
   const sessionsCountLabel = isPre ? `${agg.count} sesi` : '';
 
   const activeOpen = isPre && p.preorder.status === 'open';
@@ -179,17 +186,23 @@ export default function CatalogEdit() {
       <div className="ce-stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '16px', marginBottom: '24px' }}>
         <div style={{ border: '2px solid #14110D', background: '#fff', padding: '18px' }}>
           <div style={labelStyle}>{isPre ? 'Unit Terpesan' : 'Unit Terjual'}</div>
-          <div style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '28px', marginTop: '6px' }}>{soldUnits}</div>
+          <div style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '28px', marginTop: '6px' }}>
+            <AnimatedNumber value={soldUnits} start={state.appReady} />
+          </div>
           {isPre && <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '10px', color: '#6b655a', marginTop: '2px' }}>{sessionsCountLabel}</div>}
         </div>
         <div style={{ border: '2px solid #14110D', background: '#fff', padding: '18px' }}>
           <div style={labelStyle}>{isPre ? 'Pendapatan Masuk' : 'Pendapatan'}</div>
-          <div style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '28px', marginTop: '6px' }}>{revenue}</div>
+          <div style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '28px', marginTop: '6px' }}>
+            <AnimatedNumber value={revenueN} format={(v) => rp(v)} start={state.appReady} />
+          </div>
           {isPre && <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '10px', color: '#6b655a', marginTop: '2px' }}>{sessionsCountLabel}</div>}
         </div>
         <div style={{ border: '2px solid #14110D', background: '#fff', padding: '18px' }}>
           <div style={labelStyle}>{stockMetaLabel}</div>
-          <div style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '28px', marginTop: '6px' }}>{stockMetaValue}</div>
+          <div style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '28px', marginTop: '6px' }}>
+            <AnimatedNumber value={stockMetaValueN} format={stockMetaFormat} start={state.appReady} />
+          </div>
           {isPre && <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '10px', color: '#6b655a', marginTop: '2px' }}>{sessionsCountLabel}</div>}
         </div>
       </div>

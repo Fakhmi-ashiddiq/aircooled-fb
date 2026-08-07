@@ -3,13 +3,13 @@ import { AppContext } from '../../context/AppContext';
 import { rp } from '../../utils/helpers';
 import useCountUp from '../../hooks/useCountUp';
 
-function AnimatedNumber({ value, format }) {
-  const animated = useCountUp(value);
+function AnimatedNumber({ value, format, start }) {
+  const animated = useCountUp(value, 1200, start);
   return <>{format ? format(animated) : animated}</>;
 }
 
 export default function Dashboard() {
-  const { data, unitsOf } = useContext(AppContext);
+  const { data, state, unitsOf } = useContext(AppContext);
 
   const totalRevenueN = data.PRODUCTS.reduce((s, p) => s + p.price * unitsOf(p), 0);
   const totalCostN = data.PRODUCTS.reduce((s, p) => {
@@ -61,7 +61,7 @@ export default function Dashboard() {
           <div key={idx} className="dash-kpi-box" style={{ border: '2px solid #14110D', background: '#fff', padding: '20px', minWidth: 0 }}>
             <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#6b655a' }}>{k.label}</div>
             <div className="dash-kpi-value" style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '30px', marginTop: '8px', letterSpacing: '-0.01em' }}>
-              <AnimatedNumber value={k.value} format={k.format} />
+              <AnimatedNumber value={k.value} format={k.format} start={state.appReady} />
             </div>
             <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: k.deltaColor, marginTop: '4px' }}>{k.delta}</div>
           </div>

@@ -3,14 +3,15 @@ import { AppContext } from '../../context/AppContext';
 import useProductVM from '../../hooks/useProductVM';
 import useCountUp from '../../hooks/useCountUp';
 import PingDot from '../shared/PingDot';
+import Reveal from '../shared/Reveal';
 
-function AnimatedNumber({ value, format }) {
-  const animated = useCountUp(value);
+function AnimatedNumber({ value, format, start }) {
+  const animated = useCountUp(value, 1200, start);
   return <>{format ? format(animated) : animated}</>;
 }
 
 export default function Home() {
-  const { data, updateState, openProduct } = useContext(AppContext);
+  const { data, state, updateState, openProduct } = useContext(AppContext);
   const { getProductVM } = useProductVM();
 
   const allVM = data.PRODUCTS.map(getProductVM);
@@ -146,7 +147,7 @@ export default function Home() {
                   <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${featured.pct}%`, background: '#F2C015' }}></div>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#cfcabd', marginTop: '7px' }}>
-                  <span><AnimatedNumber value={featured.committed} /> / {featured.target} TERPESAN</span>
+                  <span><AnimatedNumber value={featured.committed} start={state.appReady} /> / {featured.target} TERPESAN</span>
                   <span>{featured.pct}%</span>
                 </div>
                 <button
@@ -179,40 +180,42 @@ export default function Home() {
           </div>
         </div>
         <div className="home-ready-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px' }}>
-          {readyProducts.slice(0, 6).map(item => (
-            <div key={item.id} style={{ cursor: 'pointer' }} onClick={() => openProduct(item.id)}>
-              <div style={{ background: item.garment, aspectRatio: '1 / 1', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #14110D', position: 'relative', overflow: 'hidden' }}>
-                <div style={{ position: 'absolute', top: '10px', left: '10px', background: '#14110D', color: '#F2EEE4', fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '4px 8px' }}>
-                  {item.cat}
-                </div>
-                {item.hasDiscount && (
-                  <div style={{ position: 'absolute', top: '10px', right: '10px', background: '#F2C015', color: '#14110D', fontFamily: "'Space Mono', monospace", fontSize: '11px', fontWeight: 700, padding: '4px 8px' }}>
-                    −{item.discountPct}%
+          {readyProducts.slice(0, 6).map((item, idx) => (
+            <Reveal key={item.id} delay={idx * 0.06}>
+              <div style={{ cursor: 'pointer' }} onClick={() => openProduct(item.id)}>
+                <div style={{ background: item.garment, aspectRatio: '1 / 1', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #14110D', position: 'relative', overflow: 'hidden' }}>
+                  <div style={{ position: 'absolute', top: '10px', left: '10px', background: '#14110D', color: '#F2EEE4', fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '4px 8px' }}>
+                    {item.cat}
                   </div>
-                )}
-                {item.printLogo && <img src="/assets/logo.png" alt={item.name} style={{ width: '52%' }} />}
-                {item.printText && (
-                  <div style={{ color: '#F2C015', fontFamily: "'Archivo', sans-serif", fontWeight: 900, fontSize: '24px', lineHeight: 0.9, textAlign: 'center', textTransform: 'uppercase' }}>
-                    Aircooled<br />Syndicate
-                  </div>
-                )}
-              </div>
-              <div style={{ paddingTop: '12px' }}>
-                <div style={{ fontFamily: "'Archivo', sans-serif", fontWeight: 700, fontSize: '16px', textTransform: 'uppercase', lineHeight: 1.05 }}>
-                  {item.name}
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '5px' }}>
-                  <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '13px', color: '#14110D', fontWeight: 700 }}>
-                    {item.priceFmt}
-                  </span>
                   {item.hasDiscount && (
-                    <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#9a8f7a', textDecoration: 'line-through' }}>
-                      {item.compareFmt}
-                    </span>
+                    <div style={{ position: 'absolute', top: '10px', right: '10px', background: '#F2C015', color: '#14110D', fontFamily: "'Space Mono', monospace", fontSize: '11px', fontWeight: 700, padding: '4px 8px' }}>
+                      −{item.discountPct}%
+                    </div>
+                  )}
+                  {item.printLogo && <img src="/assets/logo.png" alt={item.name} style={{ width: '52%' }} />}
+                  {item.printText && (
+                    <div style={{ color: '#F2C015', fontFamily: "'Archivo', sans-serif", fontWeight: 900, fontSize: '24px', lineHeight: 0.9, textAlign: 'center', textTransform: 'uppercase' }}>
+                      Aircooled<br />Syndicate
+                    </div>
                   )}
                 </div>
+                <div style={{ paddingTop: '12px' }}>
+                  <div style={{ fontFamily: "'Archivo', sans-serif", fontWeight: 700, fontSize: '16px', textTransform: 'uppercase', lineHeight: 1.05 }}>
+                    {item.name}
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '5px' }}>
+                    <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '13px', color: '#14110D', fontWeight: 700 }}>
+                      {item.priceFmt}
+                    </span>
+                    {item.hasDiscount && (
+                      <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#9a8f7a', textDecoration: 'line-through' }}>
+                        {item.compareFmt}
+                      </span>
+                    )}
+                  </div>
+                </div>
               </div>
-            </div>
+            </Reveal>
           ))}
         </div>
       </section>
@@ -226,35 +229,37 @@ export default function Home() {
           </div>
         </div>
         <div className="home-preorder-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
-          {preorderProducts.slice(0, 3).map(item => (
-            <div key={item.id} onClick={() => openProduct(item.id)} style={{ cursor: 'pointer', border: '2px solid #14110D', background: '#fff', display: 'flex', flexDirection: 'column' }}>
-              <div className="home-preorder-img" style={{ background: item.garment, aspectRatio: '4/3', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', borderBottom: '2px solid #14110D' }}>
-                <div style={{ position: 'absolute', top: '10px', left: '10px', background: '#F2C015', color: '#14110D', fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '4px 8px', fontWeight: 700 }}>
-                  {item.statusLabel}
-                </div>
-                {item.printLogo && <img src="/assets/logo.png" alt={item.name} style={{ width: '46%' }} />}
-                {item.printText && (
-                  <div style={{ color: '#F2C015', fontFamily: "'Archivo', sans-serif", fontWeight: 900, fontSize: '26px', lineHeight: 0.9, textAlign: 'center', textTransform: 'uppercase' }}>
-                    Aircooled<br />Syndicate
+          {preorderProducts.slice(0, 3).map((item, idx) => (
+            <Reveal key={item.id} delay={idx * 0.08}>
+              <div onClick={() => openProduct(item.id)} style={{ cursor: 'pointer', border: '2px solid #14110D', background: '#fff', display: 'flex', flexDirection: 'column' }}>
+                <div className="home-preorder-img" style={{ background: item.garment, aspectRatio: '4/3', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', borderBottom: '2px solid #14110D' }}>
+                  <div style={{ position: 'absolute', top: '10px', left: '10px', background: '#F2C015', color: '#14110D', fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '4px 8px', fontWeight: 700 }}>
+                    {item.statusLabel}
                   </div>
-                )}
+                  {item.printLogo && <img src="/assets/logo.png" alt={item.name} style={{ width: '46%' }} />}
+                  {item.printText && (
+                    <div style={{ color: '#F2C015', fontFamily: "'Archivo', sans-serif", fontWeight: 900, fontSize: '26px', lineHeight: 0.9, textAlign: 'center', textTransform: 'uppercase' }}>
+                      Aircooled<br />Syndicate
+                    </div>
+                  )}
+                </div>
+                <div style={{ padding: '16px' }}>
+                  <div style={{ fontFamily: "'Archivo', sans-serif", fontWeight: 800, fontSize: '18px', textTransform: 'uppercase', lineHeight: 1.05 }}>
+                    {item.name}
+                  </div>
+                  <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '13px', marginTop: '5px' }}>
+                    {item.priceFmt}
+                  </div>
+                  <div style={{ marginTop: '14px', height: '7px', background: '#e4ddcd', position: 'relative' }}>
+                    <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${item.pct}%`, background: '#14110D' }}></div>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#6b655a', marginTop: '7px' }}>
+                    <span>{item.committed}/{item.target} terpesan</span>
+                    <span>Tutup {item.closes}</span>
+                  </div>
+                </div>
               </div>
-              <div style={{ padding: '16px' }}>
-                <div style={{ fontFamily: "'Archivo', sans-serif", fontWeight: 800, fontSize: '18px', textTransform: 'uppercase', lineHeight: 1.05 }}>
-                  {item.name}
-                </div>
-                <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '13px', marginTop: '5px' }}>
-                  {item.priceFmt}
-                </div>
-                <div style={{ marginTop: '14px', height: '7px', background: '#e4ddcd', position: 'relative' }}>
-                  <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${item.pct}%`, background: '#14110D' }}></div>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#6b655a', marginTop: '7px' }}>
-                  <span>{item.committed}/{item.target} terpesan</span>
-                  <span>Tutup {item.closes}</span>
-                </div>
-              </div>
-            </div>
+            </Reveal>
           ))}
         </div>
       </section>
