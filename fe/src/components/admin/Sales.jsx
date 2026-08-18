@@ -1,4 +1,4 @@
-﻿import React, { useContext } from 'react';
+import React, { useContext } from 'react';
 import { useStore } from '../../store';
 import { rp } from '../../utils/helpers';
 
@@ -35,7 +35,7 @@ export default function Sales() {
 
   const cell1 = { padding: '13px 12px 13px 0', borderBottom: '1px solid #ddd5c4', display: 'flex', alignItems: 'center' };
   const head1 = { padding: '12px 12px 12px 0', borderBottom: '1px solid #ddd5c4', fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.06em', textTransform: 'uppercase', color: '#6b655a', display: 'flex', alignItems: 'center' };
-  // sel & header khusus kolom Terjual â€” jarak kanan diperbesar jadi 24px
+  // sel & header khusus kolom Terjual — jarak kanan diperbesar jadi 24px
   const cellTerjual = { ...cell1, padding: '13px 24px 13px 0' };
   const headTerjual = { ...head1, padding: '12px 24px 12px 0' };
 
@@ -109,4 +109,3 @@ export default function Sales() {
     </>
   );
 }
-

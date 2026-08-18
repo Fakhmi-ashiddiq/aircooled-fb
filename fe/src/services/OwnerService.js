@@ -6,7 +6,7 @@ export default {
         return res.data;
     },
     getById: async (id) => {
-        const res = await apiClient.get(/owners/ + id);
+        const res = await apiClient.get('/owners/' + id);
         return res.data;
     },
     create: async (data) => {
@@ -14,12 +14,11 @@ export default {
         return res.data;
     },
     update: async (id, data) => {
-        const res = await apiClient.put(/owners/ + id, data);
+        const res = await apiClient.put('/owners/' + id, data);
         return res.data;
     },
     delete: async (id) => {
-        const res = await apiClient.delete(/owners/ + id);
+        const res = await apiClient.delete('/owners/' + id);
         return res.data;
     }
 };
-

@@ -60,8 +60,56 @@ export const useStore = create((set, get) => ({
                 newData.sizeSets = sizeSets.map(ss => ({ ...ss, sizes: typeof ss.sizes === 'string' ? JSON.parse(ss.sizes || '[]') : ss.sizes }));
                 newData.colorOptions = colorOptions;
                 newData.owners = owners;
-                // Currently keeping PRODUCTS from data.js just to prevent breaking complex helpers,
-                // but we will override it with DB products later as we refactor.
+                newData.PRODUCTS = products.map(p => {
+      let sizes = typeof p.sizes === 'string' ? JSON.parse(p.sizes || '[]') : (p.sizes || []);
+      let colors = typeof p.colors === 'string' ? JSON.parse(p.colors || '[]') : (p.colors || []);
+      let images = typeof p.images === 'string' ? JSON.parse(p.images || '[]') : (p.images || []);
+      let costs = typeof p.costs === 'string' ? JSON.parse(p.costs || '{}') : (p.costs || {});
+      
+      let orig = (prev.data.PRODUCTS || []).find(op => op.id === p.code || op.code === p.code || op.name === p.name);
+      
+      let result = orig ? { ...orig } : {};
+      result.db_id = p.id;
+      result.id = p.code; // Use DB code as frontend id
+      result.code = p.code;
+      result.name = p.name;
+      result.cat = p.category;
+      result.category = p.category;
+      result.type = p.type;
+      result.price = p.price;
+      result.compareAt = p.compare_at;
+      result.garment = p.garment_hex;
+      result.garmentHex = p.garment_hex;
+      result.print = p.print_type;
+      result.printType = p.print_type;
+      result.sizes = sizes;
+      result.colors = colors;
+      result.stock = p.stock;
+      result.sold = p.sold;
+      
+      // Use DB images if available, else keep orig
+      if (images.length > 0) {
+          result.images = images;
+          result.gallery = images;
+      } else {
+          result.images = result.images || [];
+          result.gallery = result.gallery || [];
+      }
+      
+      result.costs = Object.keys(costs).length > 0 ? costs : (result.costs || {});
+      
+      if (!result.preorder && p.type === 'preorder') {
+          result.preorder = { sessionName: 'NEW SESSION', status: 'open', target: 50, committed: 0, eta: '-', buyers: [], price: p.price, compareAt: p.compare_at||0, sizes: sizes, colors: colors, costs: costs, split: {base: 'gross'} };
+      }
+      if (!result.productionSessions && p.type === 'ready') {
+          result.productionSessions = [{ name: 'PRODUKSI AWAL', date: 'Hari Ini', qty: p.stock||0, sold: p.sold||0, status: 'active', price: p.price, compareAt: p.compare_at||0, sizes: sizes, costs: costs }];
+      }
+      result.sessionHistory = result.sessionHistory || [];
+      result.views = result.views || 0;
+      
+      return result;
+  });
+                newData.orders = orders.length > 1 ? orders : (prev.data.orders && prev.data.orders.length > 0 ? prev.data.orders : orders);
                 return { data: newData };
             });
         } catch (error) {
@@ -94,7 +142,7 @@ export const useStore = create((set, get) => ({
     // CRUD Actions for SizeSets
     addSizeSet: async (name) => {
         try {
-            await SizeSetService.create({ name, code: name.toLowerCase().replace(/\s+/g, '-'), active: true, sizes: JSON.stringify([]) });
+            await SizeSetService.create({ name, code: name.toLowerCase().replace(/\s+/g, '-') + '-' + Math.floor(Math.random() * 1000), active: true, sizes: JSON.stringify([]) });
             await get().fetchInitialData();
             get().showToast('Pilihan ukuran ditambahkan');
         } catch (e) { console.error(e); }
@@ -119,7 +167,7 @@ export const useStore = create((set, get) => ({
     // CRUD Actions for ColorOptions
     addColorOption: async (name, hex) => {
         try {
-            await ColorOptionService.create({ name, code: name.toLowerCase().replace(/\s+/g, '-'), hex, active: true });
+            await ColorOptionService.create({ name, code: name.toLowerCase().replace(/\s+/g, '-') + '-' + Math.floor(Math.random() * 1000), hex, active: true });
             await get().fetchInitialData();
             get().showToast('Pilihan warna ditambahkan');
         } catch (e) { console.error(e); }
@@ -142,7 +190,7 @@ export const useStore = create((set, get) => ({
     // CRUD Actions for Owners
     addOwner: async (name, pic) => {
         try {
-            await OwnerService.create({ name, pic });
+            await OwnerService.create({ name, pic, code: name.toLowerCase().replace(/\s+/g, '-') + '-' + Math.floor(Math.random() * 1000) });
             await get().fetchInitialData();
             get().showToast('Owner berhasil ditambahkan');
         } catch (e) { console.error(e); }
@@ -369,6 +417,12 @@ export const useStore = create((set, get) => ({
         });
     }
 }));
+
+
+
+
+
+
 
 
 

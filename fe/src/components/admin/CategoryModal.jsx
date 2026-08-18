@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { useStore } from '../../store';
 
 export default function CategoryModal() {
@@ -30,7 +30,7 @@ export default function CategoryModal() {
       >
         <div style={{ padding: '18px 22px', borderBottom: '2px solid #14110D', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '20px', textTransform: 'uppercase' }}>Tambah Kategori</div>
-          <button onClick={close} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '24px', lineHeight: 1 }}>Ã—</button>
+          <button onClick={close} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '24px', lineHeight: 1 }}>×</button>
         </div>
         <div className="catmodal-body" style={{ padding: '22px' }}>
           <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#6b655a', marginBottom: '8px' }}>
@@ -53,4 +53,3 @@ export default function CategoryModal() {
     </>
   );
 }
-

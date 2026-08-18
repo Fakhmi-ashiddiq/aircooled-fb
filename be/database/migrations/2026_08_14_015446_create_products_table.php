@@ -22,13 +22,14 @@ return new class extends Migration
             $table->string('garment_hex')->nullable();
             $table->string('print_type')->nullable();
             $table->json('sizes')->nullable();
+            $table->json('images')->nullable();
             $table->json('colors')->nullable();
             $table->integer('stock')->default(0);
             $table->integer('sold')->default(0);
             $table->json('costs')->nullable();
             $table->json('preorder_info')->nullable();
             $table->text('description')->nullable();
-            $table->timestamps();
+            $table->integer('views')->default(0); $table->json('gallery')->nullable(); $table->json('preorder')->nullable(); $table->json('productionSessions')->nullable(); $table->json('sessionHistory')->nullable(); $table->timestamps();
         });
     }
 
@@ -40,3 +41,5 @@ return new class extends Migration
         Schema::dropIfExists('products');
     }
 };
+
+

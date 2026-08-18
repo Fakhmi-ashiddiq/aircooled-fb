@@ -1,4 +1,4 @@
-﻿import React, { useContext } from 'react';
+import React, { useContext } from 'react';
 import { useStore } from '../../store';
 import { rp } from '../../utils/helpers';
 import useCountUp from '../../hooks/useCountUp';
@@ -80,7 +80,7 @@ export default function PreOrderDone() {
     const isHarga = sp.base === 'harga';
     const base = isHarga ? orderValue : profit;
 
-    const roleName = (id) => (data.owners || []).find((r) => r.id === id)?.name || 'â€”';
+    const roleName = (id) => (data.roles || []).find((r) => r.id === id)?.name || '—';
     const splitDefs = [
       ['Media Platform', sp.mediaPct, sp.mediaRole, true],
       ['Desain & Kreatif', sp.desainPct, sp.desainRole, true],
@@ -88,7 +88,7 @@ export default function PreOrderDone() {
       ['Store Platform', sp.storePct, null, false]
     ];
     const splitRows = splitDefs.map(([label, pct, rid, hasRole]) => ({
-      label, hasRole, role: hasRole ? roleName(rid) : 'â€”',
+      label, hasRole, role: hasRole ? roleName(rid) : '—',
       pct: Number(pct) || 0,
       nominal: Math.round(base * (Number(pct) || 0) / 100)
     }));
@@ -110,7 +110,7 @@ export default function PreOrderDone() {
       <>
         {globalStyle}
         <button onClick={closePO} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontSize: '12px', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#6b655a', marginBottom: '18px' }}>
-          â† Kembali ke Pre-Order Selesai
+          ← Kembali ke Pre-Order Selesai
         </button>
 
         <div className="pod-detail-header" style={{ display: 'flex', alignItems: 'center', gap: '18px', marginBottom: '26px' }}>
@@ -128,13 +128,13 @@ export default function PreOrderDone() {
               <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.06em', textTransform: 'uppercase', fontWeight: 700, padding: '4px 9px', ...statusStyle(sess.status) }}>
                 {statusLabel(sess.status)}
               </span>
-              <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#6b655a' }}>{sess.sessionName} Â· {sess.opens} â†’ {sess.closes}</span>
+              <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#6b655a' }}>{sess.sessionName} · {sess.opens} → {sess.closes}</span>
             </div>
             <h1 style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '32px', margin: '8px 0 0', textTransform: 'uppercase', lineHeight: 1 }}>{p.name}</h1>
           </div>
         </div>
 
-        {/* RECAP STATS â€” CountUp diterapkan di sini */}
+        {/* RECAP STATS — CountUp diterapkan di sini */}
         <div className="pod-recap-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '16px', marginBottom: '24px' }}>
           <div style={{ border: '2px solid #14110D', background: '#fff', padding: '18px' }}>
             <div style={labelStyle}>Total Pesanan</div>
@@ -180,7 +180,7 @@ export default function PreOrderDone() {
                 {buyers.map((b, i) => {
                   const its = buyerItems(b);
                   const q = buyerQty(b);
-                  const variant = its.length > 1 ? its.length + ' item' : `${its[0].size} Â· ${its[0].color}`;
+                  const variant = its.length > 1 ? its.length + ' item' : `${its[0].size} · ${its[0].color}`;
                   return (
                     <React.Fragment key={i}>
                       <div style={{ ...buyerCell, fontSize: '13px', fontWeight: 600 }}>{b.name}</div>
@@ -205,7 +205,7 @@ export default function PreOrderDone() {
             </div>
             <div style={{ padding: '16px 20px' }}>
               <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#6b655a', marginBottom: '14px' }}>
-                Dasar: {isHarga ? 'Nilai Pesanan' : 'Gross Profit'} â€” {rp(base)}
+                Dasar: {isHarga ? 'Nilai Pesanan' : 'Gross Profit'} — {rp(base)}
               </div>
               {splitRows.map((sp2, i) => (
                 <div key={i} style={{ padding: '11px 0', borderBottom: '1px solid #ddd5c4' }}>
@@ -260,7 +260,7 @@ export default function PreOrderDone() {
                     <span style={{ fontFamily: "'Archivo'", fontWeight: 700, fontSize: '14px' }}>{p.name}</span>
                   </div>
                   <div style={{ ...listCell, fontFamily: "'Space Mono', monospace", fontSize: '13px', cursor: 'pointer' }} onClick={() => openPO(p.id, sess.sessionName)}>{sess.sessionName}</div>
-                  <div style={{ ...listCell, fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#6b655a', cursor: 'pointer' }} onClick={() => openPO(p.id, sess.sessionName)}>{sess.opens} â†’ {sess.closes}</div>
+                  <div style={{ ...listCell, fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#6b655a', cursor: 'pointer' }} onClick={() => openPO(p.id, sess.sessionName)}>{sess.opens} → {sess.closes}</div>
                   <div style={{ ...listCell, justifyContent: 'flex-end', fontFamily: "'Space Mono', monospace", fontSize: '13px', cursor: 'pointer' }} onClick={() => openPO(p.id, sess.sessionName)}>{units}</div>
                   <div style={{ ...listCell, justifyContent: 'flex-end', fontFamily: "'Space Mono', monospace", fontSize: '13px', fontWeight: 700, cursor: 'pointer' }} onClick={() => openPO(p.id, sess.sessionName)}>{rp(revenue)}</div>
                   <div style={{ ...listCell, paddingRight: 0 }}>
@@ -268,7 +268,7 @@ export default function PreOrderDone() {
                       onClick={() => openPO(p.id, sess.sessionName)}
                       style={{ background: '#fff', color: '#14110D', border: '2px solid #14110D', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '10px', letterSpacing: '0.04em', textTransform: 'uppercase', padding: '8px 12px', whiteSpace: 'nowrap' }}
                     >
-                      Detail â€º
+                      Detail ›
                     </button>
                   </div>
                 </React.Fragment>
@@ -285,5 +285,3 @@ export default function PreOrderDone() {
     </>
   );
 }
-
-

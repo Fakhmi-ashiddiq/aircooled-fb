@@ -1,4 +1,4 @@
-﻿import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { useStore } from '../../store';
 
 export default function AdminSidebar() {
@@ -25,7 +25,7 @@ export default function AdminSidebar() {
   const currentLabel = {
     dashboard: 'Dashboard', catalog: 'Katalog Produk', sales: 'Penjualan & Pesanan',
     sessions: 'Sesi Pre-Order', podone: 'Pre-Order Selesai', finance: 'Keuangan & Profit',
-    sizes: 'Ukuran', colors: 'Warna', owners: 'Owner'
+    sizes: 'Ukuran', colors: 'Warna', roles: 'Peran'
   }[activeSection] || '';
 
   const navStyle = (id, sub) => ({
@@ -55,7 +55,7 @@ export default function AdminSidebar() {
 
   const adminNavTop = [['dashboard', 'Dashboard'], ['catalog', 'Katalog Produk']].map(mkNav);
   const adminNavBottom = [['sales', 'Penjualan & Pesanan'], ['sessions', 'Sesi Pre-Order'], ['podone', 'Pre-Order Selesai'], ['finance', 'Keuangan & Profit']].map(mkNav);
-  const settingsSub = [['sizes', 'Ukuran'], ['colors', 'Warna'], ['owners', 'Owner']].map(([id, label]) => ({
+  const settingsSub = [['sizes', 'Ukuran'], ['colors', 'Warna'], ['roles', 'Peran']].map(([id, label]) => ({
     id, label,
     go: () => {
       updateState({ adminRoute: id });
@@ -65,7 +65,7 @@ export default function AdminSidebar() {
     style: navStyle(id, true)
   }));
 
-  const settingsActive = ['sizes', 'colors', 'owners'].includes(activeSection);
+  const settingsActive = ['sizes', 'colors', 'roles'].includes(activeSection);
 
   const settingsHeaderStyle = {
     color: settingsActive ? '#F2C015' : '#cfcabd',
@@ -90,7 +90,7 @@ export default function AdminSidebar() {
     <>
       <div className="admin-mobile-topbar">
         <button onClick={() => setIsOpen(true)} className="admin-mobile-hamburger">
-          <span>â˜°</span>
+          <span>☰</span>
         </button>
         <span className="admin-mobile-title">{currentLabel}</span>
       </div>
@@ -178,7 +178,7 @@ export default function AdminSidebar() {
             onClick={() => setIsOpen(false)}
             style={{ background: 'none', border: 'none', color: '#cfcabd', fontSize: '28px', cursor: 'pointer', lineHeight: 1, marginTop: '-4px' }}
           >
-            Ã—
+            ×
           </button>
         </div>
 
@@ -187,7 +187,7 @@ export default function AdminSidebar() {
           {adminNavBottom.map((n) => <button key={n.id} onClick={n.go} style={n.style}>{n.label}</button>)}
           <button onClick={() => updateState({ settingsOpen: !state.settingsOpen })} style={settingsHeaderStyle}>
             <span>Pengaturan</span>
-            <span style={{ fontSize: '11px' }}>{state.settingsOpen ? 'â–¾' : 'â–¸'}</span>
+            <span style={{ fontSize: '11px' }}>{state.settingsOpen ? '▾' : '▸'}</span>
           </button>
           {state.settingsOpen && settingsSub.map((n) => <button key={n.id} onClick={n.go} style={n.style}>{n.label}</button>)}
         </nav>
@@ -199,5 +199,3 @@ export default function AdminSidebar() {
     </>
   );
 }
-
-

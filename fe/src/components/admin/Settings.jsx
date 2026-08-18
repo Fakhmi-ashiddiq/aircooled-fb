@@ -64,7 +64,7 @@ export default function Settings() {
     const name = (state.newOwnerName || '').trim();
     if (!name) return;
     await useStore.getState().addOwner(name, state.newOwnerPic || '');
-    updateState({ newOwnerName: '', newRolePic: '' });
+    updateState({ newOwnerName: '', newOwnerPic: '' });
   };
 
   const deleteOwner = async (id) => {
@@ -220,25 +220,25 @@ export default function Settings() {
         </>
       )}
 
-      {route === 'owners' && (
+      {route === 'roles' && (
         <>
           <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#6b655a' }}>Pengaturan</div>
-          <h1 style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '40px', margin: '4px 0 8px', textTransform: 'uppercase' }}>Owner</h1>
+          <h1 style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '40px', margin: '4px 0 8px', textTransform: 'uppercase' }}>Peran</h1>
           <p style={{ margin: '0 0 24px', fontSize: '14px', color: '#6b655a', lineHeight: 1.5, maxWidth: '800px' }}>
             Daftar peran/pihak yang bisa dipilih saat mengatur pembagian profit sesi pre-order (mis. Aircooled Syndicate, pic Atot | RDPL, pic Dzikri).
           </p>
 
           <div className="settings-new-row" style={{ display: 'flex', alignItems: 'center', gap: '16px', border: '2px solid #14110D', background: '#fff', padding: '10px 16px', marginBottom: '32px' }}>
-            <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#9a8f7a', letterSpacing: '0.08em', textTransform: 'uppercase', flexShrink: 0 }}>Owner Baru:</span>
+            <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#9a8f7a', letterSpacing: '0.08em', textTransform: 'uppercase', flexShrink: 0 }}>Peran Baru:</span>
             <input placeholder="Nama (mis. RDPL)" value={state.newOwnerName || ''} onChange={e => updateState({ newOwnerName: e.target.value })} style={inputStyle} />
             <input placeholder="PIC (mis. Atot)" value={state.newOwnerPic || ''} onChange={e => updateState({ newOwnerPic: e.target.value })} style={inputStyle} />
             <button onClick={addOwner} style={{ background: '#F2C015', color: '#14110D', border: 'none', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '11px', textTransform: 'uppercase', padding: '14px 24px', letterSpacing: '0.06em', whiteSpace: 'nowrap' }}>
-              + Tambah Owner
+              + Tambah Peran
             </button>
           </div>
 
           <div style={{ border: '2px solid #14110D', background: '#fff' }}>
-            {(data.owners || []).map(r => (
+            {data.owners.map(r => (
               <div key={r.id} className="settings-role-row" style={{ padding: '16px 20px', borderBottom: '1px solid #ddd5c4', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
                   <span style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '16px' }}>{r.name}</span>
@@ -257,7 +257,4 @@ export default function Settings() {
     </>
   );
 }
-
-
-
 
