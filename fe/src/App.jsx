@@ -14,6 +14,15 @@ function SyncRouter() {
   // Sync URL to Zustand (when user types URL or uses Back/Forward button)
   useEffect(() => {
      if (location.pathname.startsWith('/admin')) {
+        // Protected Admin Route
+        if (!state.appReady) return; // Wait for auth check
+
+        if (!state.user || state.user.role !== 'admin') {
+           navigate('/');
+           updateState({ authOpen: true, authMode: 'login' });
+           return;
+        }
+
         let adminRoute = location.pathname.replace('/admin', '') || '/dashboard';
         adminRoute = adminRoute.replace('/', '');
         if (state.view !== 'admin' || state.adminRoute !== adminRoute) {
@@ -25,7 +34,7 @@ function SyncRouter() {
             updateState({ view: 'store', route: storeRoute || 'home' });
         }
      }
-  }, [location.pathname]);
+  }, [location.pathname, state.appReady, state.user]);
 
   // Sync Zustand to URL (when components call updateState)
   useEffect(() => {
@@ -46,11 +55,16 @@ function SyncRouter() {
 }
 
 export default function App() {
-  const { fetchInitialData } = useStore();
+  const { fetchInitialData, checkAuth, state } = useStore();
 
   useEffect(() => {
+    checkAuth();
     fetchInitialData();
-  }, [fetchInitialData]);
+  }, []);
+
+  if (!state.appReady) {
+    return <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F2EEE4' }}>Loading...</div>;
+  }
 
   return (
     <Router>

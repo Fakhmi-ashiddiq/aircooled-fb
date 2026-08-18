@@ -3,7 +3,7 @@ import { useStore } from '../../store';
 import PingDot from '../shared/PingDot';
 
 export default function StoreHeader() {
-  const { state, updateState, go } = useStore();
+  const { state, updateState, go, logout } = useStore();
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -16,8 +16,8 @@ export default function StoreHeader() {
   const user = state.user;
   const authLabel = user ? `${user.name.split(' ')[0]} · Keluar` : 'Masuk | Daftar';
 
-  const onAuthClick = () => {
-    if (user) updateState({ user: null });
+  const onAuthClick = async () => {
+    if (user) await logout();
     else updateState({ authOpen: true, authMode: 'login' });
   };
 

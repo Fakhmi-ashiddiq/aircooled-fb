@@ -7,6 +7,7 @@ import ColorOptionService from '../services/ColorOptionService';
 import OwnerService from '../services/OwnerService';
 import ProductService from '../services/ProductService';
 import OrderService from '../services/OrderService';
+import AuthService from '../services/AuthService';
 
 const deepClone = (obj) => {
     if (typeof structuredClone === 'function') return structuredClone(obj);
@@ -66,6 +67,56 @@ export const useStore = create((set, get) => ({
             });
         } catch (error) {
             console.error("Error fetching data:", error);
+        }
+    },
+
+    // Auth Actions
+    checkAuth: async () => {
+        try {
+            const user = await AuthService.me();
+            if (user) {
+                get().updateState({ user });
+            } else {
+                get().updateState({ user: null });
+            }
+        } catch (e) {
+            get().updateState({ user: null });
+        } finally {
+            get().updateState({ appReady: true });
+        }
+    },
+
+    login: async (email, password) => {
+        try {
+            const res = await AuthService.login(email, password);
+            get().updateState({ user: res.user, authOpen: false, authEmail: '' });
+            get().showToast('Berhasil masuk');
+            return true;
+        } catch (e) {
+            get().showToast('Login gagal. Periksa email/password.');
+            return false;
+        }
+    },
+
+    register: async (data) => {
+        try {
+            const res = await AuthService.register(data);
+            get().updateState({ user: res.user, authOpen: false, authName: '', authEmail: '' });
+            get().showToast('Akun berhasil dibuat');
+            return true;
+        } catch (e) {
+            get().showToast('Gagal mendaftar. Email mungkin sudah terdaftar.');
+            return false;
+        }
+    },
+
+    logout: async () => {
+        try {
+            await AuthService.logout();
+            get().updateState({ user: null, view: 'store', route: 'home' });
+            get().showToast('Berhasil keluar');
+        } catch (e) {
+            console.error(e);
         }
     },
 
