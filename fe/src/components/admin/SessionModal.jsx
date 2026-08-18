@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from 'react';
+﻿import React, { useContext, useState, useEffect } from 'react';
 import { useStore } from '../../store';
 import { rp } from '../../utils/helpers';
 
@@ -25,7 +25,7 @@ export default function SessionModal() {
   const pid = state.sessionModalPid || ns.productId || preorderProducts[0]?.id || '';
   const p = data.PRODUCTS.find((x) => x.id === pid);
   const colorOptions = (data.colorOptions || []).filter((c) => c.active !== false);
-  const roles = data.roles || [];
+  const owners = data.owners || [];
   const sizeSets = (data.sizeSets || []).filter((s) => s.active !== false);
 
   useEffect(() => {
@@ -75,7 +75,7 @@ export default function SessionModal() {
   const isGross = ns.profitBase === 'gross';
   const base = isGross ? gross : price;
 
-  const roleOptions = () => [{ value: '', label: '— pilih peran —' }].concat(roles.map((r) => ({ value: r.id, label: r.name })));
+  const roleOptions = () => [{ value: '', label: 'â€” pilih peran â€”' }].concat(owners.map((r) => ({ value: r.id, label: r.name })));
 
   const profitRows = [
     { label: 'Media Platform', hasRole: true, pctKey: 'mediaPct', roleKey: 'mediaRole' },
@@ -191,12 +191,12 @@ export default function SessionModal() {
         }}
       >
         {/* FIX: header sekarang sticky di dalam kotak modal, tidak ikut ter-scroll ke atas
-            bersama konten — sama seperti pola di ProductModal.jsx */}
+            bersama konten â€” sama seperti pola di ProductModal.jsx */}
         <div style={{ padding: '18px 24px', borderBottom: '2px solid #14110D', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, background: '#F2EEE4', zIndex: 1 }}>
           <div style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '20px', textTransform: 'uppercase' }}>
             Sesi Pre-Order Baru
           </div>
-          <button onClick={close} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '24px', lineHeight: 1 }}>×</button>
+          <button onClick={close} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '24px', lineHeight: 1 }}>Ã—</button>
         </div>
 
         <div className="sessmodal-body" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -339,7 +339,7 @@ export default function SessionModal() {
                       {roleOptions().map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
                     </select>
                   ) : (
-                    <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#6b655a' }}>—</span>
+                    <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#6b655a' }}>â€”</span>
                   )}
                   <select
                     value={String(pct)}
@@ -355,10 +355,10 @@ export default function SessionModal() {
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px', flexWrap: 'wrap', gap: '6px' }}>
               <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: over ? '#ff6b53' : '#6b655a' }}>
-                {over ? `Total ${totalPct}% melebihi 100% — kurangi salah satu` : `Sisa belum dialokasi: ${100 - totalPct}%`}
+                {over ? `Total ${totalPct}% melebihi 100% â€” kurangi salah satu` : `Sisa belum dialokasi: ${100 - totalPct}%`}
               </span>
               <span style={{ fontFamily: "'Archivo'", fontWeight: 800, fontSize: '15px' }}>
-                Total {totalPct}% · {rp(totalNominal)}
+                Total {totalPct}% Â· {rp(totalNominal)}
               </span>
             </div>
           </div>
@@ -374,3 +374,5 @@ export default function SessionModal() {
     </>
   );
 }
+
+

@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+﻿import React, { useContext } from 'react';
 import { useStore } from '../../store';
 import { rp, normStage, stageOrder } from '../../utils/helpers';
 
@@ -20,10 +20,10 @@ export default function PreOrderSessions() {
     border: status === 'closed' || status === 'done' ? '1px solid #14110D' : 'none'
   });
 
-  // label & aksi tombol cepat ubah status — mengikuti tahap 4-langkah yang sama dengan SessionDetail
+  // label & aksi tombol cepat ubah status â€” mengikuti tahap 4-langkah yang sama dengan SessionDetail
   const advanceLabel = (status) => {
     const cur = normStage(status);
-    if (cur === 'open') return 'Tutup Sesi → Produksi';
+    if (cur === 'open') return 'Tutup Sesi â†’ Produksi';
     if (cur === 'production') return 'Lanjut ke Pengiriman';
     if (cur === 'shipping') return 'Tandai Selesai';
     return 'Sesi Selesai';
@@ -85,14 +85,14 @@ export default function PreOrderSessions() {
                     onClick={() => openDetail(p)}
                     style={{ background: '#14110D', color: '#F2EEE4', border: 'none', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '10px', letterSpacing: '0.05em', textTransform: 'uppercase', padding: '7px 12px', whiteSpace: 'nowrap' }}
                   >
-                    Kelola ›
+                    Kelola â€º
                   </button>
                 </div>
               </div>
 
               <div style={{ padding: '20px' }}>
                 <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#6b655a' }}>
-                  {sess.sessionName} · {sess.opens} → {sess.closes}
+                  {sess.sessionName} Â· {sess.opens} â†’ {sess.closes}
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginTop: '16px' }}>
@@ -143,3 +143,4 @@ export default function PreOrderSessions() {
     </>
   );
 }
+

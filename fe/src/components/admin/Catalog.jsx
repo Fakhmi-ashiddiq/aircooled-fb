@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+﻿import React, { useContext } from 'react';
 import { useStore } from '../../store';
 import { rp } from '../../utils/helpers';
 
@@ -149,7 +149,7 @@ export default function Catalog() {
           <input
             value={catalogSearch || ''}
             onChange={(e) => updateState({ catalogSearch: e.target.value })}
-            placeholder="Cari produk…"
+            placeholder="Cari produkâ€¦"
             style={{ width: '100%', padding: '13px 14px', border: '2px solid #14110D', background: '#fff', fontFamily: "'Space Mono', monospace", fontSize: '13px' }}
           />
         </div>
@@ -176,7 +176,7 @@ export default function Catalog() {
 
       <div style={{ border: '2px solid #14110D', background: '#fff' }}>
         <div style={{ padding: '14px 20px', borderBottom: '2px solid #14110D', fontFamily: "'Archivo'", fontWeight: 800, fontSize: '16px', textTransform: 'uppercase' }}>
-          {isReady ? 'Ready Stock' : 'Pre-Order'} — {catalogCountLabel}
+          {isReady ? 'Ready Stock' : 'Pre-Order'} â€” {catalogCountLabel}
         </div>
         <div style={{ padding: '0 20px' }}>
           {display.map((p) => {
@@ -186,9 +186,9 @@ export default function Catalog() {
             const stockLabel = isPre ? `${agg.committed} terpesan` : `${p.stock || 0} stok`;
             const revenueLabel = isPre
               ? `Pendapatan masuk ${rp(agg.paidIn)}`
-              : `Terjual ${p.sold || 0} · ${rp(p.price * (p.sold || 0))}`;
+              : `Terjual ${p.sold || 0} Â· ${rp(p.price * (p.sold || 0))}`;
             const viewsLabel = `${(p.views || 0).toLocaleString('id-ID')} views`;
-            const soldShort = isPre ? `· ${sold} terpesan` : `· ${sold} terjual`;
+            const soldShort = isPre ? `Â· ${sold} terpesan` : `Â· ${sold} terjual`;
 
             return (
               <div
@@ -216,7 +216,7 @@ export default function Catalog() {
                 <div className="cat-row-info">
                   <div style={{ fontFamily: "'Archivo'", fontWeight: 700, fontSize: '14px' }}>{p.name}</div>
                   <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#6b655a', marginTop: '2px' }}>
-                    {p.cat} · {viewsLabel} {soldShort}
+                    {p.cat} Â· {viewsLabel} {soldShort}
                   </div>
                 </div>
                 <span className="cat-row-price" style={{ fontFamily: "'Space Mono', monospace", fontSize: '13px', fontWeight: 700 }}>{rp(p.price)}</span>
@@ -229,7 +229,7 @@ export default function Catalog() {
                   onClick={(e) => { e.stopPropagation(); editProduct(p); }}
                   style={{ background: '#fff', color: '#14110D', border: '2px solid #14110D', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '10px', letterSpacing: '0.04em', textTransform: 'uppercase', padding: '8px 14px', whiteSpace: 'nowrap' }}
                 >
-                  Edit ›
+                  Edit â€º
                 </button>
               </div>
             );
@@ -244,3 +244,4 @@ export default function Catalog() {
     </>
   );
 }
+

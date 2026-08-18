@@ -19,8 +19,10 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::apiResource('categories', \App\Http\Controllers\API\CategoryController::class);
-Route::apiResource('roles', \App\Http\Controllers\API\RoleController::class);
+Route::apiResource('owners', \App\Http\Controllers\API\OwnerController::class);
 Route::apiResource('color-options', \App\Http\Controllers\API\ColorOptionController::class);
 Route::apiResource('size-sets', \App\Http\Controllers\API\SizeSetController::class);
 Route::apiResource('products', \App\Http\Controllers\API\ProductController::class);
 Route::apiResource('orders', \App\Http\Controllers\API\OrderController::class);
+
+

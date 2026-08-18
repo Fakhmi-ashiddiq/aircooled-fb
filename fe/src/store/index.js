@@ -4,7 +4,7 @@ import { slugify, normStage, stageOrder } from '../utils/helpers';
 import CategoryService from '../services/CategoryService';
 import SizeSetService from '../services/SizeSetService';
 import ColorOptionService from '../services/ColorOptionService';
-import RoleService from '../services/RoleService';
+import OwnerService from '../services/OwnerService';
 import ProductService from '../services/ProductService';
 import OrderService from '../services/OrderService';
 
@@ -36,7 +36,7 @@ export const useStore = create((set, get) => ({
         newProdSession: { name: '', date: '', qty: '', price: '', compareAt: '', sizeSetId: 'reg', colors: [], produksi: '', kemasan: '', stiker: '', profitBase: 'harga', mediaPct: 30, mediaRole: 'ro1', desainPct: 30, desainRole: 'ro1', prodPct: 25, prodRole: 'ro2', storePct: 15, investorPct: 0, investorRole: '' },
         newCat: '', newProd: { name: '', cat: 'Kaos', type: 'ready', price: '', sizes: 'S,M,L,XL', garment: '#D9CBB0', print: 'logo', stock: '', produksi: '', kemasan: '', stiker: '' },
         newSession: { productId: '', sessionName: '', opens: '', closes: '', target: '', eta: '', price: '', compareAt: '', sizeSetId: 'reg', colors: [], produksi: '', kemasan: '', stiker: '', profitBase: 'gross', mediaPct: 0, mediaRole: '', desainPct: 0, desainRole: '', prodPct: 0, prodRole: '', storePct: 0 },
-        newSetName: '', sizeInputs: {}, newColorName: '', newColorHex: '#D9CBB0', newRoleName: '', newRolePic: '', settingsOpen: false, toast: null
+        newSetName: '', sizeInputs: {}, newColorName: '', newColorHex: '#D9CBB0', newOwnerName: '', newOwnerPic: '', settingsOpen: false, toast: null
     },
     updateState: (updates) => set((prev) => ({ state: { ...prev.state, ...updates } })),
     showToast: (msg) => set((prev) => ({ state: { ...prev.state, toast: { message: msg } } })),
@@ -44,11 +44,11 @@ export const useStore = create((set, get) => ({
     // API Fetcher
     fetchInitialData: async () => {
         try {
-            const [categories, sizeSets, colorOptions, roles, products, orders] = await Promise.all([
+            const [categories, sizeSets, colorOptions, owners, products, orders] = await Promise.all([
                 CategoryService.getAll(),
                 SizeSetService.getAll(),
                 ColorOptionService.getAll(),
-                RoleService.getAll(),
+                OwnerService.getAll(),
                 ProductService.getAll(),
                 OrderService.getAll()
             ]);
@@ -59,7 +59,7 @@ export const useStore = create((set, get) => ({
                 newData.categories = categories.map(c => c.name);
                 newData.sizeSets = sizeSets.map(ss => ({ ...ss, sizes: typeof ss.sizes === 'string' ? JSON.parse(ss.sizes || '[]') : ss.sizes }));
                 newData.colorOptions = colorOptions;
-                newData.roles = roles;
+                newData.owners = owners;
                 // Currently keeping PRODUCTS from data.js just to prevent breaking complex helpers,
                 // but we will override it with DB products later as we refactor.
                 return { data: newData };
@@ -139,26 +139,26 @@ export const useStore = create((set, get) => ({
         } catch (e) { console.error(e); }
     },
 
-    // CRUD Actions for Roles
-    addRole: async (name, pic) => {
+    // CRUD Actions for Owners
+    addOwner: async (name, pic) => {
         try {
-            await RoleService.create({ name, pic });
+            await OwnerService.create({ name, pic });
             await get().fetchInitialData();
-            get().showToast('Peran berhasil ditambahkan');
+            get().showToast('Owner berhasil ditambahkan');
         } catch (e) { console.error(e); }
     },
-    updateRole: async (id, data) => {
+    updateOwner: async (id, data) => {
         try {
-            await RoleService.update(id, data);
+            await OwnerService.update(id, data);
             await get().fetchInitialData();
-            get().showToast('Peran diperbarui');
+            get().showToast('Owner diperbarui');
         } catch (e) { console.error(e); }
     },
-    deleteRole: async (id) => {
+    deleteOwner: async (id) => {
         try {
-            await RoleService.delete(id);
+            await OwnerService.delete(id);
             await get().fetchInitialData();
-            get().showToast('Peran dihapus');
+            get().showToast('Owner dihapus');
         } catch (e) { console.error(e); }
     },
 
@@ -369,6 +369,7 @@ export const useStore = create((set, get) => ({
         });
     }
 }));
+
 
 
 

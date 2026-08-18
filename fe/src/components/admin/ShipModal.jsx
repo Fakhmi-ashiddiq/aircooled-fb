@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+﻿import React, { useContext } from 'react';
 import { useStore } from '../../store';
 
 export default function ShipModal() {
@@ -11,7 +11,7 @@ export default function ShipModal() {
   if (!b) return null;
 
   const its = b.items && b.items.length ? b.items : [{ size: b.size, color: b.color, qty: b.qty || 1 }];
-  const variant = its.length > 1 ? its.map((it) => `${it.qty || 1}× ${it.size} ${it.color}`).join(', ') : `${its[0].size} · ${its[0].color}`;
+  const variant = its.length > 1 ? its.map((it) => `${it.qty || 1}Ã— ${it.size} ${it.color}`).join(', ') : `${its[0].size} Â· ${its[0].color}`;
 
   const close = () => updateState({ shipModal: null });
   const setField = (k) => (ev) => updateState({ shipForm: { ...state.shipForm, [k]: ev.target.value } });
@@ -48,9 +48,9 @@ export default function ShipModal() {
         <div style={{ padding: '18px 24px', borderBottom: '2px solid #14110D', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <div style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '20px', textTransform: 'uppercase', lineHeight: 1 }}>Pengiriman</div>
-            <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#6b655a', marginTop: '4px' }}>{b.name} · {variant}</div>
+            <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#6b655a', marginTop: '4px' }}>{b.name} Â· {variant}</div>
           </div>
-          <button onClick={close} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '24px', lineHeight: 1 }}>×</button>
+          <button onClick={close} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '24px', lineHeight: 1 }}>Ã—</button>
         </div>
 
         <div className="shipmodal-body" style={{ padding: '22px 24px' }}>
@@ -66,7 +66,7 @@ export default function ShipModal() {
               <input value={state.shipForm.resi} onChange={setField('resi')} placeholder="mis. JNE0012345" style={{ ...inputStyle, marginTop: '5px' }} />
             </div>
             <div style={{ gridColumn: '1/3' }}>
-              <label style={labelStyle}>Real Ongkos Kirim (Rp) — sesuai resi</label>
+              <label style={labelStyle}>Real Ongkos Kirim (Rp) â€” sesuai resi</label>
               <input type="number" value={state.shipForm.cost} onChange={setField('cost')} placeholder="mis. 22000" style={{ ...inputStyle, marginTop: '5px' }} />
             </div>
             <div style={{ gridColumn: '1/3' }}>
@@ -88,3 +88,4 @@ export default function ShipModal() {
     </>
   );
 }
+

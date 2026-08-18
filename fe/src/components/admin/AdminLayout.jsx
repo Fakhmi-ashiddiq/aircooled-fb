@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+﻿import React, { useContext } from 'react';
 import { useStore } from '../../store';
 import UtilityBar from '../shared/UtilityBar';
 import AdminSidebar from './AdminSidebar';
@@ -41,7 +41,7 @@ export default function AdminLayout() {
           {route === 'sessdetail' && <SessionDetail />}
           {route === 'podone' && <PreOrderDone />}
           {route === 'finance' && <Finance />}
-          {(route === 'sizes' || route === 'colors' || route === 'roles') && <Settings />}
+          {(route === 'sizes' || route === 'colors' || route === 'owners') && <Settings />}
         </main>
       </div>
       <style>{`
@@ -60,3 +60,6 @@ export default function AdminLayout() {
     </div>
   );
 }
+
+
+

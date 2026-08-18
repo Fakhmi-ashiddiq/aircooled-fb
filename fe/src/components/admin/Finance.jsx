@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+﻿import React, { useContext, useState } from 'react';
 import { useStore } from '../../store';
 import { rp } from '../../utils/helpers';
 import useCountUp from '../../hooks/useCountUp';
@@ -134,7 +134,7 @@ export default function Finance() {
             Dari {rp(totalGross)} pendapatan,<br/>dikurangi {rp(totalBiayaKeseluruhan)} biaya.
           </div>
           <div style={{ marginTop: '24px', borderTop: '1px solid #2c2820', paddingTop: '18px', fontFamily: "'Space Mono', monospace", fontSize: '11px', letterSpacing: '0.08em', textTransform: 'uppercase', color: splitOk ? '#F2C015' : '#ff6b53' }}>
-            {splitOk ? 'TOTAL ALOKASI: 100% ✓' : `TOTAL ALOKASI: ${splitSum}% — HARUS 100%`}
+            {splitOk ? 'TOTAL ALOKASI: 100% âœ“' : `TOTAL ALOKASI: ${splitSum}% â€” HARUS 100%`}
           </div>
         </div>
 
@@ -177,3 +177,4 @@ export default function Finance() {
     </>
   );
 }
+

@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+﻿import React, { useContext } from 'react';
 import { useStore } from '../../store';
 import { rp, normStage, stageOrder } from '../../utils/helpers';
 import useCountUp from '../../hooks/useCountUp';
@@ -95,7 +95,7 @@ export default function SessionDetail() {
     { label: 'Real Ongkos Kirim', perUnit: null, total: cRealShip }
   ];
 
-  const rolesMap = (id) => (data.roles || []).find((x) => x.id === id)?.name || '—';
+  const rolesMap = (id) => (data.owners || []).find((x) => x.id === id)?.name || 'â€”';
   const splitDefs = [
     ['Media Platform', sp.mediaPct, sp.mediaRole, true],
     ['Desain & Kreatif', sp.desainPct, sp.desainRole, true],
@@ -104,7 +104,7 @@ export default function SessionDetail() {
   ];
   const reportTotalPct = (Number(sp.mediaPct) || 0) + (Number(sp.desainPct) || 0) + (Number(sp.prodPct) || 0) + (Number(sp.storePct) || 0);
   const reportRows = splitDefs.map(([label, pct, rid, hasRole]) => ({
-    label, hasRole, role: hasRole ? rolesMap(rid) : '—',
+    label, hasRole, role: hasRole ? rolesMap(rid) : 'â€”',
     pct: Number(pct) || 0,
     nominal: Math.round(reportBase * (Number(pct) || 0) / 100)
   }));
@@ -135,7 +135,7 @@ export default function SessionDetail() {
       `}</style>
 
       <button onClick={back} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontSize: '12px', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#6b655a', marginBottom: '18px' }}>
-        ← Kembali ke Produk
+        â† Kembali ke Produk
       </button>
 
       <div className="sd-header-row" style={{ display: 'flex', alignItems: 'center', gap: '18px', marginBottom: '24px' }}>
@@ -147,7 +147,7 @@ export default function SessionDetail() {
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
             <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.06em', textTransform: 'uppercase', fontWeight: 700, padding: '4px 9px', ...curStyle }}>{curLabel}</span>
-            <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#6b655a' }}>{sess.sessionName} · {sess.opens} → {sess.closes}</span>
+            <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#6b655a' }}>{sess.sessionName} Â· {sess.opens} â†’ {sess.closes}</span>
           </div>
           <h1 style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '32px', margin: '8px 0 0', textTransform: 'uppercase', lineHeight: 1 }}>{p.name}</h1>
         </div>
@@ -159,7 +159,7 @@ export default function SessionDetail() {
           <div style={{ fontFamily: "'Archivo'", fontWeight: 800, fontSize: '16px', textTransform: 'uppercase' }}>Status Sesi</div>
           {nextStage && (
             <button onClick={() => advanceSess(p.id, sess.sessionName)} style={{ background: '#F2C015', color: '#14110D', border: 'none', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '12px', letterSpacing: '0.05em', textTransform: 'uppercase', padding: '11px 18px' }}>
-              Lanjut ke {nextStage[1]} →
+              Lanjut ke {nextStage[1]} â†’
             </button>
           )}
         </div>
@@ -202,7 +202,7 @@ export default function SessionDetail() {
         </div>
       </div>
 
-      {/* RECAP STATS — CountUp diterapkan di sini */}
+      {/* RECAP STATS â€” CountUp diterapkan di sini */}
       <div className="sd-recap-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '16px', marginBottom: '24px' }}>
         <div style={{ border: '2px solid #14110D', background: '#fff', padding: '18px' }}>
           <div style={labelStyle}>Terpesan</div>
@@ -235,10 +235,10 @@ export default function SessionDetail() {
         <div style={{ padding: '14px 20px', borderBottom: '2px solid #14110D', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '14px', flexWrap: 'wrap' }}>
           <div style={{ fontFamily: "'Archivo'", fontWeight: 800, fontSize: '16px', textTransform: 'uppercase' }}>Daftar Pemesanan ({buyers.length})</div>
           <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.04em', textTransform: 'uppercase', color: '#6b655a' }}>
-            {cur === 'open' ? 'Tahap OPEN — klik status bayar untuk mengelola pembayaran.'
-              : cur === 'production' ? 'Tahap PRODUKSI — pembayaran terkunci; pesanan belum lunas otomatis dibatalkan.'
-              : cur === 'shipping' ? 'Tahap PENGIRIMAN — klik status kirim untuk input resi & bukti.'
-              : 'Sesi SELESAI — pengelolaan pesanan ditutup.'}
+            {cur === 'open' ? 'Tahap OPEN â€” klik status bayar untuk mengelola pembayaran.'
+              : cur === 'production' ? 'Tahap PRODUKSI â€” pembayaran terkunci; pesanan belum lunas otomatis dibatalkan.'
+              : cur === 'shipping' ? 'Tahap PENGIRIMAN â€” klik status kirim untuk input resi & bukti.'
+              : 'Sesi SELESAI â€” pengelolaan pesanan ditutup.'}
           </div>
         </div>
         <div className="sd-buyer-scroll">
@@ -249,7 +249,7 @@ export default function SessionDetail() {
             {buyers.map((b, i) => {
               const its = buyerItems(b);
               const q = buyerQty(b);
-              const variant = its.length > 1 ? its.length + ' item' : `${its[0].size} · ${its[0].color}`;
+              const variant = its.length > 1 ? its.length + ' item' : `${its[0].size} Â· ${its[0].color}`;
               const payClickable = canManagePay && b.pay !== 'Batal';
               const shipClickable = canManageShip && b.ship !== 'Terkirim' && b.pay !== 'Batal';
               return (
@@ -290,19 +290,19 @@ export default function SessionDetail() {
             </span>
             {!sess.splitConfirmed && (
               <button onClick={() => toggleSplitBase(p.id, sess.sessionName)} style={{ background: '#14110D', color: '#F2EEE4', border: 'none', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '10px', letterSpacing: '0.05em', textTransform: 'uppercase', padding: '8px 12px', whiteSpace: 'nowrap' }}>
-                ⇄ Ganti ke {isHarga ? 'Gross Profit' : 'Harga Jual'}
+                â‡„ Ganti ke {isHarga ? 'Gross Profit' : 'Harga Jual'}
               </button>
             )}
             {sess.splitConfirmed && (
               <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.05em', textTransform: 'uppercase', fontWeight: 700, background: '#1f7a3d', color: '#fff', padding: '6px 11px' }}>
-                ✓ Terkonfirmasi
+                âœ“ Terkonfirmasi
               </span>
             )}
           </div>
         </div>
         <div style={{ padding: '20px' }}>
           <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#6b655a', marginBottom: '16px' }}>
-            {isHarga ? 'Dasar hitung = Harga jual × unit lunas (pendapatan produk).' : 'Dasar hitung = Harga jual − total biaya di luar real ongkos kirim (produksi + kemasan + stiker).'}
+            {isHarga ? 'Dasar hitung = Harga jual Ã— unit lunas (pendapatan produk).' : 'Dasar hitung = Harga jual âˆ’ total biaya di luar real ongkos kirim (produksi + kemasan + stiker).'}
           </div>
 
           <div className="sd-report-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '12px', marginBottom: '20px' }}>
@@ -329,7 +329,7 @@ export default function SessionDetail() {
           <div className="sd-costrow-scroll" style={{ border: '1px solid #c9c1ad', marginBottom: '22px' }}>
             <div className="sd-costrow-inner">
               <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '12px', padding: '10px 14px', borderBottom: '1px solid #ddd5c4', background: '#F2EEE4', fontFamily: "'Space Mono', monospace", fontSize: '9px', letterSpacing: '0.05em', textTransform: 'uppercase', color: '#6b655a' }}>
-                <span>Komponen</span><span style={{ textAlign: 'right' }}>Per Unit</span><span style={{ textAlign: 'right' }}>Total (× unit lunas)</span>
+                <span>Komponen</span><span style={{ textAlign: 'right' }}>Per Unit</span><span style={{ textAlign: 'right' }}>Total (Ã— unit lunas)</span>
               </div>
               {costRows.map((cr, i) => (
                 <div key={i} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '12px', padding: '11px 14px', borderBottom: '1px solid #ddd5c4', alignItems: 'center' }}>
@@ -370,14 +370,14 @@ export default function SessionDetail() {
           </div>
           {!splitOk100 && (
             <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#9a3a2a', marginTop: '6px' }}>
-              ⚠ Total persentase {reportTotalPct}% — sebaiknya 100%
+              âš  Total persentase {reportTotalPct}% â€” sebaiknya 100%
             </div>
           )}
 
           <div className="sd-selisih-box" style={{ marginTop: '18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '14px', padding: '16px 18px', background: selisihPositive ? '#14110D' : '#9a3a2a', color: selisihPositive ? '#F2EEE4' : '#fff' }}>
             <div>
               <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.08em', textTransform: 'uppercase', opacity: 0.85 }}>
-                Selisih = Pembayaran Masuk − Total Biaya − Pembagian Hasil
+                Selisih = Pembayaran Masuk âˆ’ Total Biaya âˆ’ Pembagian Hasil
               </div>
               <div style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '20px', textTransform: 'uppercase', marginTop: '4px' }}>
                 {selisihPositive ? 'Kas (Surplus)' : 'Kerugian (Defisit)'}
@@ -395,14 +395,14 @@ export default function SessionDetail() {
                 Sesi sudah <strong>SELESAI</strong>. Konfirmasi pembagian hasil untuk mengunci metode &amp; angka. Setelah dikonfirmasi, metode tidak bisa diubah.
               </div>
               <button onClick={() => confirmSplit(p.id, sess.sessionName)} style={{ background: '#1f7a3d', color: '#fff', border: 'none', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '13px', letterSpacing: '0.05em', textTransform: 'uppercase', padding: '14px 22px', whiteSpace: 'nowrap' }}>
-                ✓ Konfirmasi Pembagian Hasil
+                âœ“ Konfirmasi Pembagian Hasil
               </button>
             </div>
           )}
           {sess.splitConfirmed && (
             <div className="sd-confirm-box" style={{ marginTop: '18px', border: '2px solid #1f7a3d', background: '#eef6ef', padding: '16px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '14px', flexWrap: 'wrap' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span style={{ width: '30px', height: '30px', background: '#1f7a3d', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, flex: 'none' }}>✓</span>
+                <span style={{ width: '30px', height: '30px', background: '#1f7a3d', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, flex: 'none' }}>âœ“</span>
                 <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#1f5a2e', fontWeight: 700 }}>Pembagian hasil sudah dikonfirmasi &amp; dikunci.</div>
               </div>
               <button onClick={() => unconfirmSplit(p.id, sess.sessionName)} style={{ background: 'none', color: '#1f5a2e', border: '1px solid #1f7a3d', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '10px', letterSpacing: '0.05em', textTransform: 'uppercase', padding: '8px 12px' }}>
@@ -415,3 +415,5 @@ export default function SessionDetail() {
     </>
   );
 }
+
+

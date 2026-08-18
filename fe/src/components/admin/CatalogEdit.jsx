@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+﻿import React, { useContext } from 'react';
 import { useStore } from '../../store';
 import { rp } from '../../utils/helpers';
 import useCountUp from '../../hooks/useCountUp';
@@ -144,7 +144,7 @@ export default function CatalogEdit() {
         onClick={cancel}
         style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontSize: '12px', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#6b655a', marginBottom: '18px' }}
       >
-        ← Kembali ke Katalog
+        â† Kembali ke Katalog
       </button>
 
       <div className="ce-header-row" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '20px', marginBottom: '28px', flexWrap: 'wrap' }}>
@@ -166,7 +166,7 @@ export default function CatalogEdit() {
             </span>
             <h1 style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '32px', margin: '8px 0 0', textTransform: 'uppercase', lineHeight: 1 }}>{p.name}</h1>
             <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#6b655a', marginTop: '5px' }}>
-              {p.cat} · {rp(p.price)}
+              {p.cat} Â· {rp(p.price)}
             </div>
           </div>
         </div>
@@ -174,7 +174,7 @@ export default function CatalogEdit() {
           onClick={viewStore}
           style={{ background: '#fff', color: '#14110D', border: '2px solid #14110D', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '11px', letterSpacing: '0.04em', textTransform: 'uppercase', padding: '11px 16px' }}
         >
-          Lihat di Storefront ↗
+          Lihat di Storefront â†—
         </button>
       </div>
 
@@ -246,11 +246,11 @@ export default function CatalogEdit() {
 
           {isPre ? (
             <div style={{ background: '#F2EEE4', border: '2px solid #14110D', padding: '13px 16px', fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#6b655a', lineHeight: 1.5 }}>
-              Harga, ukuran, warna &amp; biaya produk pre-order diatur per <strong style={{ color: '#14110D' }}>sesi pre-order</strong> di bawah — buat sesi baru untuk mengubahnya.
+              Harga, ukuran, warna &amp; biaya produk pre-order diatur per <strong style={{ color: '#14110D' }}>sesi pre-order</strong> di bawah â€” buat sesi baru untuk mengubahnya.
             </div>
           ) : (
             <div style={{ background: '#F2EEE4', border: '2px solid #14110D', padding: '13px 16px', fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#6b655a', lineHeight: 1.5 }}>
-              Harga jual, harga coret &amp; ukuran diatur per <strong style={{ color: '#14110D' }}>sesi produksi</strong> di bawah — buat sesi produksi baru untuk mengubahnya. Stok mengikuti total jumlah produksi.
+              Harga jual, harga coret &amp; ukuran diatur per <strong style={{ color: '#14110D' }}>sesi produksi</strong> di bawah â€” buat sesi produksi baru untuk mengubahnya. Stok mengikuti total jumlah produksi.
             </div>
           )}
 
@@ -267,7 +267,7 @@ export default function CatalogEdit() {
 
           <div style={{ borderTop: '1px solid #ddd5c4', paddingTop: '16px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-              <div style={labelStyle}>Gambar Produk — klik gambar untuk jadikan default</div>
+              <div style={labelStyle}>Gambar Produk â€” klik gambar untuk jadikan default</div>
               <label style={{ background: '#14110D', color: '#F2EEE4', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '11px', letterSpacing: '0.04em', textTransform: 'uppercase', padding: '10px 16px', display: 'inline-block' }}>
                 + Upload Gambar
                 <input type="file" accept="image/*" multiple onChange={onUpload} style={{ display: 'none' }} />
@@ -309,7 +309,7 @@ export default function CatalogEdit() {
                       onClick={() => removeImage(i)}
                       style={{ position: 'absolute', top: '4px', right: '4px', width: '20px', height: '20px', background: '#14110D', color: '#F2EEE4', border: 'none', cursor: 'pointer', fontSize: '13px', lineHeight: 1, zIndex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                     >
-                      ×
+                      Ã—
                     </button>
                     <span style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(20,17,13,0.78)', color: '#F2EEE4', fontFamily: "'Space Mono', monospace", fontSize: '9px', padding: '3px 5px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', zIndex: 1 }}>
                       {im.name}
@@ -338,7 +338,7 @@ export default function CatalogEdit() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
               {activeOpen && (
                 <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '10px', color: '#9a3a2a', maxWidth: '300px', textAlign: 'right', lineHeight: 1.4 }}>
-                  Sesi {p.preorder.sessionName} masih OPEN — tutup sesi (mulai produksi) sebelum membuat sesi baru.
+                  Sesi {p.preorder.sessionName} masih OPEN â€” tutup sesi (mulai produksi) sebelum membuat sesi baru.
                 </span>
               )}
               <button
@@ -384,13 +384,13 @@ export default function CatalogEdit() {
                         onClick={() => openSessionDetail(s.sessionName)}
                         style={{ background: '#14110D', color: '#F2EEE4', border: 'none', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '10px', letterSpacing: '0.05em', textTransform: 'uppercase', padding: '7px 12px', whiteSpace: 'nowrap' }}
                       >
-                        Kelola ›
+                        Kelola â€º
                       </button>
                     </div>
                   </div>
                   <div style={{ padding: '14px 16px' }}>
                     <div className="ce-session-stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '14px' }}>
-                      <div><div style={labelStyle}>Periode</div><div style={{ fontFamily: "'Space Mono', monospace", fontSize: '13px', marginTop: '3px' }}>{s.opens} → {s.closes}</div></div>
+                      <div><div style={labelStyle}>Periode</div><div style={{ fontFamily: "'Space Mono', monospace", fontSize: '13px', marginTop: '3px' }}>{s.opens} â†’ {s.closes}</div></div>
                       <div><div style={labelStyle}>Estimasi Kirim</div><div style={{ fontFamily: "'Space Mono', monospace", fontSize: '13px', marginTop: '3px' }}>{s.eta}</div></div>
                       <div>
                         <div style={labelStyle}>Harga</div>
@@ -413,7 +413,7 @@ export default function CatalogEdit() {
                       <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${pct}%`, background: com >= s.target ? '#1f7a3d' : '#14110D' }} />
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#6b655a', marginTop: '7px' }}>
-                      <span>{com} / {s.target} unit · Pendapatan {rp((s.price || 0) * com)}</span>
+                      <span>{com} / {s.target} unit Â· Pendapatan {rp((s.price || 0) * com)}</span>
                       <span>{pct}%</span>
                     </div>
                   </div>
@@ -430,7 +430,7 @@ export default function CatalogEdit() {
             <div>
               <div style={{ fontFamily: "'Archivo'", fontWeight: 800, fontSize: '16px', textTransform: 'uppercase' }}>Sesi Produksi</div>
               <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#6b655a', marginTop: '2px' }}>
-                {prodSessions.length} batch · {prodSessions.reduce((a, s) => a + (s.qty || 0), 0)} unit diproduksi
+                {prodSessions.length} batch Â· {prodSessions.reduce((a, s) => a + (s.qty || 0), 0)} unit diproduksi
               </div>
             </div>
             <button
@@ -486,7 +486,7 @@ export default function CatalogEdit() {
                       <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${pct}%`, background: sold >= qty ? '#1f7a3d' : '#14110D' }} />
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#6b655a', marginTop: '7px' }}>
-                      <span>{sold} terjual · Sisa {sisa} · Pendapatan {rp((s.price || p.price) * sold)}</span>
+                      <span>{sold} terjual Â· Sisa {sisa} Â· Pendapatan {rp((s.price || p.price) * sold)}</span>
                       <span>{pct}%</span>
                     </div>
                   </div>
@@ -499,4 +499,5 @@ export default function CatalogEdit() {
     </>
   );
 }
+
 

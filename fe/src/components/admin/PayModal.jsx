@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+﻿import React, { useContext } from 'react';
 import { useStore } from '../../store';
 import { rp } from '../../utils/helpers';
 
@@ -57,7 +57,7 @@ export default function PayModal() {
             <div style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '20px', textTransform: 'uppercase', lineHeight: 1 }}>Pembayaran</div>
             <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#6b655a', marginTop: '4px' }}>{b.name}</div>
           </div>
-          <button onClick={close} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '24px', lineHeight: 1 }}>×</button>
+          <button onClick={close} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '24px', lineHeight: 1 }}>Ã—</button>
         </div>
 
         <div className="paymodal-body" style={{ padding: '22px 24px' }}>
@@ -66,8 +66,8 @@ export default function PayModal() {
             {items.map((it, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '11px 14px', borderBottom: '1px solid #ddd5c4' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '13px', fontWeight: 700 }}>{it.qty || 1} ×</span>
-                  <span style={{ fontSize: '13px' }}>{it.size} · {it.color}</span>
+                  <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '13px', fontWeight: 700 }}>{it.qty || 1} Ã—</span>
+                  <span style={{ fontSize: '13px' }}>{it.size} Â· {it.color}</span>
                 </div>
                 <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '13px' }}>{rp(price * (it.qty || 1))}</span>
               </div>
@@ -128,3 +128,4 @@ export default function PayModal() {
     </>
   );
 }
+

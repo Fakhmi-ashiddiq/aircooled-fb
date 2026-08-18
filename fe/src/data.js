@@ -70,7 +70,7 @@ export const getInitialData = () => {
     {id:'co8',name:'Khaki',hex:'#B7A98A',active:false}
   ];
 
-  const roles = [
+  const owners = [
     {id:'ro1', name:'Aircooled Syndicate', pic:'Atot'},
     {id:'ro2', name:'RDPL', pic:'Dzikri'}
   ];
@@ -89,7 +89,8 @@ export const getInitialData = () => {
     categories,
     sizeSets,
     colorOptions,
-    roles,
+    owners,
     orders
   };
 };
+

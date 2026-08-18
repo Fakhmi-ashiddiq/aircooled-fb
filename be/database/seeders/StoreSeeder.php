@@ -4,7 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\Category;
-use App\Models\Role;
+use App\Models\Owner;
 use App\Models\ColorOption;
 use App\Models\SizeSet;
 use App\Models\Product;
@@ -19,12 +19,12 @@ class StoreSeeder extends Seeder
             Category::create(['name' => $cat]);
         }
 
-        $roles = [
+        $owners = [
             ['code' => 'ro1', 'name' => 'Aircooled Syndicate', 'pic' => 'Atot'],
             ['code' => 'ro2', 'name' => 'RDPL', 'pic' => 'Dzikri']
         ];
-        foreach ($roles as $role) {
-            Role::create($role);
+        foreach ($owners as $owner) {
+            Owner::create($owner);
         }
 
         $colors = [

@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+﻿import React, { useContext } from 'react';
 import { useStore } from '../../store';
 import { rp } from '../../utils/helpers';
 import useCountUp from '../../hooks/useCountUp';
@@ -22,8 +22,8 @@ export default function Dashboard() {
   const totalOrdersN = data.orders.length + 18;
 
   const kpis = [
-    { label: 'Pendapatan', value: totalRevenueN, format: (v) => rp(v), delta: '▲ Total tercatat', deltaColor: '#1f7a3d' },
-    { label: 'Total Pesanan', value: totalOrdersN, format: (v) => String(v), delta: '▲ 6 minggu ini', deltaColor: '#1f7a3d' },
+    { label: 'Pendapatan', value: totalRevenueN, format: (v) => rp(v), delta: 'â–² Total tercatat', deltaColor: '#1f7a3d' },
+    { label: 'Total Pesanan', value: totalOrdersN, format: (v) => String(v), delta: 'â–² 6 minggu ini', deltaColor: '#1f7a3d' },
     { label: 'Pre-Order Terpesan', value: preorderCommitted, format: (v) => String(v) + ' unit', delta: `Lintas ${preorderProducts.length} drop`, deltaColor: '#6b655a' },
     { label: 'Profit Kotor', value: totalProfitN, format: (v) => rp(v), delta: 'Setelah biaya', deltaColor: '#6b655a' }
   ];
@@ -75,7 +75,7 @@ export default function Dashboard() {
             {orders.map((o, idx) => (
               <div key={idx} className="dash-order-row" style={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto auto', gap: '12px', alignItems: 'center', padding: '11px 0', borderBottom: '1px solid #ddd5c4' }}>
                 <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#6b655a' }}>{o.id}</span>
-                <span style={{ fontSize: '13px' }}>{o.customer} — {o.items}</span>
+                <span style={{ fontSize: '13px' }}>{o.customer} â€” {o.items}</span>
                 <span className="dash-order-total" style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', fontWeight: 700 }}>{o.totalFmt}</span>
                 <span className="dash-order-status" style={{ fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.06em', textTransform: 'uppercase', padding: '3px 8px', ...o.statusStyle }}>{o.status}</span>
               </div>
@@ -102,3 +102,4 @@ export default function Dashboard() {
     </>
   );
 }
+

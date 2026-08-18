@@ -60,15 +60,15 @@ export default function Settings() {
     await useStore.getState().deleteColorOption(id);
   };
 
-  const addRole = async () => {
-    const name = (state.newRoleName || '').trim();
+  const addOwner = async () => {
+    const name = (state.newOwnerName || '').trim();
     if (!name) return;
-    await useStore.getState().addRole(name, state.newRolePic || '');
-    updateState({ newRoleName: '', newRolePic: '' });
+    await useStore.getState().addOwner(name, state.newOwnerPic || '');
+    updateState({ newOwnerName: '', newRolePic: '' });
   };
 
-  const deleteRole = async (id) => {
-    await useStore.getState().deleteRole(id);
+  const deleteOwner = async (id) => {
+    await useStore.getState().deleteOwner(id);
   };
 
   const inputStyle = { padding: '12px 16px', border: '2px solid #14110D', fontFamily: "'Archivo', sans-serif", fontSize: '14px', background: '#fff', flex: 1, outline: 'none', minWidth: '140px' };
@@ -220,25 +220,25 @@ export default function Settings() {
         </>
       )}
 
-      {route === 'roles' && (
+      {route === 'owners' && (
         <>
           <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#6b655a' }}>Pengaturan</div>
-          <h1 style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '40px', margin: '4px 0 8px', textTransform: 'uppercase' }}>Peran</h1>
+          <h1 style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '40px', margin: '4px 0 8px', textTransform: 'uppercase' }}>Owner</h1>
           <p style={{ margin: '0 0 24px', fontSize: '14px', color: '#6b655a', lineHeight: 1.5, maxWidth: '800px' }}>
             Daftar peran/pihak yang bisa dipilih saat mengatur pembagian profit sesi pre-order (mis. Aircooled Syndicate, pic Atot | RDPL, pic Dzikri).
           </p>
 
           <div className="settings-new-row" style={{ display: 'flex', alignItems: 'center', gap: '16px', border: '2px solid #14110D', background: '#fff', padding: '10px 16px', marginBottom: '32px' }}>
-            <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#9a8f7a', letterSpacing: '0.08em', textTransform: 'uppercase', flexShrink: 0 }}>Peran Baru:</span>
-            <input placeholder="Nama (mis. RDPL)" value={state.newRoleName || ''} onChange={e => updateState({ newRoleName: e.target.value })} style={inputStyle} />
-            <input placeholder="PIC (mis. Atot)" value={state.newRolePic || ''} onChange={e => updateState({ newRolePic: e.target.value })} style={inputStyle} />
-            <button onClick={addRole} style={{ background: '#F2C015', color: '#14110D', border: 'none', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '11px', textTransform: 'uppercase', padding: '14px 24px', letterSpacing: '0.06em', whiteSpace: 'nowrap' }}>
-              + Tambah Peran
+            <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#9a8f7a', letterSpacing: '0.08em', textTransform: 'uppercase', flexShrink: 0 }}>Owner Baru:</span>
+            <input placeholder="Nama (mis. RDPL)" value={state.newOwnerName || ''} onChange={e => updateState({ newOwnerName: e.target.value })} style={inputStyle} />
+            <input placeholder="PIC (mis. Atot)" value={state.newOwnerPic || ''} onChange={e => updateState({ newOwnerPic: e.target.value })} style={inputStyle} />
+            <button onClick={addOwner} style={{ background: '#F2C015', color: '#14110D', border: 'none', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '11px', textTransform: 'uppercase', padding: '14px 24px', letterSpacing: '0.06em', whiteSpace: 'nowrap' }}>
+              + Tambah Owner
             </button>
           </div>
 
           <div style={{ border: '2px solid #14110D', background: '#fff' }}>
-            {data.roles.map(r => (
+            {(data.owners || []).map(r => (
               <div key={r.id} className="settings-role-row" style={{ padding: '16px 20px', borderBottom: '1px solid #ddd5c4', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
                   <span style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '16px' }}>{r.name}</span>
@@ -246,7 +246,7 @@ export default function Settings() {
                     PIC: <span style={{ color: '#14110D' }}>{r.pic || '—'}</span>
                   </span>
                 </div>
-                <button onClick={() => deleteRole(r.id)} style={{ background: '#14110D', color: '#F2EEE4', border: 'none', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontSize: '14px' }}>
+                <button onClick={() => deleteOwner(r.id)} style={{ background: '#14110D', color: '#F2EEE4', border: 'none', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontSize: '14px' }}>
                   ×
                 </button>
               </div>
@@ -257,4 +257,7 @@ export default function Settings() {
     </>
   );
 }
+
+
+
 

@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from 'react';
+﻿import React, { useContext, useState, useEffect } from 'react';
 import { useStore } from '../../store';
 import { rp } from '../../utils/helpers';
 
@@ -23,7 +23,7 @@ export default function ProdSessionModal() {
   const pid = state.prodSessionPid;
   const p = data.PRODUCTS.find((x) => x.id === pid);
   const colorOptions = (data.colorOptions || []).filter((c) => c.active !== false);
-  const roles = data.roles || [];
+  const owners = data.owners || [];
 
   useEffect(() => {
     if (state.prodSessionModal && p) {
@@ -67,7 +67,7 @@ export default function ProdSessionModal() {
   const isGross = nps.profitBase === 'gross';
   const base = isGross ? gross : price;
 
-  const roleOptions = () => [{ value: '', label: '— pilih peran —' }].concat(roles.map((r) => ({ value: r.id, label: r.name })));
+  const roleOptions = () => [{ value: '', label: 'â€” pilih peran â€”' }].concat(owners.map((r) => ({ value: r.id, label: r.name })));
 
   const profitRows = [
     { label: 'Media Platform', hasRole: true, pctKey: 'mediaPct', roleKey: 'mediaRole' },
@@ -120,7 +120,7 @@ export default function ProdSessionModal() {
         if (x.id !== p.id) return x;
         const batch = {
           name: nps.name || 'PRODUKSI',
-          date: nps.date || '—',
+          date: nps.date || 'â€”',
           qty, sold: 0, status: 'active',
           price, compareAt: ca > price ? ca : 0,
           sizes: sizes.length ? sizes : (x.sizes || []),
@@ -172,12 +172,12 @@ export default function ProdSessionModal() {
           maxHeight: '90vh', overflowY: 'auto', background: '#F2EEE4', border: '2px solid #14110D'
         }}
       >
-        {/* FIX: header sekarang sticky, tombol × tetap terlihat walau konten di-scroll */}
+        {/* FIX: header sekarang sticky, tombol Ã— tetap terlihat walau konten di-scroll */}
         <div style={{ padding: '18px 24px', borderBottom: '2px solid #14110D', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, background: '#F2EEE4', zIndex: 1 }}>
           <div style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '20px', textTransform: 'uppercase' }}>
             Sesi Produksi Baru
           </div>
-          <button onClick={close} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '24px', lineHeight: 1 }}>×</button>
+          <button onClick={close} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '24px', lineHeight: 1 }}>Ã—</button>
         </div>
 
         <div className="prodsess-body" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -301,7 +301,7 @@ export default function ProdSessionModal() {
                       {roleOptions().map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
                     </select>
                   ) : (
-                    <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#6b655a' }}>—</span>
+                    <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#6b655a' }}>â€”</span>
                   )}
                   <select
                     value={String(pct)}
@@ -317,10 +317,10 @@ export default function ProdSessionModal() {
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px', flexWrap: 'wrap', gap: '6px' }}>
               <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: over ? '#ff6b53' : '#6b655a' }}>
-                {over ? `Total ${totalPct}% melebihi 100% — kurangi salah satu` : `Sisa belum dialokasi: ${100 - totalPct}%`}
+                {over ? `Total ${totalPct}% melebihi 100% â€” kurangi salah satu` : `Sisa belum dialokasi: ${100 - totalPct}%`}
               </span>
               <span style={{ fontFamily: "'Archivo'", fontWeight: 800, fontSize: '15px' }}>
-                Total {totalPct}% · {rp(totalNominal)}
+                Total {totalPct}% Â· {rp(totalNominal)}
               </span>
             </div>
           </div>
@@ -336,3 +336,5 @@ export default function ProdSessionModal() {
     </>
   );
 }
+
+
