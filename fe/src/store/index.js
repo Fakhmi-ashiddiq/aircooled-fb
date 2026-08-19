@@ -418,14 +418,15 @@ export const useStore = create((set, get) => ({
         if (p.colors && p.colors.length > 1 && !state.selectedColor) return;
         
         const size = state.selectedSize || p.sizes[0];
-        const key = p.id + '|' + size;
+        const color = state.selectedColor || (p.colors && p.colors[0]) || '';
+        const key = p.id + '|' + size + '|' + color;
         const cart = [...state.cart];
         const ex = cart.find(c => c.key === key);
         
         if (ex) {
             ex.qty += state.qty;
         } else {
-            cart.push({ key, id: p.id, size, qty: state.qty });
+            cart.push({ key, id: p.id, size, color, qty: state.qty });
         }
         updateState({ cart, cartOpen: true });
     },
