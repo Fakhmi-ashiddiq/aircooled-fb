@@ -1,12 +1,29 @@
-import React, { useContext } from 'react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useStore } from '../../../store';
 
 export default function AuthModal() {
-  const { state, updateState } = useStore();
+  const { state, updateState, login, register } = useStore();
+  const navigate = useNavigate();
+  const [authPassword, setAuthPassword] = useState('');
+  const [authPasswordConfirm, setAuthPasswordConfirm] = useState('');
+  const [authPhone, setAuthPhone] = useState('');
+  const [authAddress, setAuthAddress] = useState('');
+  const [authCity, setAuthCity] = useState('');
+  const [authPostalCode, setAuthPostalCode] = useState('');
+  const [authLoading, setAuthLoading] = useState(false);
 
   if (!state.authOpen) return null;
 
-  const closeAuth = () => updateState({ authOpen: false });
+  const closeAuth = () => {
+    updateState({ authOpen: false, authName: '', authEmail: '' });
+    setAuthPassword('');
+    setAuthPasswordConfirm('');
+    setAuthPhone('');
+    setAuthAddress('');
+    setAuthCity('');
+    setAuthPostalCode('');
+  };
 
   const setAuthLogin = () => updateState({ authMode: 'login' });
   const setAuthRegister = () => updateState({ authMode: 'register' });
@@ -28,14 +45,35 @@ export default function AuthModal() {
     flex: 1
   });
 
-  const doAuth = () => {
-    const name = (state.authName || '').trim() || 'Member';
-    updateState({
-      user: { name, email: state.authEmail || '' },
-      authOpen: false,
-      authName: '',
-      authEmail: ''
-    });
+  const handleLogin = async () => {
+    setAuthLoading(true);
+    try {
+      const result = await login(state.authEmail, authPassword);
+      closeAuth();
+      if (result?.user?.role === '1') {
+        updateState({ view: 'admin', adminRoute: 'dashboard' });
+        navigate('/admin');
+      }
+    } catch (e) {
+      // Error handled by store
+    }
+    setAuthLoading(false);
+  };
+
+  const handleRegister = async () => {
+    setAuthLoading(true);
+    try {
+      await register(state.authName, state.authEmail, authPassword, authPasswordConfirm, {
+        phone: authPhone,
+        address: authAddress,
+        city: authCity,
+        postal_code: authPostalCode,
+      });
+      closeAuth();
+    } catch (e) {
+      // Error handled by store
+    }
+    setAuthLoading(false);
   };
 
   return (
@@ -67,21 +105,28 @@ export default function AuthModal() {
           {authIsLogin && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <input placeholder="Email" value={state.authEmail} onChange={e => updateState({ authEmail: e.target.value })} style={{ padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
-              <input type="password" placeholder="Password" style={{ padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
-              <button onClick={doAuth} style={{ background: '#F2C015', color: '#14110D', border: 'none', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '13px', letterSpacing: '0.06em', textTransform: 'uppercase', padding: '15px', marginTop: '6px' }}>Masuk ke Akun</button>
+              <input type="password" placeholder="Password" value={authPassword} onChange={e => setAuthPassword(e.target.value)} style={{ padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
+              <button onClick={handleLogin} disabled={authLoading} style={{ background: '#F2C015', color: '#14110D', border: 'none', cursor: authLoading ? 'not-allowed' : 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '13px', letterSpacing: '0.06em', textTransform: 'uppercase', padding: '15px', marginTop: '6px', opacity: authLoading ? 0.6 : 1 }}>
+                {authLoading ? 'Masuk...' : 'Masuk ke Akun'}
+              </button>
             </div>
           )}
 
           {authIsRegister && (
             <div className="auth-register-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
               <input placeholder="Nama lengkap" value={state.authName} onChange={e => updateState({ authName: e.target.value })} style={{ gridColumn: '1/3', padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
-              <input placeholder="No. Telp / WhatsApp" style={{ padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
-              <input placeholder="Email" value={state.authEmail} onChange={e => updateState({ authEmail: e.target.value })} style={{ padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
-              <input placeholder="Alamat lengkap" style={{ gridColumn: '1/3', padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
-              <input placeholder="Kota" style={{ padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
-              <input placeholder="Kode pos" style={{ padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
-              <input type="password" placeholder="Password (untuk akun baru)" style={{ gridColumn: '1/3', padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
-              <button onClick={doAuth} style={{ gridColumn: '1/3', background: '#F2C015', color: '#14110D', border: 'none', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '13px', letterSpacing: '0.06em', textTransform: 'uppercase', padding: '15px', marginTop: '6px' }}>Buat Akun</button>
+              <input placeholder="Email" value={state.authEmail} onChange={e => updateState({ authEmail: e.target.value })} style={{ gridColumn: '1/3', padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
+              <input placeholder="No. Telp / WhatsApp" value={authPhone} onChange={e => setAuthPhone(e.target.value)} style={{ padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
+              <input placeholder="Kode Pos" value={authPostalCode} onChange={e => setAuthPostalCode(e.target.value)} style={{ padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
+              <input placeholder="Alamat lengkap" value={authAddress} onChange={e => setAuthAddress(e.target.value)} style={{ gridColumn: '1/3', padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
+              <input placeholder="Kota" value={authCity} onChange={e => setAuthCity(e.target.value)} style={{ gridColumn: '1/3', padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
+              <input type="password" placeholder="Password (opsional)" value={authPassword} onChange={e => setAuthPassword(e.target.value)} style={{ gridColumn: '1/3', padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
+              {authPassword && (
+                <input type="password" placeholder="Konfirmasi Password" value={authPasswordConfirm} onChange={e => setAuthPasswordConfirm(e.target.value)} style={{ gridColumn: '1/3', padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
+              )}
+              <button onClick={handleRegister} disabled={authLoading} style={{ gridColumn: '1/3', background: '#F2C015', color: '#14110D', border: 'none', cursor: authLoading ? 'not-allowed' : 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '13px', letterSpacing: '0.06em', textTransform: 'uppercase', padding: '15px', marginTop: '6px', opacity: authLoading ? 0.6 : 1 }}>
+                {authLoading ? 'Mendaftar...' : 'Buat Akun'}
+              </button>
             </div>
           )}
 

@@ -3,7 +3,7 @@ import { useStore } from '../../store';
 import { rp } from '../../utils/helpers';
 
 export default function Checkout() {
-  const { state, updateState, data, go } = useStore();
+  const { state, updateState, data, go, login, register } = useStore();
 
   const { cart, user, checkoutStep, orderId, authName, authEmail } = state;
 
@@ -23,10 +23,14 @@ export default function Checkout() {
 
   const cartLines = cart.map(c => {
     const p = data.PRODUCTS.find(x => x.id === c.id);
-    const meta = (p.sizes.length > 1 ? `Ukuran ${c.size} · ` : '') + (p.type === 'preorder' ? 'Pre-Order' : 'Ready Stock');
+    const metaParts = [];
+    if (c.color) metaParts.push(c.color);
+    if (p.sizes.length > 1) metaParts.push('Ukuran ' + c.size);
+    if (p.type === 'preorder') metaParts.push('Pre-Order');
+    else metaParts.push('Ready Stock');
     return {
       name: p.name,
-      meta,
+      meta: metaParts.join(' · '),
       label: p.name + (p.sizes.length > 1 ? ` (${c.size})` : ''),
       qty: c.qty,
       lineTotal: rp(p.price * c.qty)
@@ -70,16 +74,27 @@ export default function Checkout() {
     letterSpacing: '0.04em'
   });
 
-  const checkoutLogin = () => {
+  const checkoutLogin = async () => {
     const em = (authEmail || '').trim();
-    const name = (authName || '').trim() || (em.split('@')[0]) || 'Member';
-    updateState({ user: { name, email: em }, checkoutMode: 'guest', authName: '', authEmail: '' });
+    if (!em) return;
+    try {
+      await login(em, 'password');
+      updateState({ checkoutMode: 'guest', authName: '', authEmail: '' });
+    } catch (err) {
+      // If login fails, just use email as guest
+      const name = (authName || '').trim() || (em.split('@')[0]) || 'Member';
+      updateState({ user: { name, email: em }, checkoutMode: 'guest', authName: '', authEmail: '' });
+    }
   };
 
-  const placeOrder = () => {
+  const placeOrder = async () => {
     if (checkoutMode === 'register' && !user) {
       const name = (authName || '').trim() || 'Member';
-      updateState({ user: { name, email: authEmail || '' } });
+      try {
+        await register(name, authEmail || '', 'password123', 'password123');
+      } catch (err) {
+        updateState({ user: { name, email: authEmail || '' } });
+      }
     }
     const id = 'ASC-' + (1052 + Math.floor(Math.random() * 40));
     updateState({ checkoutStep: 'done', orderId: id, cart: [], checkoutMode: 'guest', authName: '', authEmail: '' });
@@ -129,9 +144,12 @@ export default function Checkout() {
             )}
 
             {user && (
-              <div style={{ border: '2px solid #14110D', background: '#F2C015', padding: '14px 16px', marginBottom: '22px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span style={{ width: '9px', height: '9px', borderRadius: '50%', background: '#14110D', display: 'inline-block' }}></span>
-                <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '13px', fontWeight: 700 }}>Masuk sebagai {authLabel}</span>
+              <div style={{ border: '2px solid #14110D', background: '#F2C015', padding: '14px 16px', marginBottom: '22px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span style={{ width: '9px', height: '9px', borderRadius: '50%', background: '#14110D', display: 'inline-block' }}></span>
+                  <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '13px', fontWeight: 700 }}>Masuk sebagai {authLabel}</span>
+                </div>
+                <button onClick={() => updateState({ user: null })} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#14110D', textDecoration: 'underline' }}>Ganti Akun</button>
               </div>
             )}
 

@@ -4,8 +4,13 @@ import { rp } from '../../../utils/helpers';
 import useProductVM from '../../../hooks/useProductVM';
 
 export default function POModal() {
-  const { state, updateState, data } = useStore();
+  const { state, updateState, data, submitPreOrder } = useStore();
   const { getProductVM } = useProductVM();
+  const [poLoading, setPoLoading] = React.useState(false);
+  const [inputPhone, setInputPhone] = React.useState('');
+  const [inputAddress, setInputAddress] = React.useState('');
+  const [inputPostalCode, setInputPostalCode] = React.useState('');
+  const [inputNotes, setInputNotes] = React.useState('');
 
   if (!state.poModal) return null;
 
@@ -15,13 +20,18 @@ export default function POModal() {
   const activeP = ap ? getProductVM(ap) : null;
   const { user, poDone, poOrderId, poMode, authEmail, authName, poCity, poShip, poItems } = state;
 
+  const isLoggedIn = !!user;
   const poName = user ? user.name : '';
   const poEmail = user ? (user.email || '') : '';
+  const poPhone = user ? (user.phone || '') : '';
+  const poAddress = user ? (user.address || '') : '';
+  const poUserCity = user ? (user.city || '') : '';
+  const poPostalCode = user ? (user.postal_code || '') : '';
 
-  const poModeGuest = poMode === 'guest';
-  const poModeLogin = poMode === 'login';
-  const poModeRegister = poMode === 'register';
-  const poOrderForm = poMode === 'guest' || poMode === 'register';
+  const poModeGuest = !isLoggedIn && poMode === 'guest';
+  const poModeLogin = !isLoggedIn && poMode === 'login';
+  const poModeRegister = !isLoggedIn && poMode === 'register';
+  const poOrderForm = isLoggedIn || poMode === 'guest' || poMode === 'register';
 
   const poSummary = {
     name: ap?.name || '',
@@ -51,19 +61,37 @@ export default function POModal() {
     updateState({ user: { name, email: em }, poMode: 'guest', authName: '', authEmail: '' });
   };
 
-  const submitPreorder = () => {
-    if (!poCanSub) return;
-    const ov = { ...state.committedOverride };
-    ov[ap.id] = (state.committedOverride[ap.id] ?? ap.preorder.committed) + poTotalQty;
-    const id = 'PO-' + (2300 + Math.floor(Math.random() * 90));
-    updateState({ committedOverride: ov, poDone: true, poOrderId: id });
+  const submitPreorder = async () => {
+    if (!poCanSub || poLoading) return;
+    setPoLoading(true);
+    try {
+      const result = await submitPreOrder({
+        product: ap,
+        items: poItems,
+        shippingCost: poShipN,
+        name: isLoggedIn ? poName : (authName || '').trim() || 'Member',
+        email: isLoggedIn ? poEmail : (authEmail || '').trim(),
+        phone: isLoggedIn ? poPhone : inputPhone,
+        address: isLoggedIn ? poAddress : inputAddress,
+        city: isLoggedIn ? poUserCity : poCity,
+        postalCode: isLoggedIn ? poPostalCode : inputPostalCode,
+        notes: inputNotes,
+        userId: user?.id || null
+      });
+      if (result.success) {
+        updateState({ committedOverride: { ...state.committedOverride, [ap.id]: (state.committedOverride[ap.id] ?? (ap.preorder?.committed || 0)) + poTotalQty }, poDone: true, poOrderId: result.orderId });
+      }
+    } catch (e) {
+      // error handled by store
+    }
+    setPoLoading(false);
   };
 
-  const poRegister = () => {
-    if (!poCanSub) return;
+  const poRegister = async () => {
+    if (!poCanSub || poLoading) return;
     const name = (authName || '').trim() || 'Member';
     updateState({ user: { name, email: authEmail || '' } });
-    submitPreorder();
+    await submitPreorder();
   };
 
   const addPoItem = () => {
@@ -132,12 +160,18 @@ export default function POModal() {
           </div>
         ) : (
           <div className="po-modal-body" style={{ padding: '22px 24px' }}>
-            {poModeGuest && (
+            {!isLoggedIn && poModeGuest && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '18px', fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#6b655a' }}>
                 <span>Pesan sebagai tamu — atau</span>
                 <button onClick={() => updateState({ poMode: 'login', authMode: 'login' })} style={{ background: '#14110D', color: '#F2EEE4', border: 'none', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontSize: '11px', fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase', padding: '7px 12px' }}>Masuk</button>
                 <span>/</span>
                 <button onClick={() => updateState({ poMode: 'register', authMode: 'register' })} style={{ background: '#fff', color: '#14110D', border: '2px solid #14110D', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontSize: '11px', fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase', padding: '5px 12px' }}>Daftar</button>
+              </div>
+            )}
+            {isLoggedIn && (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '18px', fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#6b655a' }}>
+                <span>Memesan sebagai <strong style={{ color: '#14110D' }}>{user.name}</strong></span>
+                <button onClick={() => { localStorage.removeItem('auth_token'); localStorage.removeItem('auth_user'); updateState({ user: null, poMode: 'guest' }); }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontSize: '11px', fontWeight: 700, color: '#9a3a2a', textTransform: 'uppercase' }}>Keluar</button>
               </div>
             )}
             {poModeLogin && (
@@ -164,24 +198,45 @@ export default function POModal() {
             {poOrderForm && (
               <>
                 <div className="po-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                  {poModeRegister ? (
+                  {isLoggedIn ? (
+                    <input placeholder="Nama lengkap" value={poName} readOnly style={{ gridColumn: '1/3', padding: '13px', border: '2px solid #14110D', background: '#e8e4da', fontSize: '14px', color: '#3d382f' }} />
+                  ) : poModeRegister ? (
                     <input placeholder="Nama lengkap" value={authName} onChange={(e) => updateState({ authName: e.target.value })} style={{ gridColumn: '1/3', padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
                   ) : (
-                    <input placeholder="Nama lengkap" defaultValue={poName} style={{ gridColumn: '1/3', padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
+                    <input placeholder="Nama lengkap" value={authName} onChange={(e) => updateState({ authName: e.target.value })} style={{ gridColumn: '1/3', padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
                   )}
-                  <input placeholder="No. Telp / WhatsApp" style={{ padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
-                  {poModeRegister ? (
+                  {isLoggedIn ? (
+                    <input placeholder="No. Telp / WhatsApp" value={poPhone} readOnly style={{ padding: '13px', border: '2px solid #14110D', background: '#e8e4da', fontSize: '14px', color: '#3d382f' }} />
+                  ) : (
+                    <input placeholder="No. Telp / WhatsApp" value={inputPhone} onChange={(e) => setInputPhone(e.target.value)} style={{ padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
+                  )}
+                  {isLoggedIn ? (
+                    <input placeholder="Email" value={poEmail} readOnly style={{ padding: '13px', border: '2px solid #14110D', background: '#e8e4da', fontSize: '14px', color: '#3d382f' }} />
+                  ) : poModeRegister ? (
                     <input placeholder="Email" value={authEmail} onChange={(e) => updateState({ authEmail: e.target.value })} style={{ padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
                   ) : (
-                    <input placeholder="Email" defaultValue={poEmail} style={{ padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
+                    <input placeholder="Email" value={authEmail} onChange={(e) => updateState({ authEmail: e.target.value })} style={{ padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
                   )}
-                  <input placeholder="Alamat lengkap" style={{ gridColumn: '1/3', padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
-                  <input placeholder="Kota" value={poCity} onChange={(e) => updateState({ poCity: e.target.value })} style={{ padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
-                  <input placeholder="Kode pos" style={{ padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
+                  {isLoggedIn ? (
+                    <input placeholder="Alamat lengkap" value={poAddress} readOnly style={{ gridColumn: '1/3', padding: '13px', border: '2px solid #14110D', background: '#e8e4da', fontSize: '14px', color: '#3d382f' }} />
+                  ) : (
+                    <input placeholder="Alamat lengkap" value={inputAddress} onChange={(e) => setInputAddress(e.target.value)} style={{ gridColumn: '1/3', padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
+                  )}
+                  {isLoggedIn ? (
+                    <>
+                      <input placeholder="Kota" value={poUserCity} readOnly style={{ padding: '13px', border: '2px solid #14110D', background: '#e8e4da', fontSize: '14px', color: '#3d382f' }} />
+                      <input placeholder="Kode pos" value={poPostalCode} readOnly style={{ padding: '13px', border: '2px solid #14110D', background: '#e8e4da', fontSize: '14px', color: '#3d382f' }} />
+                    </>
+                  ) : (
+                    <>
+                      <input placeholder="Kota" value={poCity} onChange={(e) => updateState({ poCity: e.target.value })} style={{ padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
+                      <input placeholder="Kode pos" value={inputPostalCode} onChange={(e) => setInputPostalCode(e.target.value)} style={{ padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
+                    </>
+                  )}
                   {poModeRegister && (
                     <input type="password" placeholder="Password (untuk akun baru)" style={{ gridColumn: '1/3', padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
                   )}
-                  <textarea placeholder="Keterangan (opsional)" rows="2" style={{ gridColumn: '1/3', padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px', resize: 'vertical' }}></textarea>
+                  <textarea placeholder="Keterangan (opsional)" value={inputNotes} onChange={(e) => setInputNotes(e.target.value)} rows="2" style={{ gridColumn: '1/3', padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px', resize: 'vertical' }}></textarea>
                 </div>
 
                 <div style={{ border: '2px solid #14110D', background: '#F2EEE4', padding: '14px', marginTop: '14px' }}>
@@ -234,8 +289,8 @@ export default function POModal() {
                   </div>
                 </div>
 
-                {poModeGuest && <button onClick={submitPreorder} style={poSubmitStyle}>Kirim Pesanan Pre-Order</button>}
-                {poModeRegister && <button onClick={poRegister} style={poSubmitStyle}>Daftar &amp; Kirim Pesanan</button>}
+                {(poModeGuest || isLoggedIn) && <button onClick={submitPreorder} disabled={poLoading || !poCanSub} style={{ ...poSubmitStyle, opacity: poLoading ? 0.6 : 1, cursor: poLoading ? 'not-allowed' : poSubmitStyle.cursor }}>{poLoading ? 'Mengirim...' : 'Kirim Pesanan Pre-Order'}</button>}
+                {poModeRegister && <button onClick={poRegister} disabled={poLoading || !poCanSub} style={{ ...poSubmitStyle, opacity: poLoading ? 0.6 : 1, cursor: poLoading ? 'not-allowed' : poSubmitStyle.cursor }}>{poLoading ? 'Mengirim...' : 'Daftar & Kirim Pesanan'}</button>}
                 {poSubmitHint && <div style={{ marginTop: '8px', fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#9a3a2a', textAlign: 'center' }}>{poSubmitHint}</div>}
 
                 <p style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#6b655a', lineHeight: 1.6, margin: '12px 0 0', textAlign: 'center' }}>

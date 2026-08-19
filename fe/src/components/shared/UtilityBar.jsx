@@ -1,10 +1,15 @@
-import React, { useContext } from 'react';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useStore } from '../../store';
 
 export default function UtilityBar() {
-  const { state, updateState } = useStore();
+  const { state, updateState, isAdmin, logout } = useStore();
+  const navigate = useNavigate();
   const isStore = state.view === 'store';
-  const isAdmin = state.view === 'admin';
+  const isAdminView = state.view === 'admin';
+  const user = state.user;
+
+  if (!user || !isAdmin()) return null;
 
   const tabActive = {
     background: '#F2C015', color: '#14110D', border: 'none', cursor: 'pointer',
@@ -13,6 +18,20 @@ export default function UtilityBar() {
   const tabIdle = {
     background: 'none', color: '#F2EEE4', border: '1px solid #4a443a', cursor: 'pointer',
     fontFamily: "'Space Mono', monospace", fontSize: '11px', letterSpacing: '0.08em', padding: '4px 12px'
+  };
+  const tabDisabled = {
+    ...tabIdle,
+    opacity: 0.4,
+    cursor: 'not-allowed'
+  };
+
+  const handleAdminClick = () => {
+    if (user && isAdmin()) {
+      updateState({ view: 'admin', adminRoute: 'dashboard' });
+      navigate('/admin');
+    } else {
+      navigate('/admin/login');
+    }
   };
 
   return (
@@ -41,8 +60,29 @@ export default function UtilityBar() {
       >
         <div className="utility-bar-label">AIRCOOLED SYNDICATE — OFFICIAL MERCH STORE</div>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }}>
-          <button onClick={() => updateState({ view: 'store' })} style={isStore ? tabActive : tabIdle}>STORE</button>
-          <button onClick={() => updateState({ view: 'admin' })} style={isAdmin ? tabActive : tabIdle}>ADMIN</button>
+          <button onClick={() => { updateState({ view: 'store' }); navigate('/'); }} style={isStore ? tabActive : tabIdle}>STORE</button>
+          <button onClick={handleAdminClick} style={isAdminView ? tabActive : tabIdle}>ADMIN</button>
+          {user && (
+            <>
+              <button
+                onClick={(e) => { e.stopPropagation(); navigate('/profile'); }}
+                style={{
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  color: '#F2C015', fontSize: '10px', marginLeft: '4px',
+                  fontFamily: "'Space Mono', monospace", letterSpacing: '0.08em',
+                  padding: '4px 8px'
+                }}
+              >
+                {user.name}
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); logout(); navigate('/'); }}
+                style={tabIdle}
+              >
+                KELUAR
+              </button>
+            </>
+          )}
         </div>
       </div>
     </>
