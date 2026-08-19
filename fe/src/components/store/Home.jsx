@@ -11,7 +11,7 @@ function AnimatedNumber({ value, format, start }) {
 }
 
 export default function Home() {
-  const { data, state, updateState, openProduct } = useStore();
+  const { data, state, updateState, openProduct, dataLoading } = useStore();
   const { getProductVM } = useProductVM();
 
   const allVM = data.PRODUCTS.map(getProductVM);
@@ -57,6 +57,11 @@ export default function Home() {
   return (
     <main>
       <style>{`
+        @keyframes skelPulse {
+          0%, 100% { opacity: 0.4; }
+          50% { opacity: 0.8; }
+        }
+        .skel-box { animation: skelPulse 1.4s ease-in-out infinite; background: #d8d2c4; }
         .home-marquee-outer {
           position: relative;
           overflow: hidden;
@@ -122,13 +127,31 @@ export default function Home() {
             </div>
           </div>
 
-          {featured && (
+          {dataLoading ? (
+            <div className="home-hero-featured" style={{ borderLeft: '2px solid #2c2820', padding: '40px', display: 'flex', flexDirection: 'column', justifyContent: 'center', background: '#1a1712' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+                <div className="skel-box" style={{ width: '8px', height: '8px', borderRadius: '50%' }}></div>
+                <div className="skel-box" style={{ width: '120px', height: '11px' }}></div>
+              </div>
+              <div className="skel-box" style={{ aspectRatio: '4/3', border: '2px solid #14110D' }}></div>
+              <div style={{ marginTop: '18px' }}>
+                <div className="skel-box" style={{ width: '70%', height: '22px', marginBottom: '8px' }}></div>
+                <div className="skel-box" style={{ width: '55%', height: '13px', marginBottom: '14px' }}></div>
+                <div className="skel-box" style={{ width: '100%', height: '8px', marginBottom: '7px' }}></div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <div className="skel-box" style={{ width: '50%', height: '11px' }}></div>
+                  <div className="skel-box" style={{ width: '15%', height: '11px' }}></div>
+                </div>
+                <div className="skel-box" style={{ width: '100%', height: '42px', marginTop: '16px' }}></div>
+              </div>
+            </div>
+          ) : featured && (
             <div className="home-hero-featured" style={{ borderLeft: '2px solid #2c2820', padding: '40px', display: 'flex', flexDirection: 'column', justifyContent: 'center', background: '#1a1712' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontFamily: "'Space Mono', monospace", fontSize: '11px', letterSpacing: '0.16em', color: '#F2C015', textTransform: 'uppercase', marginBottom: '16px' }}>
                 <PingDot />
                 {featured.statusLabel}
               </div>
-              <div style={{ background: featured.garment, aspectRatio: '4/3', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #14110D', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ background: '#F2EEE4', aspectRatio: '4/3', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #14110D', position: 'relative', overflow: 'hidden' }}>
                 {featured.printLogo && <img src="/assets/logo.png" alt="Featured Logo" style={{ width: '48%', opacity: 0.95 }} />}
                 {featured.printText && (
                   <div style={{ color: '#F2C015', fontFamily: "'Archivo', sans-serif", fontWeight: 900, fontSize: '30px', lineHeight: 0.9, textAlign: 'center', textTransform: 'uppercase', letterSpacing: '-0.01em' }}>
@@ -180,7 +203,16 @@ export default function Home() {
           </div>
         </div>
         <div className="home-ready-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px' }}>
-          {readyProducts.slice(0, 6).map((item, idx) => (
+          {dataLoading && Array.from({ length: 6 }).map((_, i) => (
+            <div key={i}>
+              <div className="skel-box" style={{ aspectRatio: '1 / 1', border: '2px solid #14110D' }}></div>
+              <div style={{ paddingTop: '12px' }}>
+                <div className="skel-box" style={{ height: '16px', width: '60%', marginBottom: '6px' }}></div>
+                <div className="skel-box" style={{ height: '13px', width: '40%' }}></div>
+              </div>
+            </div>
+          ))}
+          {!dataLoading && readyProducts.slice(0, 6).map((item, idx) => (
             <Reveal key={item.id} delay={idx * 0.06}>
               <div style={{ cursor: 'pointer' }} onClick={() => openProduct(item.id)}>
                 <div style={{ background: item.garment, aspectRatio: '1 / 1', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #14110D', position: 'relative', overflow: 'hidden' }}>
@@ -219,8 +251,6 @@ export default function Home() {
           ))}
         </div>
       </section>
-
-      {/* PRE-ORDER */}
       <section className="home-section-preorder" style={{ padding: '0 48px 64px' }}>
         <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: '28px', borderBottom: '2px solid #14110D', paddingBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
           <h2 className="home-section-heading" style={{ fontFamily: "'Archivo', sans-serif", fontWeight: 900, fontSize: '38px', margin: 0, textTransform: 'uppercase', letterSpacing: '-0.01em' }}>Pre-Order — Open Now</h2>
@@ -229,10 +259,24 @@ export default function Home() {
           </div>
         </div>
         <div className="home-preorder-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
-          {preorderProducts.slice(0, 3).map((item, idx) => (
+          {dataLoading && Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} style={{ border: '2px solid #14110D', background: '#fff', display: 'flex', flexDirection: 'column' }}>
+              <div className="skel-box" style={{ aspectRatio: '4/3', borderBottom: '2px solid #14110D' }}></div>
+              <div style={{ padding: '16px' }}>
+                <div className="skel-box" style={{ height: '18px', width: '70%', marginBottom: '8px' }}></div>
+                <div className="skel-box" style={{ height: '13px', width: '40%', marginBottom: '14px' }}></div>
+                <div className="skel-box" style={{ height: '7px', width: '100%', marginBottom: '7px' }}></div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <div className="skel-box" style={{ height: '11px', width: '50%' }}></div>
+                  <div className="skel-box" style={{ height: '11px', width: '30%' }}></div>
+                </div>
+              </div>
+            </div>
+          ))}
+          {!dataLoading && preorderProducts.slice(0, 3).map((item, idx) => (
             <Reveal key={item.id} delay={idx * 0.08}>
               <div onClick={() => openProduct(item.id)} style={{ cursor: 'pointer', border: '2px solid #14110D', background: '#fff', display: 'flex', flexDirection: 'column' }}>
-                <div className="home-preorder-img" style={{ background: item.garment, aspectRatio: '4/3', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', borderBottom: '2px solid #14110D' }}>
+                <div className="home-preorder-img" style={{ background: '#F2EEE4', aspectRatio: '4/3', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', borderBottom: '2px solid #14110D' }}>
                   <div style={{ position: 'absolute', top: '10px', left: '10px', background: '#F2C015', color: '#14110D', fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '4px 8px', fontWeight: 700 }}>
                     {item.statusLabel}
                   </div>

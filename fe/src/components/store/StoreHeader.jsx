@@ -1,9 +1,11 @@
 import React, { useContext, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useStore } from '../../store';
 import PingDot from '../shared/PingDot';
 
 export default function StoreHeader() {
-  const { state, updateState, go } = useStore();
+  const { state, updateState, go, logout } = useStore();
+  const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -14,17 +16,36 @@ export default function StoreHeader() {
 
   const cartCount = state.cart.reduce((s, c) => s + c.qty, 0);
   const user = state.user;
-  const authLabel = user ? `${user.name.split(' ')[0]} · Keluar` : 'Masuk | Daftar';
 
   const onAuthClick = () => {
-    if (user) updateState({ user: null });
-    else updateState({ authOpen: true, authMode: 'login' });
+    updateState({ authOpen: true, authMode: 'login' });
   };
+
+  const onLogoutClick = () => {
+    logout();
+    navigate('/');
+  };
+
+  const onProfileClick = () => {
+    navigate('/profile');
+  };
+
+  const isShopPage = state.route === 'shop';
+  const shopFilter = state.shopFilter || 'all';
+  const isAll = isShopPage && shopFilter === 'all';
+  const isReady = isShopPage && shopFilter === 'ready';
+  const isPreorder = isShopPage && shopFilter === 'preorder';
 
   const navBtnStyle = {
     background: 'none', border: 'none', cursor: 'pointer',
     fontFamily: "'Space Mono', monospace", fontSize: '12px', letterSpacing: '0.12em',
     textTransform: 'uppercase', color: '#14110D', padding: 0
+  };
+  const navBtnActive = {
+    ...navBtnStyle,
+    fontWeight: 700,
+    borderBottom: '2px solid #14110D',
+    paddingBottom: '2px'
   };
 
   const goAnd = (fn) => () => { fn(); setMenuOpen(false); };
@@ -58,13 +79,23 @@ export default function StoreHeader() {
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
               <button onClick={() => setMenuOpen(false)} style={{ background: 'none', border: 'none', fontSize: '26px', cursor: 'pointer', lineHeight: 1 }}>×</button>
             </div>
-            <button onClick={goAnd(() => { updateState({ shopFilter: 'all' }); go('shop'); })} style={{ ...navBtnStyle, textAlign: 'left', padding: '14px 4px', fontWeight: 700, borderBottom: '1px solid #ddd5c4' }}>Shop</button>
-            <button onClick={goAnd(() => { updateState({ shopFilter: 'ready' }); go('shop'); })} style={{ ...navBtnStyle, textAlign: 'left', padding: '14px 4px', borderBottom: '1px solid #ddd5c4' }}>Ready Stock</button>
-            <button onClick={goAnd(() => { updateState({ shopFilter: 'preorder' }); go('shop'); })} style={{ ...navBtnStyle, textAlign: 'left', padding: '14px 4px', borderBottom: '1px solid #ddd5c4' }}>Pre-Order</button>
-            <button onClick={goAnd(onAuthClick)} style={{ ...navBtnStyle, textAlign: 'left', padding: '14px 4px', display: 'flex', alignItems: 'center', gap: '7px' }}>
-              <PingDot />
-              {authLabel}
-            </button>
+            <button onClick={goAnd(() => { updateState({ shopFilter: 'all' }); go('shop'); })} style={{ ...(isAll ? navBtnActive : navBtnStyle), textAlign: 'left', padding: isAll ? '14px 4px 12px' : '14px 4px', fontWeight: isAll ? 700 : 400, borderBottom: isAll ? '2px solid #14110D' : 'none', paddingBottom: isAll ? '12px' : undefined }}>Shop</button>
+            <button onClick={goAnd(() => { updateState({ shopFilter: 'ready' }); go('shop'); })} style={{ ...(isReady ? navBtnActive : navBtnStyle), textAlign: 'left', padding: isReady ? '14px 4px 12px' : '14px 4px', fontWeight: isReady ? 700 : 400, borderBottom: isReady ? '2px solid #14110D' : '1px solid #ddd5c4', paddingBottom: isReady ? '12px' : undefined }}>Ready Stock</button>
+            <button onClick={goAnd(() => { updateState({ shopFilter: 'preorder' }); go('shop'); })} style={{ ...(isPreorder ? navBtnActive : navBtnStyle), textAlign: 'left', padding: isPreorder ? '14px 4px 12px' : '14px 4px', fontWeight: isPreorder ? 700 : 400, borderBottom: isPreorder ? '2px solid #14110D' : 'none', paddingBottom: isPreorder ? '12px' : undefined }}>Pre-Order</button>
+            {user ? (
+              <>
+                <button onClick={goAnd(onProfileClick)} style={{ ...navBtnStyle, textAlign: 'left', padding: '14px 4px', display: 'flex', alignItems: 'center', gap: '7px' }}>
+                  <PingDot />
+                  {user.name.split(' ')[0]}
+                </button>
+                <button onClick={goAnd(onLogoutClick)} style={{ ...navBtnStyle, textAlign: 'left', padding: '14px 4px', color: '#9a3a2a' }}>Keluar</button>
+              </>
+            ) : (
+              <button onClick={goAnd(onAuthClick)} style={{ ...navBtnStyle, textAlign: 'left', padding: '14px 4px', display: 'flex', alignItems: 'center', gap: '7px' }}>
+                <PingDot />
+                Masuk | Daftar
+              </button>
+            )}
           </div>
         </>
       )}
@@ -85,13 +116,23 @@ export default function StoreHeader() {
         </button>
 
         <nav className="store-nav-desktop">
-          <button onClick={() => { updateState({ shopFilter: 'all' }); go('shop'); }} style={{ ...navBtnStyle, fontWeight: 700 }}>Shop</button>
-          <button onClick={() => { updateState({ shopFilter: 'ready' }); go('shop'); }} style={navBtnStyle}>Ready Stock</button>
-          <button onClick={() => { updateState({ shopFilter: 'preorder' }); go('shop'); }} style={navBtnStyle}>Pre-Order</button>
-          <button onClick={onAuthClick} style={{ ...navBtnStyle, display: 'flex', alignItems: 'center', gap: '7px', letterSpacing: '0.1em' }}>
-            <PingDot />
-            {authLabel}
-          </button>
+          <button onClick={() => { updateState({ shopFilter: 'all' }); go('shop'); }} style={isAll ? navBtnActive : navBtnStyle}>Shop</button>
+          <button onClick={() => { updateState({ shopFilter: 'ready' }); go('shop'); }} style={isReady ? navBtnActive : navBtnStyle}>Ready Stock</button>
+          <button onClick={() => { updateState({ shopFilter: 'preorder' }); go('shop'); }} style={isPreorder ? navBtnActive : navBtnStyle}>Pre-Order</button>
+          {user ? (
+            <>
+              <button onClick={onProfileClick} style={{ ...navBtnStyle, display: 'flex', alignItems: 'center', gap: '7px', letterSpacing: '0.1em', color: '#F2C015' }}>
+                <PingDot />
+                {user.name.split(' ')[0]}
+              </button>
+              <button onClick={onLogoutClick} style={{ ...navBtnStyle, letterSpacing: '0.1em', color: '#9a3a2a' }}>Keluar</button>
+            </>
+          ) : (
+            <button onClick={onAuthClick} style={{ ...navBtnStyle, display: 'flex', alignItems: 'center', gap: '7px', letterSpacing: '0.1em' }}>
+              <PingDot />
+              Masuk | Daftar
+            </button>
+          )}
           <button
             onClick={() => updateState({ cartOpen: !state.cartOpen })}
             style={{

@@ -14,7 +14,7 @@ export default function Catalog() {
   };
   const committedOf = (p) => {
     const o = state.committedOverride && state.committedOverride[p.id];
-    return o != null ? o : p.preorder.committed;
+    return o != null ? o : (p.committed || 0);
   };
   const poAggregate = (p) => {
     if (p.type !== 'preorder') return { committed: 0, paidIn: 0 };

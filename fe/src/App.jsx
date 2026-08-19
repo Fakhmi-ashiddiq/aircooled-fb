@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from
 import { useStore } from './store';
 import StoreLayout from './components/store/StoreLayout';
 import AdminLayout from './components/admin/AdminLayout';
+import AdminLogin from './components/admin/AdminLogin';
+import Profile from './components/admin/Profile';
 import Preloader from './components/shared/Preloader';
 import Toast from './components/shared/Toast';
 
@@ -13,6 +15,8 @@ function SyncRouter() {
   
   // Sync URL to Zustand (when user types URL or uses Back/Forward button)
   useEffect(() => {
+     if (location.pathname === '/admin/login') return;
+     if (location.pathname === '/profile') return;
      if (location.pathname.startsWith('/admin')) {
         let adminRoute = location.pathname.replace('/admin', '') || '/dashboard';
         adminRoute = adminRoute.replace('/', '');
@@ -29,6 +33,8 @@ function SyncRouter() {
 
   // Sync Zustand to URL (when components call updateState)
   useEffect(() => {
+     if (location.pathname === '/admin/login') return;
+     if (location.pathname === '/profile') return;
      let expectedPath = '/';
      if (state.view === 'admin') {
          expectedPath = '/admin/' + (state.adminRoute === 'dashboard' ? '' : state.adminRoute);
@@ -46,11 +52,12 @@ function SyncRouter() {
 }
 
 export default function App() {
-  const { fetchInitialData } = useStore();
+  const { fetchInitialData, loadUser } = useStore();
 
   useEffect(() => {
+    loadUser();
     fetchInitialData();
-  }, [fetchInitialData]);
+  }, [fetchInitialData, loadUser]);
 
   return (
     <Router>
@@ -58,7 +65,9 @@ export default function App() {
       <Preloader />
       <Toast />
       <Routes>
+        <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin/*" element={<AdminLayout />} />
+        <Route path="/profile" element={<Profile />} />
         <Route path="/*" element={<StoreLayout />} />
       </Routes>
     </Router>
