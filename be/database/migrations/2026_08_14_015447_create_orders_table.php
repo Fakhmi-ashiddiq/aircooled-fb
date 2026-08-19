@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('code')->unique();
             $table->string('customer');
-            $table->string('items');
+            $table->string('items')->nullable();
             $table->integer('total')->default(0);
             $table->string('date')->nullable();
             $table->enum('type', ['ready', 'preorder'])->default('ready');

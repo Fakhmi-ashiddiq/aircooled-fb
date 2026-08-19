@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { getInitialData } from '../data';
+import { persist } from 'zustand/middleware'
 import { slugify, normStage, stageOrder } from '../utils/helpers';
 import CategoryService from '../services/CategoryService';
 import SizeSetService from '../services/SizeSetService';
@@ -7,6 +7,7 @@ import ColorOptionService from '../services/ColorOptionService';
 import OwnerService from '../services/OwnerService';
 import ProductService from '../services/ProductService';
 import OrderService from '../services/OrderService';
+import AuthService from '../services/AuthService';
 
 const deepClone = (obj) => {
     if (typeof structuredClone === 'function') return structuredClone(obj);
@@ -15,7 +16,8 @@ const deepClone = (obj) => {
 
 export const useStore = create((set, get) => ({
     // Data from API (replacing data.js)
-    data: getInitialData(), 
+    data: { PRODUCTS: [], categories: [], sizeSets: [], colorOptions: [], owners: [], orders: [] },
+    dataLoading: true,
     setData: (updater) => set((prev) => ({ data: typeof updater === 'function' ? updater(prev.data) : updater })),
     
     // UI State
@@ -41,6 +43,64 @@ export const useStore = create((set, get) => ({
     updateState: (updates) => set((prev) => ({ state: { ...prev.state, ...updates } })),
     showToast: (msg) => set((prev) => ({ state: { ...prev.state, toast: { message: msg } } })),
 
+    // Auth Actions
+    login: async (email, password) => {
+        try {
+            const result = await AuthService.login({ email, password });
+            localStorage.setItem('auth_token', result.token);
+            localStorage.setItem('auth_user', JSON.stringify(result.user));
+            set((prev) => ({ state: { ...prev.state, user: result.user, authOpen: false } }));
+            get().showToast('Login berhasil');
+            return result;
+        } catch (error) {
+            get().showToast(error.response?.data?.message || 'Login gagal');
+            throw error;
+        }
+    },
+    register: async (name, email, password, password_confirmation, extra = {}) => {
+        try {
+            const payload = { name, email, password, password_confirmation, ...extra };
+            const result = await AuthService.register(payload);
+            localStorage.setItem('auth_token', result.token);
+            localStorage.setItem('auth_user', JSON.stringify(result.user));
+            set((prev) => ({ state: { ...prev.state, user: result.user, authOpen: false } }));
+            get().showToast('Registrasi berhasil');
+            return result;
+        } catch (error) {
+            get().showToast(error.response?.data?.message || 'Registrasi gagal');
+            throw error;
+        }
+    },
+    logout: async () => {
+        try {
+            await AuthService.logout();
+        } catch (error) {
+            // Ignore error, just clear local state
+        }
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('auth_user');
+        set((prev) => ({ state: { ...prev.state, user: null } }));
+        get().showToast('Logout berhasil');
+    },
+    loadUser: async () => {
+        const token = localStorage.getItem('auth_token');
+        const savedUser = localStorage.getItem('auth_user');
+        if (token && savedUser) {
+            try {
+                const user = await AuthService.me();
+                localStorage.setItem('auth_user', JSON.stringify(user));
+                set((prev) => ({ state: { ...prev.state, user } }));
+            } catch (error) {
+                localStorage.removeItem('auth_token');
+                localStorage.removeItem('auth_user');
+            }
+        }
+    },
+    isAdmin: () => {
+        const { state } = get();
+        return state.user?.role === 'admin';
+    },
+    
     // API Fetcher
     fetchInitialData: async () => {
         try {
@@ -86,6 +146,8 @@ export const useStore = create((set, get) => ({
       result.colors = colors;
       result.stock = p.stock;
       result.sold = p.sold;
+      result.committed = p.committed || 0;
+      result.target = p.target || 0;
       
       // Use DB images if available, else keep orig
       if (images.length > 0) {
@@ -109,11 +171,13 @@ export const useStore = create((set, get) => ({
       
       return result;
   });
-                newData.orders = orders.length > 0 ? orders.map(o => ({ ...o, db_id: o.id, id: o.code || o.id })) : (prev.data.orders || []);
-                return { data: newData };
+                newData.orders = orders.map(o => ({ ...o, order_items: o.items || [] }));
+                newData.orders = newData.orders.length > 1 ? newData.orders : (prev.data.orders && prev.data.orders.length > 0 ? prev.data.orders : newData.orders);
+                return { data: newData, dataLoading: false };
             });
         } catch (error) {
             console.error("Error fetching data:", error);
+            set({ dataLoading: false });
         }
     },
 
@@ -233,6 +297,54 @@ export const useStore = create((set, get) => ({
         } catch (e) { console.error(e); }
     },
 
+    // Submit Pre-Order
+    submitPreOrder: async ({ product, items, shippingCost, name, email, phone, address, city, postalCode, notes, userId }) => {
+        try {
+            const totalQty = items.reduce((a, it) => a + (it.qty || 1), 0);
+            const subtotal = (product.price || 0) * totalQty;
+            const total = subtotal + (shippingCost || 0);
+            const code = 'PO-' + Date.now().toString(36).toUpperCase() + Math.floor(Math.random() * 100);
+            const today = new Date();
+            const dateStr = today.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+
+            const orderItems = items.map(it => ({
+                product_id: product.db_id || product.id,
+                size: it.size,
+                color: it.color,
+                qty: it.qty || 1,
+                price: product.price || 0,
+                type: 'preorder'
+            }));
+
+            const orderData = {
+                code,
+                customer: name,
+                total,
+                date: dateStr,
+                type: 'preorder',
+                status: 'Awaiting',
+                user_id: userId || null,
+                product_id: product.db_id || product.id,
+                session_name: product.preorder?.sessionName || '',
+                phone,
+                email,
+                address,
+                city,
+                postal_code: postalCode,
+                shipping_cost: shippingCost,
+                notes: notes || '',
+                order_items: orderItems
+            };
+
+            const result = await OrderService.create(orderData);
+            await get().fetchInitialData();
+            return { success: true, orderId: code, data: result.data };
+        } catch (error) {
+            get().showToast(error.response?.data?.message || 'Gagal mengirim pesanan');
+            return { success: false, error };
+        }
+    },
+
     // Helpers ported from AppContext
     go: (route) => {
         get().updateState({ route, cartOpen: false });
@@ -261,7 +373,7 @@ export const useStore = create((set, get) => ({
 
     committedOf: (p) => {
         const o = get().state.committedOverride[p.id];
-        return o != null ? o : p.preorder?.committed || 0;
+        return o != null ? o : (p.committed || 0);
     },
 
     unitsOf: (p) => {
@@ -306,14 +418,15 @@ export const useStore = create((set, get) => ({
         if (p.colors && p.colors.length > 1 && !state.selectedColor) return;
         
         const size = state.selectedSize || p.sizes[0];
-        const key = p.id + '|' + size;
+        const color = state.selectedColor || (p.colors && p.colors[0]) || '';
+        const key = p.id + '|' + size + '|' + color;
         const cart = [...state.cart];
         const ex = cart.find(c => c.key === key);
         
         if (ex) {
             ex.qty += state.qty;
         } else {
-            cart.push({ key, id: p.id, size, qty: state.qty });
+            cart.push({ key, id: p.id, size, color, qty: state.qty });
         }
         updateState({ cart, cartOpen: true });
     },

@@ -9,11 +9,15 @@ export default function CartDrawer() {
 
   const cartLines = state.cart.map(c => {
     const p = data.PRODUCTS.find(x => x.id === c.id);
-    const meta = (p.sizes.length > 1 ? `Ukuran ${c.size} · ` : '') + (p.type === 'preorder' ? 'Pre-Order' : 'Ready Stock');
+    const metaParts = [];
+    if (c.color) metaParts.push(c.color);
+    if (p.sizes.length > 1) metaParts.push('Ukuran ' + c.size);
+    if (p.type === 'preorder') metaParts.push('Pre-Order');
+    else metaParts.push('Ready Stock');
     return {
       key: c.key,
       name: p.name,
-      meta,
+      meta: metaParts.join(' · '),
       qty: c.qty,
       garment: p.garment,
       printLogo: p.print === 'logo',

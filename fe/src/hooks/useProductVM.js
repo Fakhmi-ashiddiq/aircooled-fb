@@ -23,9 +23,9 @@ export default function useProductVM() {
       compareFmt: p.compareAt ? rp(p.compareAt) : '',
       statusLabel: lbl,
       closes: isPre && p.preorder ? p.preorder.closes : '',
-      committed: isPre && p.preorder ? committedOf(p) : 0,
-      target: isPre && p.preorder ? p.preorder.target : 0,
-      pct: isPre && p.preorder ? Math.min(100, Math.round((committedOf(p) / p.preorder.target) * 100)) : 0,
+      committed: isPre ? committedOf(p) : 0,
+      target: isPre ? (p.target || 0) : 0,
+      pct: isPre && p.target ? Math.min(100, Math.round((committedOf(p) / p.target) * 100)) : 0,
       printLogo: p.print === 'logo',
       printText: p.print === 'text'
     };

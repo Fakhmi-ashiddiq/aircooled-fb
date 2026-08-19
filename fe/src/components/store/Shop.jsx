@@ -4,7 +4,7 @@ import useProductVM from '../../hooks/useProductVM';
 import Reveal from '../shared/Reveal';
 
 export default function Shop() {
-  const { state, updateState, data, openProduct } = useStore();
+  const { state, updateState, data, openProduct, dataLoading } = useStore();
   const { getProductVM } = useProductVM();
 
   const allVM = data.PRODUCTS.map(getProductVM);
@@ -31,6 +31,11 @@ export default function Shop() {
   return (
     <main className="shop-main-pad" style={{ padding: '48px' }}>
       <style>{`
+        @keyframes skelPulse {
+          0%, 100% { opacity: 0.4; }
+          50% { opacity: 0.8; }
+        }
+        .skel-box { animation: skelPulse 1.4s ease-in-out infinite; background: #d8d2c4; }
         @media (max-width: 768px) {
           .shop-main-pad { padding: 24px 20px !important; }
           .shop-title { font-size: 32px !important; }
@@ -75,7 +80,17 @@ export default function Shop() {
       </div>
 
       <div className="shop-products-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '22px' }}>
-        {shopProducts.map((item, idx) => (
+        {dataLoading && Array.from({ length: 8 }).map((_, i) => (
+          <div key={i}>
+            <div className="skel-box" style={{ aspectRatio: 1, border: '2px solid #14110D' }}></div>
+            <div style={{ paddingTop: '12px' }}>
+              <div className="skel-box" style={{ height: '10px', width: '35%', marginBottom: '5px' }}></div>
+              <div className="skel-box" style={{ height: '16px', width: '75%', marginBottom: '5px' }}></div>
+              <div className="skel-box" style={{ height: '13px', width: '45%' }}></div>
+            </div>
+          </div>
+        ))}
+        {!dataLoading && shopProducts.map((item, idx) => (
           <Reveal key={item.id} delay={(idx % 4) * 0.06}>
             <div style={{ cursor: 'pointer' }} onClick={() => openProduct(item.id)}>
               <div style={{ background: item.garment, aspectRatio: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #14110D', position: 'relative', overflow: 'hidden' }}>
