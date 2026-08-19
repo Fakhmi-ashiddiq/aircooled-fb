@@ -23,7 +23,7 @@ export default function ProdSessionModal() {
   const pid = state.prodSessionPid;
   const p = data.PRODUCTS.find((x) => x.id === pid);
   const colorOptions = (data.colorOptions || []).filter((c) => c.active !== false);
-  const roles = data.roles || [];
+  const roles = data.owners || [];
 
   useEffect(() => {
     if (state.prodSessionModal && p) {

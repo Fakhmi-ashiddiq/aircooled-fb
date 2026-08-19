@@ -206,7 +206,11 @@ export default function Catalog() {
                 }}
               >
                 <div className="cat-row-thumb" style={{ width: '48px', height: '48px', background: p.garment, border: '2px solid #14110D', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-                  {p.print === 'logo' && <img src="/assets/logo.png" style={{ width: '60%' }} alt="" />}
+                  {p.images && p.images.length > 0 && p.images[0].src && p.images[0].src !== '/logo.jpg' ? (
+    <img src={p.images[0].src} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
+  ) : p.print === 'logo' && (
+    <img src="/assets/logo.png" style={{ width: '60%' }} alt="" />
+  )}
                   {p.print === 'text' && (
                     <div style={{ color: '#F2C015', fontFamily: "'Archivo'", fontWeight: 900, fontSize: '9px', lineHeight: 0.9, textAlign: 'center', textTransform: 'uppercase' }}>
                       AC<br />SYND
