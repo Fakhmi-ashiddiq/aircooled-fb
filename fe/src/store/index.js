@@ -7,6 +7,7 @@ import ColorOptionService from '../services/ColorOptionService';
 import OwnerService from '../services/OwnerService';
 import ProductService from '../services/ProductService';
 import OrderService from '../services/OrderService';
+import CartService from '../services/CartService';
 import AuthService from '../services/AuthService';
 
 const deepClone = (obj) => {
@@ -51,6 +52,7 @@ export const useStore = create((set, get) => ({
             localStorage.setItem('auth_user', JSON.stringify(result.user));
             set((prev) => ({ state: { ...prev.state, user: result.user, authOpen: false } }));
             get().showToast('Login berhasil');
+            await get().loadCartFromDB();
             return result;
         } catch (error) {
             get().showToast(error.response?.data?.message || 'Login gagal');
@@ -65,6 +67,7 @@ export const useStore = create((set, get) => ({
             localStorage.setItem('auth_user', JSON.stringify(result.user));
             set((prev) => ({ state: { ...prev.state, user: result.user, authOpen: false } }));
             get().showToast('Registrasi berhasil');
+            await get().loadCartFromDB();
             return result;
         } catch (error) {
             get().showToast(error.response?.data?.message || 'Registrasi gagal');
@@ -73,13 +76,14 @@ export const useStore = create((set, get) => ({
     },
     logout: async () => {
         try {
+            await CartService.clear();
+        } catch (e) {}
+        try {
             await AuthService.logout();
-        } catch (error) {
-            // Ignore error, just clear local state
-        }
+        } catch (error) {}
         localStorage.removeItem('auth_token');
         localStorage.removeItem('auth_user');
-        set((prev) => ({ state: { ...prev.state, user: null } }));
+        set((prev) => ({ state: { ...prev.state, user: null, cart: [] } }));
         get().showToast('Logout berhasil');
     },
     loadUser: async () => {
@@ -90,6 +94,7 @@ export const useStore = create((set, get) => ({
                 const user = await AuthService.me();
                 localStorage.setItem('auth_user', JSON.stringify(user));
                 set((prev) => ({ state: { ...prev.state, user } }));
+                await get().loadCartFromDB();
             } catch (error) {
                 localStorage.removeItem('auth_token');
                 localStorage.removeItem('auth_user');
@@ -410,8 +415,9 @@ export const useStore = create((set, get) => ({
         return { committed, paidIn, target, count: allSess.length };
     },
 
-    addToCart: () => {
+    addToCart: async () => {
         const { data, state, updateState } = get();
+        const user = state.user;
         const p = data.PRODUCTS.find(x => x.id === state.activeId);
         if (!p) return;
         if (p.sizes.length > 1 && !state.selectedSize) return;
@@ -429,12 +435,67 @@ export const useStore = create((set, get) => ({
             cart.push({ key, id: p.id, size, color, qty: state.qty });
         }
         updateState({ cart, cartOpen: true });
+
+        if (user) {
+            try {
+                await CartService.add({ product_id: p.db_id, size, color, qty: state.qty });
+                await get().loadCartFromDB();
+            } catch (e) {
+                console.error('Cart add failed:', e.response?.data || e.message);
+                get().showToast('Gagal simpan keranjang: ' + (e.response?.data?.message || e.message));
+            }
+        }
     },
 
-    changeQty: (key, d) => {
+    changeQty: async (key, d) => {
         const { state, updateState } = get();
+        const user = state.user;
+        const item = state.cart.find(c => c.key === key);
         let cart = state.cart.map(c => c.key === key ? { ...c, qty: c.qty + d } : c).filter(c => c.qty > 0);
         updateState({ cart });
+
+        if (user && item) {
+            const newQty = item.qty + d;
+            try {
+                if (newQty <= 0 && item.dbId) {
+                    await CartService.remove(item.dbId);
+                } else if (item.dbId) {
+                    await CartService.update(item.dbId, newQty);
+                }
+                await get().loadCartFromDB();
+            } catch (e) {}
+        }
+    },
+
+    removeCartItem: async (key) => {
+        const { state, updateState } = get();
+        const user = state.user;
+        const item = state.cart.find(c => c.key === key);
+        let cart = state.cart.filter(c => c.key !== key);
+        updateState({ cart });
+
+        if (user && item?.dbId) {
+            try { await CartService.remove(item.dbId); } catch (e) {}
+        }
+    },
+
+    loadCartFromDB: async () => {
+        try {
+            const items = await CartService.getAll();
+            const cart = items.map(item => {
+                const p = get().data.PRODUCTS.find(x => x.db_id === item.product_id);
+                const pid = p ? p.id : 'product-' + item.product_id;
+                return {
+                    key: pid + '|' + (item.size || '') + '|' + (item.color || ''),
+                    id: pid,
+                    size: item.size || '',
+                    color: item.color || '',
+                    qty: item.qty,
+                    dbId: item.id
+                };
+            });
+            set((prev) => ({ state: { ...prev.state, cart } }));
+        } catch (e) {}
     },
 
     findSession: (productId, sessionName) => {

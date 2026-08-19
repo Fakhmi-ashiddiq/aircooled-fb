@@ -23,6 +23,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
         return $request->user();
     });
+    Route::apiResource('cart', \App\Http\Controllers\API\CartController::class)->except(['show', 'create', 'edit']);
+    Route::delete('/cart', [\App\Http\Controllers\API\CartController::class, 'clear']);
 });
 
 Route::apiResource('categories', \App\Http\Controllers\API\CategoryController::class);
