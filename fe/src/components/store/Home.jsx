@@ -151,8 +151,12 @@ export default function Home() {
                 <PingDot />
                 {featured.statusLabel}
               </div>
-              <div style={{ background: '#F2EEE4', aspectRatio: '4/3', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #14110D', position: 'relative', overflow: 'hidden' }}>
-                {featured.printLogo && <img src="/assets/logo.png" alt="Featured Logo" style={{ width: '48%', opacity: 0.95 }} />}
+              <div style={{ background: featured.garment, aspectRatio: '4/3', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #14110D', position: 'relative', overflow: 'hidden' }}>
+                {featured.images && featured.images.length > 0 && featured.images[0].src && featured.images[0].src !== '/logo.jpg' ? (
+                  <img src={featured.images[0].src} alt="Featured Image" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : featured.printLogo && (
+                  <img src="/assets/logo.png" alt="Featured Logo" style={{ width: '48%', opacity: 0.95 }} />
+                )}
                 {featured.printText && (
                   <div style={{ color: '#F2C015', fontFamily: "'Archivo', sans-serif", fontWeight: 900, fontSize: '30px', lineHeight: 0.9, textAlign: 'center', textTransform: 'uppercase', letterSpacing: '-0.01em' }}>
                     Aircooled<br />Syndicate
@@ -224,7 +228,11 @@ export default function Home() {
                       −{item.discountPct}%
                     </div>
                   )}
-                  {item.printLogo && <img src="/assets/logo.png" alt={item.name} style={{ width: '52%' }} />}
+                  {item.images && item.images.length > 0 && item.images[0].src && item.images[0].src !== '/logo.jpg' ? (
+                      <img src={item.images[0].src} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : item.printLogo && (
+                      <img src="/assets/logo.png" alt={item.name} style={{ width: '52%' }} />
+                    )}
                   {item.printText && (
                     <div style={{ color: '#F2C015', fontFamily: "'Archivo', sans-serif", fontWeight: 900, fontSize: '24px', lineHeight: 0.9, textAlign: 'center', textTransform: 'uppercase' }}>
                       Aircooled<br />Syndicate
@@ -280,7 +288,11 @@ export default function Home() {
                   <div style={{ position: 'absolute', top: '10px', left: '10px', background: '#F2C015', color: '#14110D', fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '4px 8px', fontWeight: 700 }}>
                     {item.statusLabel}
                   </div>
-                  {item.printLogo && <img src="/assets/logo.png" alt={item.name} style={{ width: '46%' }} />}
+                  {item.images && item.images.length > 0 && item.images[0].src && item.images[0].src !== '/logo.jpg' ? (
+                      <img src={item.images[0].src} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : item.printLogo && (
+                      <img src="/assets/logo.png" alt={item.name} style={{ width: '46%' }} />
+                    )}
                   {item.printText && (
                     <div style={{ color: '#F2C015', fontFamily: "'Archivo', sans-serif", fontWeight: 900, fontSize: '26px', lineHeight: 0.9, textAlign: 'center', textTransform: 'uppercase' }}>
                       Aircooled<br />Syndicate
