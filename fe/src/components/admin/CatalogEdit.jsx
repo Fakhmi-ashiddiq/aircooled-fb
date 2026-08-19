@@ -40,7 +40,7 @@ export default function CatalogEdit() {
     if (!isPre) {
       updated.price = parseInt(e.price) || 0;
       const ca = parseInt(e.compareAt) || 0;
-      updated.compareAt = ca > updated.price ? ca : null;
+      updated.compare_at = ca > updated.price ? ca : null;
       updated.sizes = (e.sizes || '').split(',').map((s) => s.trim()).filter(Boolean);
       if (!updated.sizes.length) updated.sizes = ['One Size'];
       updated.stock = parseInt(e.stock) || 0;
@@ -55,7 +55,7 @@ export default function CatalogEdit() {
     const def = updated.images[updated.defaultImg];
     if (def && def.src) updated.heroImg = def.src;
     
-    await useStore.getState().updateProduct(p.id, updated);
+    await useStore.getState().updateProduct(p.db_id || p.id, updated);
     updateState({ adminRoute: 'catalog', adminProdId: null, editProd: null });
     window.scrollTo(0, 0);
   };
@@ -150,8 +150,8 @@ export default function CatalogEdit() {
       <div className="ce-header-row" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '20px', marginBottom: '28px', flexWrap: 'wrap' }}>
         <div style={{ display: 'flex', gap: '18px', alignItems: 'center' }}>
           <div style={{ width: '84px', height: '84px', background: p.garment, border: '2px solid #14110D', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flex: 'none' }}>
-            {p.heroImg ? (
-              <img src={p.heroImg} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
+            {p.images && p.images.length > 0 && p.images[0].src && p.images[0].src !== '/logo.jpg' ? (
+              <img src={p.images[0].src} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
             ) : p.print === 'logo' ? (
               <img src="/assets/logo.png" style={{ width: '60%' }} alt="" />
             ) : (
@@ -499,6 +499,7 @@ export default function CatalogEdit() {
     </>
   );
 }
+
 
 
 

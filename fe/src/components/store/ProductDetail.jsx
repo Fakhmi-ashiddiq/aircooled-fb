@@ -120,7 +120,11 @@ export default function ProductDetail() {
               ⤢ {activeGalleryLabel} — Klik perbesar
             </div>
             {ap.heroImg && <img src={ap.heroImg} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} alt="" />}
-            {!ap.heroImg && activeP.printLogo && <img src="/assets/logo.png" style={{ width: '50%' }} alt="" />}
+            {!ap.heroImg && activeP.images && activeP.images.length > 0 && activeP.images[0].src && activeP.images[0].src !== '/logo.jpg' ? (
+                <img src={activeP.images[0].src} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
+              ) : !ap.heroImg && activeP.printLogo && (
+                <img src="/assets/logo.png" style={{ width: '50%' }} alt="" />
+              )}
             {!ap.heroImg && activeP.printText && (
               <div style={{ color: '#F2C015', fontFamily: "'Archivo'", fontWeight: 900, fontSize: '44px', lineHeight: 0.9, textAlign: 'center', textTransform: 'uppercase' }}>
                 Aircooled<br/>Syndicate
@@ -130,7 +134,13 @@ export default function ProductDetail() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '10px', marginTop: '12px' }}>
             {galleryVMs.map((g, idx) => (
               <button key={idx} onClick={g.pick} style={g.thumbStyle}>
-                {!ap.heroImg && activeP.printLogo && <img src="/assets/logo.png" style={{ width: '54%' }} alt="" />}
+                {!ap.heroImg && activeP.images && activeP.images[idx]?.src && activeP.images[idx].src !== '/logo.jpg' ? (
+                  <img src={activeP.images[idx].src} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} alt="" />
+                ) : !ap.heroImg && activeP.images && activeP.images[0]?.src && activeP.images[0].src !== '/logo.jpg' ? (
+                  <img src={activeP.images[0].src} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} alt="" />
+                ) : !ap.heroImg && activeP.printLogo && (
+                  <img src="/assets/logo.png" style={{ width: '54%' }} alt="" />
+                )}
                 {!ap.heroImg && activeP.printText && (
                   <div style={{ color: '#F2C015', fontFamily: "'Archivo'", fontWeight: 900, fontSize: '13px', lineHeight: 0.9, textAlign: 'center', textTransform: 'uppercase' }}>
                     AC<br/>SYND

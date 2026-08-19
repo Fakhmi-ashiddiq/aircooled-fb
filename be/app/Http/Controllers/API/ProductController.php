@@ -28,7 +28,13 @@ class ProductController extends Controller
 
     public function store(Request $request)
     {
-        $data = Product::create($request->all());
+        
+        $data = Product::create($request->except(['images', 'defaultImg', 'heroImg']));
+        if ($request->has('images')) {
+            foreach($request->images as $img) {
+                $data->productImages()->create(['src' => is_string($img) ? $img : ($img['src'] ?? '')]);
+            }
+        }
         return response()->json(['message' => 'Success', 'data' => $data]);
     }
 
@@ -45,14 +51,21 @@ class ProductController extends Controller
 
     public function update(Request $request, $id)
     {
-        $data = Product::findOrFail($id);
-        $data->update($request->all());
+        $data = Product::where('id', $id)->orWhere('code', $id)->firstOrFail();
+        
+        $data->update($request->except(['images', 'defaultImg', 'heroImg']));
+        if ($request->has('images')) {
+            $data->productImages()->delete();
+            foreach($request->images as $img) {
+                $data->productImages()->create(['src' => is_string($img) ? $img : ($img['src'] ?? '')]);
+            }
+        }
         return response()->json(['message' => 'Success', 'data' => $data]);
     }
 
     public function destroy($id)
     {
-        $data = Product::findOrFail($id);
+        $data = Product::where('id', $id)->orWhere('code', $id)->firstOrFail();
         $data->delete();
         return response()->json(['message' => 'Success']);
     }

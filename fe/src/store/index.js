@@ -128,7 +128,7 @@ export const useStore = create((set, get) => ({
                 newData.PRODUCTS = products.map(p => {
       let sizes = typeof p.sizes === 'string' ? JSON.parse(p.sizes || '[]') : (p.sizes || []);
       let colors = typeof p.colors === 'string' ? JSON.parse(p.colors || '[]') : (p.colors || []);
-      let images = typeof p.images === 'string' ? JSON.parse(p.images || '[]') : (p.images || []);
+      let images = p.product_images && p.product_images.length > 0 ? p.product_images.map(img => typeof img === 'string' ? {src: img} : img) : (typeof p.images === 'string' ? JSON.parse(p.images || '[]') : (p.images || []));
       let costs = typeof p.costs === 'string' ? JSON.parse(p.costs || '{}') : (p.costs || {});
       
       let orig = (prev.data.PRODUCTS || []).find(op => op.id === p.code || op.code === p.code || op.name === p.name);
@@ -157,7 +157,7 @@ export const useStore = create((set, get) => ({
       // Use DB images if available, else keep orig
       if (images.length > 0) {
           result.images = images;
-          result.gallery = images;
+          result.gallery = images.map((img, i) => img.name || 'Gambar ' + (i+1));
       } else {
           result.images = result.images || [];
           result.gallery = result.gallery || [];
@@ -176,9 +176,8 @@ export const useStore = create((set, get) => ({
       
       return result;
   });
-                newData.orders = orders.map(o => ({ ...o, order_items: o.items || [] }));
-                newData.orders = newData.orders.length > 1 ? newData.orders : (prev.data.orders && prev.data.orders.length > 0 ? prev.data.orders : newData.orders);
-                return { data: newData, dataLoading: false };
+                newData.orders = orders.length > 0 ? orders.map(o => ({ ...o, db_id: o.id, id: o.code || o.id })) : (prev.data.orders || []);
+                return { data: newData };
             });
         } catch (error) {
             console.error("Error fetching data:", error);
@@ -508,9 +507,10 @@ export const useStore = create((set, get) => ({
         return null;
     },
 
-    mutateSession: (productId, sessionName, mutator) => {
-        const { setData } = get();
-        setData((prevData) => {
+    mutateSession: async (productId, sessionName, mutator) => {
+        const _this = get();
+        let updatedProduct = null;
+        _this.setData((prevData) => {
             const next = deepClone(prevData);
             const p = next.PRODUCTS.find((x) => x.id === productId);
             if (!p) return prevData;
@@ -519,8 +519,12 @@ export const useStore = create((set, get) => ({
                 : (p.sessionHistory || []).find((s) => s.sessionName === sessionName);
             if (!sess) return prevData;
             mutator(sess);
+            updatedProduct = p;
             return next;
         });
+        if (updatedProduct) {
+            await _this.updateProduct(updatedProduct.db_id || updatedProduct.id, updatedProduct);
+        }
     },
 
     applyStageEffects: (sess) => {
@@ -591,6 +595,7 @@ export const useStore = create((set, get) => ({
         });
     }
 }));
+
 
 
 

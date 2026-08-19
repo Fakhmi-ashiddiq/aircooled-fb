@@ -9,6 +9,7 @@ use App\Models\ColorOption;
 use App\Models\SizeSet;
 use App\Models\Product;
 use App\Models\Order;
+use App\Models\ProductImage;
 
 class StoreSeeder extends Seeder
 {
@@ -118,12 +119,10 @@ class StoreSeeder extends Seeder
         ];
         
         foreach ($products as $prod) {
-            Product::create($prod);
+            $p = Product::create($prod); $p->productImages()->create(['src' => '/logo.jpg']);
         }
 
-        Order::create([
-            'code' => 'ASC-1051', 'customer' => 'Bayu Pratama', 'items' => 'Classic Tee x2, Sticker Pack',
-            'total' => 425000, 'date' => '18 Jun', 'type' => 'ready', 'status' => 'Paid'
-        ]);
+        
     }
 }
+
