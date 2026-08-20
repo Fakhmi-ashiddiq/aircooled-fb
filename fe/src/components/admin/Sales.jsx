@@ -96,7 +96,7 @@ export default function Sales() {
                 <div style={{ ...cell2, fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#6b655a' }}>{o.id}</div>
                 <div style={{ ...cell2, fontSize: '13px', flexDirection: 'column', alignItems: 'flex-start', gap: '2px' }}>
                   <span>{o.customer}</span>
-                  <span style={{ color: '#6b655a', fontSize: '12px' }}>{o.items}</span>
+                  <span style={{ color: '#6b655a', fontSize: '12px' }}>{Array.isArray(o.items) ? o.items.map(it => `${it.product?.name || it.product_id} ×${it.qty}`).join(', ') : o.items}</span>
                 </div>
                 <div style={{ ...cell2, fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#6b655a' }}>{o.date}</div>
                 <div style={{ ...cell2, fontFamily: "'Space Mono', monospace", fontSize: '13px', fontWeight: 700 }}>{rp(o.total)}</div>

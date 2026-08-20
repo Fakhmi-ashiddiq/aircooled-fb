@@ -102,12 +102,15 @@ export default function Shop() {
                     −{item.discountPct}%
                   </div>
                 )}
-                {item.printLogo && <img src="/assets/logo.png" style={{ width: '52%' }} />}
-                {item.printText && (
+                {item.images && item.images.length > 0 && item.images[0].src && item.images[0].src !== '/logo.jpg' ? (
+                  <img src={item.images[0].src} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : item.printLogo ? (
+                  <img src="/assets/logo.png" style={{ width: '52%' }} />
+                ) : item.printText ? (
                   <div style={{ color: '#F2C015', fontFamily: "'Archivo'", fontWeight: 900, fontSize: '24px', lineHeight: 0.9, textAlign: 'center', textTransform: 'uppercase' }}>
                     Aircooled<br/>Syndicate
                   </div>
-                )}
+                ) : null}
               </div>
               <div style={{ paddingTop: '12px' }}>
                 <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#6b655a' }}>{item.cat}</div>

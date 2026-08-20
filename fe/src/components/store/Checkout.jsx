@@ -18,6 +18,10 @@ export default function Checkout() {
 
   const checkoutName = user ? user.name : '';
   const checkoutEmail = user ? (user.email || '') : '';
+  const checkoutPhone = user ? (user.phone || '') : '';
+  const checkoutAddress = user ? (user.address || '') : '';
+  const checkoutCity = user ? (user.city || '') : '';
+  const checkoutPostalCode = user ? (user.postal_code || '') : '';
 
   const authLabel = user ? `${user.name.split(' ')[0]} · Keluar` : 'Masuk | Daftar';
 
@@ -176,7 +180,7 @@ export default function Checkout() {
                   ) : (
                     <input className="ck-span-full" placeholder="Nama lengkap" defaultValue={checkoutName} style={{ gridColumn: '1/3', padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
                   )}
-                  <input placeholder="No. Telp / WhatsApp" style={{ padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
+                  <input placeholder="No. Telp / WhatsApp" defaultValue={checkoutPhone} style={{ padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
 
                   {checkoutIsRegister ? (
                     <input placeholder="Email" value={authEmail} onChange={(e) => updateState({ authEmail: e.target.value })} style={{ padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
@@ -184,9 +188,9 @@ export default function Checkout() {
                     <input placeholder="Email" defaultValue={checkoutEmail} style={{ padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
                   )}
 
-                  <input className="ck-span-full" placeholder="Alamat lengkap" style={{ gridColumn: '1/3', padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
-                  <input placeholder="Kota" style={{ padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
-                  <input placeholder="Kode pos" style={{ padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
+                  <input className="ck-span-full" placeholder="Alamat lengkap" defaultValue={checkoutAddress} style={{ gridColumn: '1/3', padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
+                  <input placeholder="Kota" defaultValue={checkoutCity} style={{ padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
+                  <input placeholder="Kode pos" defaultValue={checkoutPostalCode} style={{ padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
 
                   {checkoutIsRegister && (
                     <input className="ck-span-full" type="password" placeholder="Password (untuk akun baru)" style={{ gridColumn: '1/3', padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />

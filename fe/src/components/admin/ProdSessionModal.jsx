@@ -132,7 +132,7 @@ export default function ProdSessionModal() {
         return {
           ...x,
           productionSessions: [batch, ...prevSessions],
-          stock: (x.stock || 0) + qty,
+          stock: (typeof x.stock === 'object' ? { ...x.stock } : {}),
           price: price || x.price,
           compareAt: ca > price ? ca : null,
           sizes: sizes.length ? sizes : x.sizes,

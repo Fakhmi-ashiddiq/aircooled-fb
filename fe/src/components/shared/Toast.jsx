@@ -20,7 +20,7 @@ export default function Toast() {
     <div
       style={{
         position: 'fixed',
-        bottom: '24px',
+        top: '24px',
         right: '24px',
         background: '#14110D',
         color: '#F2C015',
@@ -33,12 +33,12 @@ export default function Toast() {
         zIndex: 9999,
         border: '2px solid #F2C015',
         boxShadow: '4px 4px 0 rgba(20,17,13,0.3)',
-        animation: 'slideUp 0.3s ease-out'
+        animation: 'slideDown 0.3s ease-out'
       }}
     >
       <style>{`
-        @keyframes slideUp {
-          from { transform: translateY(100px); opacity: 0; }
+        @keyframes slideDown {
+          from { transform: translateY(-100px); opacity: 0; }
           to { transform: translateY(0); opacity: 1; }
         }
       `}</style>

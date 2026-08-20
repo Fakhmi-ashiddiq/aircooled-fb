@@ -183,7 +183,7 @@ export default function Catalog() {
             const isPre = p.type === 'preorder';
             const agg = poAggregate(p);
             const sold = unitsOf(p);
-            const stockLabel = isPre ? `${agg.committed} terpesan` : `${p.stock || 0} stok`;
+            const stockLabel = isPre ? `${agg.committed} terpesan` : `${p.stockTotal || 0} stok`;
             const revenueLabel = isPre
               ? `Pendapatan masuk ${rp(agg.paidIn)}`
               : `Terjual ${p.sold || 0} · ${rp(p.price * (p.sold || 0))}`;

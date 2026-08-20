@@ -23,6 +23,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
         return $request->user();
     });
+    Route::apiResource('cart', \App\Http\Controllers\API\CartController::class)->except(['show', 'create', 'edit']);
+    Route::delete('/cart', [\App\Http\Controllers\API\CartController::class, 'clear']);
 });
 
 Route::apiResource('categories', \App\Http\Controllers\API\CategoryController::class);
@@ -30,6 +32,7 @@ Route::apiResource('owners', \App\Http\Controllers\API\OwnerController::class);
 Route::apiResource('color-options', \App\Http\Controllers\API\ColorOptionController::class);
 Route::apiResource('size-sets', \App\Http\Controllers\API\SizeSetController::class);
 Route::apiResource('products', \App\Http\Controllers\API\ProductController::class);
+Route::apiResource('product-parents', \App\Http\Controllers\API\ProductParentController::class);
 Route::apiResource('orders', \App\Http\Controllers\API\OrderController::class);
 
 

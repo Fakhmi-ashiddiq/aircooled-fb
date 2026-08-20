@@ -9,7 +9,7 @@ export default function ProductDetail() {
   const ap = data.PRODUCTS.find(x => x.id === state.activeId);
   if (!ap) return null;
 
-  const activeP = getProductVM(ap);
+  const activeP = getProductVM(ap, state.selectedSize);
 
   const sizes = ap.sizes.map(sz => ({
     label: sz,
@@ -28,13 +28,19 @@ export default function ProductDetail() {
   }));
 
   const hasSizes = ap.sizes.length > 1;
+  const stockTotal = Object.values(ap.stock || {}).reduce((a, b) => a + (b || 0), 0);
+  const selectedSizeStock = state.selectedSize ? (ap.stock || {})[state.selectedSize] : null;
   const stockNote = ap.type === 'preorder'
     ? 'Produksi berjalan setelah sesi pre-order ditutup. Pembayaran di muka.'
-    : (ap.stock > 0 ? 'Stok tersedia: ' + ap.stock + ' unit · Kirim 1–2 hari kerja' : 'Stok habis');
+    : (stockTotal > 0
+      ? (state.selectedSize && selectedSizeStock !== undefined
+        ? `Stok ${state.selectedSize}: ${selectedSizeStock} unit · Kirim 1–2 hari kerja`
+        : `Total stok: ${stockTotal} unit · Kirim 1–2 hari kerja`)
+      : 'Stok habis');
   const ctaLabel = ap.type === 'preorder' ? 'Pesan Pre-Order' : 'Tambah ke Keranjang';
   const specs = ap.type === 'preorder'
     ? [{ k: 'Kategori', v: ap.cat }, { k: 'Sesi', v: ap.preorder.sessionName }, { k: 'Estimasi Kirim', v: ap.preorder.eta }, { k: 'Pembayaran', v: 'Penuh di muka' }]
-    : [{ k: 'Kategori', v: ap.cat }, { k: 'Bahan', v: 'Premium' }, { k: 'Pengiriman', v: '1–2 hari kerja' }, { k: 'Stok', v: ap.stock + ' unit' }];
+    : [{ k: 'Kategori', v: ap.cat }, { k: 'Bahan', v: 'Premium' }, { k: 'Pengiriman', v: '1–2 hari kerja' }, { k: 'Stok', v: ap.sizes.map(sz => `${sz}: ${ap.stock?.[sz] || 0}`).join(' / ') + ' unit' }];
 
   const colorList = (ap.colors && ap.colors.length) ? ap.colors : [{ name: 'Default', hex: ap.garment }];
   const selColor = colorList.find(c => c.name === state.selectedColor);
