@@ -133,7 +133,7 @@ export default function Home() {
                 <div className="skel-box" style={{ width: '8px', height: '8px', borderRadius: '50%' }}></div>
                 <div className="skel-box" style={{ width: '120px', height: '11px' }}></div>
               </div>
-              <div className="skel-box" style={{ aspectRatio: '4/3', border: '2px solid #14110D' }}></div>
+              <div className="skel-box" style={{ background: '#F2EEE4', aspectRatio: '4/3', border: '2px solid #14110D' }}></div>
               <div style={{ marginTop: '18px' }}>
                 <div className="skel-box" style={{ width: '70%', height: '22px', marginBottom: '8px' }}></div>
                 <div className="skel-box" style={{ width: '55%', height: '13px', marginBottom: '14px' }}></div>
@@ -152,7 +152,11 @@ export default function Home() {
                 {featured.statusLabel}
               </div>
               <div style={{ background: '#F2EEE4', aspectRatio: '4/3', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #14110D', position: 'relative', overflow: 'hidden' }}>
-                {featured.printLogo && <img src="/assets/logo.png" alt="Featured Logo" style={{ width: '48%', opacity: 0.95 }} />}
+                {featured.images && featured.images.length > 0 && featured.images[0].src && featured.images[0].src !== '/logo.jpg' ? (
+                  <img src={featured.images[0].src} alt="Featured Image" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : featured.printLogo && (
+                  <img src="/assets/logo.png" alt="Featured Logo" style={{ width: '48%', opacity: 0.95 }} />
+                )}
                 {featured.printText && (
                   <div style={{ color: '#F2C015', fontFamily: "'Archivo', sans-serif", fontWeight: 900, fontSize: '30px', lineHeight: 0.9, textAlign: 'center', textTransform: 'uppercase', letterSpacing: '-0.01em' }}>
                     Aircooled<br />Syndicate
@@ -226,14 +230,14 @@ export default function Home() {
                   )}
                   {item.images && item.images.length > 0 && item.images[0].src && item.images[0].src !== '/logo.jpg' ? (
                       <img src={item.images[0].src} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    ) : item.printLogo && (
+                    ) : item.printLogo ? (
                       <img src="/assets/logo.png" alt={item.name} style={{ width: '52%' }} />
-                    )}
-                  {item.printText && (
-                    <div style={{ color: '#F2C015', fontFamily: "'Archivo', sans-serif", fontWeight: 900, fontSize: '24px', lineHeight: 0.9, textAlign: 'center', textTransform: 'uppercase' }}>
-                      Aircooled<br />Syndicate
-                    </div>
-                  )}
+                    ) : item.printText ? (
+                      <div style={{ color: '#F2C015', fontFamily: "'Archivo', sans-serif", fontWeight: 900, fontSize: '24px', lineHeight: 0.9, textAlign: 'center', textTransform: 'uppercase' }}>
+                        Aircooled<br />Syndicate
+                      </div>
+                    ) : null
+                  }
                 </div>
                 <div style={{ paddingTop: '12px' }}>
                   <div style={{ fontFamily: "'Archivo', sans-serif", fontWeight: 700, fontSize: '16px', textTransform: 'uppercase', lineHeight: 1.05 }}>

@@ -1,7 +1,8 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { useStore } from '../../store';
 import { rp } from '../../utils/helpers';
 import useCountUp from '../../hooks/useCountUp';
+import { hasOverXxlSizes } from '../../hooks/useProductVM';
 
 function AnimatedNumber({ value, format, start }) {
   const animated = useCountUp(value, 1200, start);
@@ -21,67 +22,160 @@ export default function CatalogEdit() {
     cat: p.cat,
     price: String(p.price || ''),
     compareAt: String(p.compareAt || ''),
-    sizes: (p.sizes || []).join(', '),
-    stock: String(p.stock != null ? p.stock : ''),
+    sizeType: (data.sizeSets || []).find(s => JSON.stringify(s.sizes) === JSON.stringify(p.sizes))?.code || ((data.sizeSets || [])[0]?.code || ''),
+    manualSizes: (p.sizes || []).join(','),
+    stock: typeof p.stock === 'object' ? p.stock : {},
     produksi: String(p.costs?.production || ''),
     kemasan: String(p.costs?.kemasan || ''),
     stiker: String(p.costs?.stiker || ''),
+    hppLess: String(p.hppLessXxlUnit || ''),
+    hppMore: String(p.hppMoreXxlUnit || ''),
+    priceLess: String(p.priceLessXxl || ''),
+    priceMore: String(p.priceMoreXxl || ''),
+    priceLessDiscount: String(p.priceLessXxlDiscount || ''),
+    priceMoreDiscount: String(p.priceMoreXxlDiscount || ''),
+    parentId: String(p.parentId || ''),
+    printType: p.print || 'logo',
+    selectedColors: (p.colors || []).map(c => {
+      if (typeof c === 'string') return c;
+      const found = (data.colorOptions || []).find(co => co.name === c.name || co.hex === c.hex);
+      return found || { name: c.name || c, hex: c.hex || '#000000', code: c.name || c };
+    }),
     images: p.images || (p.gallery || ['Depan']).map((lbl) => ({ src: null, name: lbl })),
-    defaultImg: p.defaultImg || 0
+    defaultImg: p.defaultImg || 0,
+    removedImages: []
   };
 
   const e = state.editProd || defaultDraft;
   const setEdit = (patch) => updateState({ editProd: { ...e, ...patch } });
 
+  const [submitting, setSubmitting] = useState(false);
   const cancel = () => updateState({ adminRoute: 'catalog', adminProdId: null, editProd: null });
 
   const save = async () => {
-    const updated = { name: e.name || p.name, category: e.cat || p.category };
-    if (!isPre) {
-      updated.price = parseInt(e.price) || 0;
-      const ca = parseInt(e.compareAt) || 0;
-      updated.compare_at = ca > updated.price ? ca : null;
-      updated.sizes = (e.sizes || '').split(',').map((s) => s.trim()).filter(Boolean);
-      if (!updated.sizes.length) updated.sizes = ['One Size'];
-      updated.stock = parseInt(e.stock) || 0;
-      updated.costs = {
-        production: parseInt(e.produksi) || 0,
-        kemasan: parseInt(e.kemasan) || 0,
-        stiker: parseInt(e.stiker) || 0
-      };
+    setSubmitting(true);
+    try {
+      const hasNewFiles = (e.images || []).some(im => im.file && !im._deleted);
+      
+      if (hasNewFiles) {
+        const fd = new FormData();
+        fd.append('name', e.name || p.name);
+        fd.append('category', e.cat || p.category);
+        if (!isPre) {
+          fd.append('price', parseInt(e.price) || 0);
+          const ca = parseInt(e.compareAt) || 0;
+          fd.append('compare_at', ca > (parseInt(e.price) || 0) ? ca : '');
+          const sizes = (data.sizeSets || []).find(s => s.code === e.sizeType)?.sizes || [];
+          fd.append('sizes', JSON.stringify(sizes.length ? sizes : ['One Size']));
+          fd.append('stock', JSON.stringify(typeof e.stock === 'object' ? e.stock : {}));
+          fd.append('costs', JSON.stringify({
+            production: parseInt(e.produksi) || 0,
+            kemasan: parseInt(e.kemasan) || 0,
+            stiker: parseInt(e.stiker) || 0
+          }));
+          const showDualPrice = hasOverXxlSizes(sizes);
+          fd.append('hpp_less_xxl_unit', parseInt(e.hppLess) || 0);
+          fd.append('hpp_more_xxl_unit', showDualPrice ? (parseInt(e.hppMore) || 0) : (parseInt(e.hppLess) || 0));
+          fd.append('price_less_xxl', parseInt(e.priceLess) || 0);
+          fd.append('price_more_xxl', showDualPrice ? (parseInt(e.priceMore) || 0) : (parseInt(e.priceLess) || 0));
+          if (e.priceLessDiscount) fd.append('price_less_xxl_discount', parseInt(e.priceLessDiscount));
+          fd.append('price_more_xxl_discount', showDualPrice ? (e.priceMoreDiscount ? parseInt(e.priceMoreDiscount) : '') : (e.priceLessDiscount ? parseInt(e.priceLessDiscount) : ''));
+        }
+        fd.append('product_parent_id', e.parentId || '');
+        fd.append('print_type', e.printType || 'logo');
+        fd.append('colors', JSON.stringify((e.selectedColors || []).map(c => ({ name: c.name, hex: c.hex }))));
+        fd.append('defaultImg', e.defaultImg || 0);
+
+        const existingPaths = (e.images || []).filter(im => im.src && !im.file && !im._deleted).map(im => im.src);
+        fd.append('existingImages', JSON.stringify(existingPaths));
+        fd.append('removedImages', JSON.stringify(e.removedImages || []));
+
+        (e.images || []).forEach((im) => {
+          if (im.file && im.file instanceof File && im.file.size > 0 && !im._deleted) {
+            fd.append('images[]', im.file);
+          }
+        });
+
+        await useStore.getState().updateProduct(p.db_id || p.id, fd);
+      } else {
+        const updated = { name: e.name || p.name, category: e.cat || p.category };
+        if (!isPre) {
+          updated.price = parseInt(e.price) || 0;
+          const ca = parseInt(e.compareAt) || 0;
+          updated.compare_at = ca > updated.price ? ca : null;
+          updated.sizes = (data.sizeSets || []).find(s => s.code === e.sizeType)?.sizes || [];
+          if (!updated.sizes.length) updated.sizes = ['One Size'];
+          updated.stock = typeof e.stock === 'object' ? e.stock : {};
+          updated.costs = {
+            production: parseInt(e.produksi) || 0,
+            kemasan: parseInt(e.kemasan) || 0,
+            stiker: parseInt(e.stiker) || 0
+          };
+          updated.hpp_less_xxl_unit = parseInt(e.hppLess) || 0;
+          const showDualPrice = hasOverXxlSizes(updated.sizes || []);
+          updated.hpp_more_xxl_unit = showDualPrice ? (parseInt(e.hppMore) || 0) : (parseInt(e.hppLess) || 0);
+          updated.price_less_xxl = parseInt(e.priceLess) || 0;
+          updated.price_more_xxl = showDualPrice ? (parseInt(e.priceMore) || 0) : (parseInt(e.priceLess) || 0);
+          updated.price_less_xxl_discount = parseInt(e.priceLessDiscount) || null;
+          updated.price_more_xxl_discount = showDualPrice ? (parseInt(e.priceMoreDiscount) || null) : (parseInt(e.priceLessDiscount) || null);
+        }
+        updated.images = (e.images || []).map(im => im.src || im);
+        updated.existingImages = (e.images || []).filter(im => im.src && !im.file && !im._deleted).map(im => im.src);
+        updated.removedImages = e.removedImages || [];
+        updated.defaultImg = e.defaultImg || 0;
+        const def = updated.images[updated.defaultImg];
+        if (def && def.src) updated.heroImg = def.src;
+        updated.product_parent_id = e.parentId || null;
+        updated.print_type = e.printType || 'logo';
+        updated.colors = (e.selectedColors || []).map(c => ({ name: c.name, hex: c.hex }));
+        
+        await useStore.getState().updateProduct(p.db_id || p.id, updated);
+      }
+      updateState({ editProd: null });
+      useStore.getState().showToast('Produk berhasil diperbarui');
+    } catch (e) {
+      const msg = e.response?.data?.message || e.response?.data?.errors?.images?.[0] || e.message || 'Gagal memperbarui produk';
+      useStore.getState().showToast(msg);
+      console.error(e);
+    } finally {
+      setSubmitting(false);
     }
-    updated.images = (e.images || []).map(im => im.src || im);
-    updated.defaultImg = e.defaultImg || 0;
-    const def = updated.images[updated.defaultImg];
-    if (def && def.src) updated.heroImg = def.src;
-    
-    await useStore.getState().updateProduct(p.db_id || p.id, updated);
-    updateState({ adminRoute: 'catalog', adminProdId: null, editProd: null });
-    window.scrollTo(0, 0);
   };
 
   const onUpload = (ev) => {
     const files = [...(ev.target.files || [])];
     if (!files.length) return;
-    let done = 0;
-    const imgs = (e.images || []).slice();
-    files.forEach((f) => {
-      const rd = new FileReader();
-      rd.onload = () => {
-        imgs.push({ src: rd.result, name: f.name.replace(/\.[^.]+$/, '').slice(0, 20) });
-        done++;
-        if (done === files.length) setEdit({ images: imgs });
-      };
-      rd.readAsDataURL(f);
+    const maxSize = 10 * 1024 * 1024;
+    const validFiles = files.filter(f => {
+      if (f.size > maxSize) {
+        useStore.getState().showToast(f.name + ' melebihi 10MB');
+        return false;
+      }
+      return true;
     });
+    if (!validFiles.length) return;
+    const imgs = validFiles.map(f => ({ file: f, preview: URL.createObjectURL(f), name: f.name.replace(/\.[^.]+$/, '').slice(0, 20) }));
+    setEdit({ images: [...(e.images || []), ...imgs] });
     ev.target.value = '';
   };
   const removeImage = (idx) => {
-    const imgs = (e.images || []).filter((_, i) => i !== idx);
-    let def = e.defaultImg || 0;
-    if (idx === def) def = 0;
-    else if (idx < def) def = def - 1;
-    setEdit({ images: imgs, defaultImg: Math.max(0, Math.min(def, imgs.length - 1)) });
+    const imgs = (e.images || []).map((im, i) => i === idx ? { ...im, _deleted: true } : im);
+    const target = (e.images || [])[idx];
+    const newRemovedImages = [...(e.removedImages || [])];
+    if (target && target.src && !target.file && !newRemovedImages.includes(target.src)) {
+      newRemovedImages.push(target.src);
+    }
+    setEdit({ images: imgs, removedImages: newRemovedImages });
+  };
+
+  const restoreImage = (idx) => {
+    const imgs = (e.images || []).map((im, i) => i === idx ? { ...im, _deleted: false } : im);
+    const target = (e.images || [])[idx];
+    const newRemovedImages = (e.removedImages || []).filter(p => {
+      if (target && target.src) return p !== target.src;
+      return true;
+    });
+    setEdit({ images: imgs, removedImages: newRemovedImages });
   };
   const setDefaultImg = (idx) => setEdit({ defaultImg: idx });
 
@@ -102,10 +196,10 @@ export default function CatalogEdit() {
   const inputStyle = { width: '100%', padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' };
 
   const agg = isPre ? poAggregate(p) : null;
-  const soldUnits = isPre ? agg.committed : unitsOf(p);
-  const revenueN = isPre ? agg.paidIn : p.price * (p.sold || 0);
+  const soldUnits = isPre ? agg.committed : (p.totalSold || 0);
+  const revenueN = isPre ? agg.paidIn : (p.totalRevenue || 0);
   const stockMetaLabel = isPre ? 'Target Sesi' : 'Sisa Stok';
-  const stockMetaValueN = isPre ? agg.target : (p.stock || 0);
+  const stockMetaValueN = isPre ? agg.target : Object.values(e.stock || {}).reduce((a, b) => a + (b || 0), 0);
   const stockMetaFormat = isPre ? (v) => `${v} unit` : (v) => `${v} unit`;
   const sessionsCountLabel = isPre ? `${agg.count} sesi` : '';
 
@@ -174,7 +268,7 @@ export default function CatalogEdit() {
           onClick={viewStore}
           style={{ background: '#fff', color: '#14110D', border: '2px solid #14110D', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '11px', letterSpacing: '0.04em', textTransform: 'uppercase', padding: '11px 16px' }}
         >
-          Lihat di Storefront Ã¢â€ —
+          Lihat di Store
         </button>
       </div>
 
@@ -207,13 +301,19 @@ export default function CatalogEdit() {
           Edit Detail Produk
         </div>
         <div style={{ padding: '22px 20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div className="ce-form-grid-2" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '14px' }}>
+          <div className="ce-form-grid-2" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '14px' }}>
             <div>
               <div style={labelStyle}>Nama Produk</div>
               <input value={e.name} onChange={(ev) => setEdit({ name: ev.target.value })} style={inputStyle} />
-              <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#6b655a', marginTop: '6px' }}>
-                Slug: <span style={{ color: '#14110D' }}>/produk/{(e.name || p.name).toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}</span>
-              </div>
+            </div>
+            <div>
+              <div style={labelStyle}>SKU (Product Parent)</div>
+              <select value={e.parentId} onChange={(ev) => setEdit({ parentId: ev.target.value })} style={inputStyle}>
+                <option value="">— Pilih SKU —</option>
+                {(data.productParents || []).map((pp) => (
+                  <option key={pp.id} value={pp.id}>{pp.sku}</option>
+                ))}
+              </select>
             </div>
             <div>
               <div style={labelStyle}>Kategori</div>
@@ -223,25 +323,84 @@ export default function CatalogEdit() {
             </div>
           </div>
 
+          <div style={{ display: 'grid', gridTemplateColumns: !isPre ? '1fr 1fr' : '1fr', gap: '14px' }}>
+            {!isPre && (
+              <div>
+                <div style={labelStyle}>Pilihan Ukuran</div>
+                <select value={e.sizeType} onChange={(ev) => setEdit({ sizeType: ev.target.value })} style={inputStyle}>
+                  {(data.sizeSets || []).map(sz => (
+                    <option key={sz.code} value={sz.code}>{sz.name} ({sz.sizes.join(', ')})</option>
+                  ))}
+                </select>
+              </div>
+            )}
+          </div>
+
           {!isPre && (
-            <div className="ce-form-grid-4" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '14px' }}>
+            <>
+              {(() => {
+                const currentSizes = (data.sizeSets || []).find(s => s.code === e.sizeType)?.sizes || [];
+                if (currentSizes.length === 0) return null;
+                return (
+                  <div>
+                    <div style={labelStyle}>Stok per Ukuran</div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '8px' }}>
+                      {currentSizes.map(sz => (
+                        <div key={sz}>
+                          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '10px', fontWeight: 700, marginBottom: '3px' }}>{sz}</div>
+                          <input type="number" min="0"
+                            value={(e.stock || {})[sz] ?? ''}
+                            placeholder="0"
+                            onChange={(ev) => setEdit({ stock: { ...e.stock, [sz]: Number(ev.target.value) || 0 } })}
+                            style={{ ...inputStyle, padding: '9px', fontSize: '13px' }}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
+
               <div>
-                <div style={labelStyle}>Harga Jual (Rp)</div>
-                <input type="number" value={e.price} onChange={(ev) => setEdit({ price: ev.target.value })} style={inputStyle} />
+                <div style={labelStyle}>Harga & HPP per Ukuran</div>
+                {(() => {
+                  const currentSizes = (data.sizeSets || []).find(s => s.code === e.sizeType)?.sizes || [];
+                  const showDual = hasOverXxlSizes(currentSizes);
+                  if (showDual) {
+                    return (
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                        <div style={{ border: '2px solid #14110D', padding: '14px', background: '#fff' }}>
+                          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', fontWeight: 700, marginBottom: '10px', color: '#14110D' }}>&lt; XXL (XS, S, M, L, XL)</div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            <input type="number" placeholder="HPP / Satuan" value={e.hppLess} onChange={(ev) => setEdit({ hppLess: ev.target.value })} style={inputStyle} />
+                            <input type="number" placeholder="Harga Jual" value={e.priceLess} onChange={(ev) => setEdit({ priceLess: ev.target.value })} style={inputStyle} />
+                            <input type="number" placeholder="Harga Coret (opsional)" value={e.priceLessDiscount} onChange={(ev) => setEdit({ priceLessDiscount: ev.target.value })} style={inputStyle} />
+                          </div>
+                        </div>
+                        <div style={{ border: '2px solid #14110D', padding: '14px', background: '#fff' }}>
+                          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', fontWeight: 700, marginBottom: '10px', color: '#14110D' }}>&gt;= XXL (XXL, 3L, 4L, 5L, 6L)</div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            <input type="number" placeholder="HPP / Satuan" value={e.hppMore} onChange={(ev) => setEdit({ hppMore: ev.target.value })} style={inputStyle} />
+                            <input type="number" placeholder="Harga Jual" value={e.priceMore} onChange={(ev) => setEdit({ priceMore: ev.target.value })} style={inputStyle} />
+                            <input type="number" placeholder="Harga Coret (opsional)" value={e.priceMoreDiscount} onChange={(ev) => setEdit({ priceMoreDiscount: ev.target.value })} style={inputStyle} />
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }
+                  return (
+                    <div style={{ border: '2px solid #14110D', padding: '14px', background: '#fff', maxWidth: '400px' }}>
+                      <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', fontWeight: 700, marginBottom: '10px', color: '#14110D' }}>Harga</div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <input type="number" placeholder="HPP / Satuan" value={e.hppLess} onChange={(ev) => setEdit({ hppLess: ev.target.value })} style={inputStyle} />
+                        <input type="number" placeholder="Harga Jual" value={e.priceLess} onChange={(ev) => setEdit({ priceLess: ev.target.value })} style={inputStyle} />
+                        <input type="number" placeholder="Harga Coret (opsional)" value={e.priceLessDiscount} onChange={(ev) => setEdit({ priceLessDiscount: ev.target.value })} style={inputStyle} />
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
-              <div>
-                <div style={labelStyle}>Harga Coret</div>
-                <input type="number" value={e.compareAt} onChange={(ev) => setEdit({ compareAt: ev.target.value })} style={inputStyle} />
-              </div>
-              <div>
-                <div style={labelStyle}>Ukuran (koma)</div>
-                <input value={e.sizes} onChange={(ev) => setEdit({ sizes: ev.target.value })} style={inputStyle} />
-              </div>
-              <div>
-                <div style={labelStyle}>Stok</div>
-                <input type="number" value={e.stock} onChange={(ev) => setEdit({ stock: ev.target.value })} style={inputStyle} />
-              </div>
-            </div>
+            </>
           )}
 
           {isPre ? (
@@ -266,6 +425,47 @@ export default function CatalogEdit() {
           )}
 
           <div style={{ borderTop: '1px solid #ddd5c4', paddingTop: '16px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <div>
+                <div style={labelStyle}>Sablon</div>
+                <div style={{ display: 'flex' }}>
+                  <button onClick={() => setEdit({ printType: 'logo' })} style={{ flex: 1, background: e.printType === 'logo' ? '#14110D' : '#fff', color: e.printType === 'logo' ? '#F2EEE4' : '#14110D', border: '2px solid #14110D', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '12px', textTransform: 'uppercase', padding: '11px' }}>Logo</button>
+                  <button onClick={() => setEdit({ printType: 'text' })} style={{ flex: 1, background: e.printType === 'text' ? '#14110D' : '#fff', color: e.printType === 'text' ? '#F2EEE4' : '#14110D', border: '2px solid #14110D', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '12px', textTransform: 'uppercase', padding: '11px' }}>Teks</button>
+                </div>
+              </div>
+              <div>
+                <div style={labelStyle}>Warna (Bisa Pilih &gt; 1)</div>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  {(data.colorOptions || []).map((col) => {
+                    const isSelected = (e.selectedColors || []).find(c => c.name === col.name);
+                    return (
+                      <button
+                        key={col.code || col.name}
+                        title={col.name}
+                        onClick={() => {
+                          const exists = (e.selectedColors || []).find(c => c.name === col.name);
+                          const newColors = exists
+                            ? (e.selectedColors || []).filter(c => c.name !== col.name)
+                            : [...(e.selectedColors || []), col];
+                          setEdit({ selectedColors: newColors });
+                        }}
+                        style={{
+                          width: '34px', height: '34px', cursor: 'pointer',
+                          border: isSelected ? '3px solid #14110D' : '2px solid #c9c1ad',
+                          background: col.hex
+                        }}
+                      />
+                    );
+                  })}
+                </div>
+                <div style={{ fontSize: '11px', marginTop: '6px', color: '#6b655a', fontFamily: "'Space Mono', monospace" }}>
+                  Dipilih: {(e.selectedColors || []).length > 0 ? (e.selectedColors || []).map(c => c.name).join(', ') : 'Belum ada'}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ borderTop: '1px solid #ddd5c4', paddingTop: '16px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
               <div style={labelStyle}>Gambar Produk — klik gambar untuk jadikan default</div>
               <label style={{ background: '#14110D', color: '#F2EEE4', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '11px', letterSpacing: '0.04em', textTransform: 'uppercase', padding: '10px 16px', display: 'inline-block' }}>
@@ -275,23 +475,31 @@ export default function CatalogEdit() {
             </div>
             <div className="ce-images-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: '12px' }}>
               {(e.images || []).map((im, i) => {
-                const isDefault = i === (e.defaultImg || 0);
+                const isDefault = i === (e.defaultImg || 0) && !im._deleted;
+                const isDeleted = im._deleted;
                 return (
                   <div
                     key={i}
                     style={{
                       position: 'relative', aspectRatio: 1,
                       border: isDefault ? '3px solid #14110D' : '2px solid #c9c1ad',
-                      background: im.src ? '#fff' : p.garment,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden'
+                      background: (im.src || im.preview) ? '#fff' : p.garment,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
+                      opacity: isDeleted ? 0.3 : 1,
+                      filter: isDeleted ? 'grayscale(100%)' : 'none'
                     }}
                   >
+                    {isDeleted && (
+                      <div style={{ position: 'absolute', inset: 0, background: 'rgba(220,38,38,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3 }}>
+                        <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '10px', fontWeight: 700, color: '#dc2626', background: '#fff', padding: '4px 8px', borderRadius: '4px' }}>DIHAPUS</span>
+                      </div>
+                    )}
                     <button
-                      onClick={() => setDefaultImg(i)}
+                      onClick={() => isDeleted ? restoreImage(i) : setDefaultImg(i)}
                       style={{ position: 'absolute', inset: 0, border: 'none', background: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}
                     >
-                      {im.src ? (
-                        <img src={im.src} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} alt={im.name} />
+                      {im.src || im.preview ? (
+                        <img src={im.preview || im.src} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} alt={im.name} />
                       ) : p.print === 'logo' ? (
                         <img src="/assets/logo.png" style={{ width: '55%' }} alt="" />
                       ) : (
@@ -305,12 +513,22 @@ export default function CatalogEdit() {
                         DEFAULT
                       </span>
                     )}
-                    <button
-                      onClick={() => removeImage(i)}
-                      style={{ position: 'absolute', top: '4px', right: '4px', width: '20px', height: '20px', background: '#14110D', color: '#F2EEE4', border: 'none', cursor: 'pointer', fontSize: '13px', lineHeight: 1, zIndex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                    >
-                      ×
-                    </button>
+                    {isDeleted ? (
+                      <button
+                        onClick={() => restoreImage(i)}
+                        style={{ position: 'absolute', top: '4px', right: '4px', width: '20px', height: '20px', background: '#16a34a', color: '#F2EEE4', border: 'none', cursor: 'pointer', fontSize: '11px', lineHeight: 1, zIndex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                        title="Pulihkan"
+                      >
+                        ↺
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => removeImage(i)}
+                        style={{ position: 'absolute', top: '4px', right: '4px', width: '20px', height: '20px', background: '#14110D', color: '#F2EEE4', border: 'none', cursor: 'pointer', fontSize: '13px', lineHeight: 1, zIndex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                      >
+                        ×
+                      </button>
+                    )}
                     <span style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(20,17,13,0.78)', color: '#F2EEE4', fontFamily: "'Space Mono', monospace", fontSize: '9px', padding: '3px 5px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', zIndex: 1 }}>
                       {im.name}
                     </span>
@@ -320,12 +538,10 @@ export default function CatalogEdit() {
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '12px', marginTop: '6px' }}>
-            <button onClick={save} style={{ background: '#F2C015', color: '#14110D', border: 'none', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '13px', letterSpacing: '0.06em', textTransform: 'uppercase', padding: '15px 28px' }}>
-              Simpan Perubahan
-            </button>
-            <button onClick={cancel} style={{ background: '#fff', color: '#14110D', border: '2px solid #14110D', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '13px', letterSpacing: '0.06em', textTransform: 'uppercase', padding: '13px 24px' }}>
-              Batal
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '6px' }}>
+            <button onClick={save} disabled={submitting}
+              style={{ background: submitting ? '#d4b812' : '#F2C015', color: '#14110D', border: 'none', cursor: submitting ? 'not-allowed' : 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '13px', letterSpacing: '0.06em', textTransform: 'uppercase', padding: '15px 28px', opacity: submitting ? 0.7 : 1 }}>
+              {submitting ? 'Menyimpan...' : 'Simpan Perubahan'}
             </button>
           </div>
         </div>

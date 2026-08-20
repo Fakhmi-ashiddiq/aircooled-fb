@@ -20,7 +20,7 @@ export default function AdminLogin() {
     setLoading(true);
     try {
       const result = await login(email, password);
-      if (result?.user?.role === 'admin') {
+      if (result?.user?.role === '1') {
         updateState({ view: 'admin', adminRoute: 'dashboard' });
         navigate('/admin');
       } else {

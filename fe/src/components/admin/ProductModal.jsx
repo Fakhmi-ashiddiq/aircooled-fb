@@ -1,17 +1,23 @@
 import React, { useContext, useState } from 'react';
 import { useStore } from '../../store';
+import { hasOverXxlSizes } from '../../hooks/useProductVM';
 
 const blankProd = () => ({
   name: '', cat: 'Kaos', type: 'ready', price: '',
+  parentId: '',
   sizeType: 'reg', manualSizes: 'S,M,L,XL',
   selectedColors: [],
   images: [],
-  print: 'logo', stock: '', produksi: '', kemasan: '', stiker: ''
+  print: 'logo', stockSizes: {}, produksi: '', kemasan: '', stiker: '',
+  hppLess: '', hppMore: '',
+  priceLess: '', priceMore: '',
+  priceLessDiscount: '', priceMoreDiscount: ''
 });
 
 export default function ProductModal() {
   const { data, state, updateState } = useStore();
   const [np, setNp] = useState(blankProd());
+  const [submitting, setSubmitting] = useState(false);
 
   if (!state.prodModal) return null;
 
@@ -46,17 +52,17 @@ export default function ProductModal() {
   const onUpload = (ev) => {
     const files = [...(ev.target.files || [])];
     if (!files.length) return;
-    let done = 0;
-    const imgs = [...np.images];
-    files.forEach((f) => {
-      const rd = new FileReader();
-      rd.onload = () => {
-        imgs.push({ src: rd.result, name: f.name.replace(/\.[^.]+$/, '').slice(0, 20) });
-        done++;
-        if (done === files.length) setNp({ ...np, images: imgs });
-      };
-      rd.readAsDataURL(f);
+    const maxSize = 10 * 1024 * 1024;
+    const validFiles = files.filter(f => {
+      if (f.size > maxSize) {
+        useStore.getState().showToast(f.name + ' melebihi 10MB');
+        return false;
+      }
+      return true;
     });
+    if (!validFiles.length) return;
+    const imgs = validFiles.map(f => ({ file: f, preview: URL.createObjectURL(f), name: f.name.replace(/\.[^.]+$/, '').slice(0, 20) }));
+    setNp({ ...np, images: [...np.images, ...imgs] });
   };
 
   const removeImage = (idx) => {
@@ -66,39 +72,60 @@ export default function ProductModal() {
   };
 
   const addProduct = async () => {
-    const isPre = np.type === 'preorder';
-    
-    let finalSizes = [];
-    if (np.sizeType === 'manual') {
-      finalSizes = np.manualSizes.split(',').map(s => s.trim()).filter(Boolean);
-    } else {
-      const foundSet = (data.sizeSets || []).find(s => s.code === np.sizeType);
-      finalSizes = foundSet ? foundSet.sizes : [];
-    }
+    setSubmitting(true);
+    try {
+      const isPre = np.type === 'preorder';
+      
+      let finalSizes = [];
+      if (np.sizeType === 'manual') {
+        finalSizes = np.manualSizes.split(',').map(s => s.trim()).filter(Boolean);
+      } else {
+        const foundSet = (data.sizeSets || []).find(s => s.code === np.sizeType);
+        finalSizes = foundSet ? foundSet.sizes : [];
+      }
 
-    const finalColors = np.selectedColors.map(c => ({ name: c.name, hex: c.hex }));
+      const finalColors = np.selectedColors.map(c => ({ name: c.name, hex: c.hex }));
 
-    const prod = {
-      code: np.name.toLowerCase().replace(/\s+/g, '-') + '-' + Math.floor(Math.random() * 1000),
-      name: np.name,
-      category: np.cat,
-      type: np.type,
-      price: Number(np.price),
-      sizes: finalSizes,
-      colors: finalColors,
-      images: np.images.map(img => img.src),
-      print_type: np.print,
-      stock: isPre ? 0 : Number(np.stock),
-      costs: {
+      const fd = new FormData();
+      fd.append('code', np.name.toLowerCase().replace(/\s+/g, '-') + '-' + Math.floor(Math.random() * 1000));
+      fd.append('name', np.name);
+      fd.append('category', np.cat);
+      fd.append('type', np.type);
+      fd.append('price', Number(np.price));
+      fd.append('product_parent_id', np.parentId || '');
+      fd.append('sizes', JSON.stringify(finalSizes));
+      fd.append('colors', JSON.stringify(finalColors));
+      fd.append('print_type', np.print);
+      fd.append('stock', JSON.stringify(isPre ? {} : np.stockSizes));
+      fd.append('costs', JSON.stringify({
         production: Number(np.produksi||0),
         kemasan: Number(np.kemasan||0),
         stiker: Number(np.stiker||0)
-      }
-    };
+      }));
+      fd.append('hpp_less_xxl_unit', Number(np.hppLess || 0));
+      const showDualPrice = hasOverXxlSizes(finalSizes);
+      fd.append('hpp_more_xxl_unit', showDualPrice ? Number(np.hppMore || 0) : Number(np.hppLess || 0));
+      fd.append('price_less_xxl', Number(np.priceLess || np.price || 0));
+      fd.append('price_more_xxl', showDualPrice ? Number(np.priceMore || 0) : Number(np.priceLess || np.price || 0));
+      if (np.priceLessDiscount) fd.append('price_less_xxl_discount', Number(np.priceLessDiscount));
+      fd.append('price_more_xxl_discount', showDualPrice ? (np.priceMoreDiscount ? Number(np.priceMoreDiscount) : '') : (np.priceLessDiscount ? Number(np.priceLessDiscount) : ''));
 
-    await useStore.getState().addProduct(prod);
-    setNp(blankProd());
-    updateState({ prodModal: false });
+      np.images.forEach((img) => {
+        if (img.file && img.file instanceof File && img.file.size > 0) {
+          fd.append('images[]', img.file);
+        }
+      });
+
+      await useStore.getState().addProduct(fd);
+      setNp(blankProd());
+      updateState({ prodModal: false });
+    } catch (e) {
+      const msg = e.response?.data?.message || e.response?.data?.errors?.images?.[0] || e.message || 'Gagal menambahkan produk';
+      useStore.getState().showToast(msg);
+      console.error(e);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -120,6 +147,16 @@ export default function ProductModal() {
 
         <div className="prodmodal-body" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <div>
+            <div style={labelStyle}>SKU (Product Parent)</div>
+            <select value={np.parentId} onChange={set('parentId')} style={inputStyle}>
+              <option value="">— Pilih SKU —</option>
+              {(data.productParents || []).map((pp) => (
+                <option key={pp.id} value={pp.id}>{pp.sku}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
             <div style={labelStyle}>Nama Produk</div>
             <input placeholder="mis. Targa Florio Tee" value={np.name} onChange={set('name')} style={inputStyle} />
           </div>
@@ -132,9 +169,85 @@ export default function ProductModal() {
               </select>
             </div>
             <div>
-              <div style={labelStyle}>Harga (Rp)</div>
-              <input type="number" placeholder="185000" value={np.price} onChange={set('price')} style={inputStyle} />
+              <div style={labelStyle}>Pilihan Ukuran</div>
+              <select value={np.sizeType} onChange={(e) => {
+                const newType = e.target.value;
+                const foundSet = (data.sizeSets || []).find(s => s.code === newType);
+                const sizes = foundSet ? foundSet.sizes : [];
+                const newStockSizes = {};
+                sizes.forEach(sz => { newStockSizes[sz] = np.stockSizes[sz] || 0; });
+                setNp({ ...np, sizeType: newType, stockSizes: newStockSizes });
+              }} style={inputStyle}>
+                {(data.sizeSets || []).map(sz => (
+                  <option key={sz.code} value={sz.code}>{sz.name} ({sz.sizes.join(', ')})</option>
+                ))}
+              </select>
             </div>
+          </div>
+
+          {np.type === 'ready' && (() => {
+            const finalSizes = (data.sizeSets || []).find(s => s.code === np.sizeType)?.sizes || [];
+            if (finalSizes.length === 0) return null;
+            return (
+              <div>
+                <div style={labelStyle}>Stok per Ukuran</div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: '10px' }}>
+                  {finalSizes.map(sz => (
+                    <div key={sz}>
+                      <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', fontWeight: 700, marginBottom: '4px' }}>{sz}</div>
+                      <input type="number" placeholder="0" min="0"
+                        value={np.stockSizes[sz] || ''}
+                        onChange={(e) => setNp({ ...np, stockSizes: { ...np.stockSizes, [sz]: Number(e.target.value) || 0 } })}
+                        style={{ ...inputStyle, padding: '10px', fontSize: '13px' }}
+                      />
+                    </div>
+                  ))}
+                </div>
+                <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#6b655a', marginTop: '8px' }}>
+                  Total: {Object.values(np.stockSizes).reduce((a, b) => a + (b || 0), 0)} unit
+                </div>
+              </div>
+            );
+          })()}
+
+          <div style={{ borderTop: '1px solid #ddd5c4', paddingTop: '16px' }}>
+            <div style={labelStyle}>Harga & HPP per Ukuran</div>
+            {(() => {
+              const currentSizes = (data.sizeSets || []).find(s => s.code === np.sizeType)?.sizes || [];
+              const showDual = hasOverXxlSizes(currentSizes);
+              if (showDual) {
+                return (
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                    <div style={{ border: '2px solid #14110D', padding: '14px', background: '#fff' }}>
+                      <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', fontWeight: 700, marginBottom: '10px', color: '#14110D' }}>&lt; XXL (XS, S, M, L, XL)</div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <input type="number" placeholder="HPP / Satuan" value={np.hppLess} onChange={set('hppLess')} style={inputStyle} />
+                        <input type="number" placeholder="Harga Jual" value={np.priceLess} onChange={set('priceLess')} style={inputStyle} />
+                        <input type="number" placeholder="Harga Coret (opsional)" value={np.priceLessDiscount} onChange={set('priceLessDiscount')} style={inputStyle} />
+                      </div>
+                    </div>
+                    <div style={{ border: '2px solid #14110D', padding: '14px', background: '#fff' }}>
+                      <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', fontWeight: 700, marginBottom: '10px', color: '#14110D' }}>&gt;= XXL (XXL, 3L, 4L, 5L, 6L)</div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <input type="number" placeholder="HPP / Satuan" value={np.hppMore} onChange={set('hppMore')} style={inputStyle} />
+                        <input type="number" placeholder="Harga Jual" value={np.priceMore} onChange={set('priceMore')} style={inputStyle} />
+                        <input type="number" placeholder="Harga Coret (opsional)" value={np.priceMoreDiscount} onChange={set('priceMoreDiscount')} style={inputStyle} />
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
+              return (
+                <div style={{ border: '2px solid #14110D', padding: '14px', background: '#fff', maxWidth: '400px' }}>
+                  <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', fontWeight: 700, marginBottom: '10px', color: '#14110D' }}>Harga</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <input type="number" placeholder="HPP / Satuan" value={np.hppLess} onChange={set('hppLess')} style={inputStyle} />
+                    <input type="number" placeholder="Harga Jual" value={np.priceLess} onChange={set('priceLess')} style={inputStyle} />
+                    <input type="number" placeholder="Harga Coret (opsional)" value={np.priceLessDiscount} onChange={set('priceLessDiscount')} style={inputStyle} />
+                  </div>
+                </div>
+              );
+            })()}
           </div>
 
           <div>
@@ -143,27 +256,6 @@ export default function ProductModal() {
               <button onClick={() => setNp({ ...np, type: 'ready' })} style={segStyle(np.type === 'ready')}>Ready Stock</button>
               <button onClick={() => setNp({ ...np, type: 'preorder' })} style={segStyle(np.type === 'preorder')}>Pre-Order</button>
             </div>
-          </div>
-
-          <div className="prodmodal-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
-            <div>
-              <div style={labelStyle}>Pilihan Ukuran</div>
-              <select value={np.sizeType} onChange={set('sizeType')} style={{ ...inputStyle, marginBottom: np.sizeType === 'manual' ? '8px' : '0' }}>
-                {(data.sizeSets || []).map(sz => (
-                  <option key={sz.code} value={sz.code}>{sz.name} ({sz.sizes.join(', ')})</option>
-                ))}
-                <option value="manual">Lainnya (Manual)</option>
-              </select>
-              {np.sizeType === 'manual' && (
-                <input placeholder="S,M,L,XL" value={np.manualSizes} onChange={set('manualSizes')} style={inputStyle} />
-              )}
-            </div>
-            {np.type === 'ready' && (
-              <div>
-                <div style={labelStyle}>Stok Awal</div>
-                <input type="number" placeholder="50" value={np.stock} onChange={set('stock')} style={inputStyle} />
-              </div>
-            )}
           </div>
 
           <div className="prodmodal-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
@@ -211,7 +303,7 @@ export default function ProductModal() {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '10px' }}>
                 {np.images.map((im, i) => (
                   <div key={i} style={{ position: 'relative', aspectRatio: 1, border: '2px solid #14110D', background: '#e0d8c3' }}>
-                    <img src={im.src} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Uploaded" />
+                    <img src={im.preview || im.src} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Uploaded" />
                     <button onClick={() => removeImage(i)} style={{ position: 'absolute', top: 0, right: 0, background: '#14110D', color: '#F2EEE4', border: 'none', cursor: 'pointer', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px' }}>×</button>
                   </div>
                 ))}
@@ -230,9 +322,10 @@ export default function ProductModal() {
 
           <button
             onClick={addProduct}
-            style={{ background: '#F2C015', color: '#14110D', border: 'none', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '14px', letterSpacing: '0.06em', textTransform: 'uppercase', padding: '16px', marginTop: '8px' }}
+            disabled={submitting}
+            style={{ background: submitting ? '#d4b812' : '#F2C015', color: '#14110D', border: 'none', cursor: submitting ? 'not-allowed' : 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '14px', letterSpacing: '0.06em', textTransform: 'uppercase', padding: '16px', marginTop: '8px', width: '100%', opacity: submitting ? 0.7 : 1 }}
           >
-            Simpan Produk ke Katalog
+            {submitting ? 'Menyimpan...' : 'Simpan Produk ke Katalog'}
           </button>
         </div>
       </div>

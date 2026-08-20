@@ -6,7 +6,9 @@ import SizeSetService from '../services/SizeSetService';
 import ColorOptionService from '../services/ColorOptionService';
 import OwnerService from '../services/OwnerService';
 import ProductService from '../services/ProductService';
+import ProductParentService from '../services/ProductParentService';
 import OrderService from '../services/OrderService';
+import CartService from '../services/CartService';
 import AuthService from '../services/AuthService';
 
 const deepClone = (obj) => {
@@ -16,7 +18,7 @@ const deepClone = (obj) => {
 
 export const useStore = create((set, get) => ({
     // Data from API (replacing data.js)
-    data: { PRODUCTS: [], categories: [], sizeSets: [], colorOptions: [], owners: [], orders: [] },
+    data: { PRODUCTS: [], categories: [], sizeSets: [], colorOptions: [], owners: [], orders: [], productParents: [] },
     dataLoading: true,
     setData: (updater) => set((prev) => ({ data: typeof updater === 'function' ? updater(prev.data) : updater })),
     
@@ -51,6 +53,7 @@ export const useStore = create((set, get) => ({
             localStorage.setItem('auth_user', JSON.stringify(result.user));
             set((prev) => ({ state: { ...prev.state, user: result.user, authOpen: false } }));
             get().showToast('Login berhasil');
+            await get().loadCartFromDB();
             return result;
         } catch (error) {
             get().showToast(error.response?.data?.message || 'Login gagal');
@@ -65,6 +68,7 @@ export const useStore = create((set, get) => ({
             localStorage.setItem('auth_user', JSON.stringify(result.user));
             set((prev) => ({ state: { ...prev.state, user: result.user, authOpen: false } }));
             get().showToast('Registrasi berhasil');
+            await get().loadCartFromDB();
             return result;
         } catch (error) {
             get().showToast(error.response?.data?.message || 'Registrasi gagal');
@@ -73,13 +77,14 @@ export const useStore = create((set, get) => ({
     },
     logout: async () => {
         try {
+            await CartService.clear();
+        } catch (e) {}
+        try {
             await AuthService.logout();
-        } catch (error) {
-            // Ignore error, just clear local state
-        }
+        } catch (error) {}
         localStorage.removeItem('auth_token');
         localStorage.removeItem('auth_user');
-        set((prev) => ({ state: { ...prev.state, user: null } }));
+        set((prev) => ({ state: { ...prev.state, user: null, cart: [] } }));
         get().showToast('Logout berhasil');
     },
     loadUser: async () => {
@@ -90,6 +95,7 @@ export const useStore = create((set, get) => ({
                 const user = await AuthService.me();
                 localStorage.setItem('auth_user', JSON.stringify(user));
                 set((prev) => ({ state: { ...prev.state, user } }));
+                await get().loadCartFromDB();
             } catch (error) {
                 localStorage.removeItem('auth_token');
                 localStorage.removeItem('auth_user');
@@ -98,19 +104,20 @@ export const useStore = create((set, get) => ({
     },
     isAdmin: () => {
         const { state } = get();
-        return state.user?.role === 'admin';
+        return state.user?.role === 'admin' || state.user?.role === '1';
     },
     
     // API Fetcher
     fetchInitialData: async () => {
         try {
-            const [categories, sizeSets, colorOptions, owners, products, orders] = await Promise.all([
+            const [categories, sizeSets, colorOptions, owners, products, orders, productParents] = await Promise.all([
                 CategoryService.getAll(),
                 SizeSetService.getAll(),
                 ColorOptionService.getAll(),
                 OwnerService.getAll(),
                 ProductService.getAll(),
-                OrderService.getAll()
+                OrderService.getAll(),
+                ProductParentService.getAll()
             ]);
 
             set((prev) => {
@@ -120,10 +127,21 @@ export const useStore = create((set, get) => ({
                 newData.sizeSets = sizeSets.map(ss => ({ ...ss, sizes: typeof ss.sizes === 'string' ? JSON.parse(ss.sizes || '[]') : ss.sizes }));
                 newData.colorOptions = colorOptions;
                 newData.owners = owners;
+                newData.productParents = productParents;
                 newData.PRODUCTS = products.map(p => {
+      const API_BASE = 'http://localhost:8000/storage/';
       let sizes = typeof p.sizes === 'string' ? JSON.parse(p.sizes || '[]') : (p.sizes || []);
       let colors = typeof p.colors === 'string' ? JSON.parse(p.colors || '[]') : (p.colors || []);
-      let images = p.product_images && p.product_images.length > 0 ? p.product_images.map(img => typeof img === 'string' ? {src: img} : img) : (typeof p.images === 'string' ? JSON.parse(p.images || '[]') : (p.images || []));
+      let images = [];
+      if (p.product_images && p.product_images.length > 0) {
+          images = p.product_images.map(img => {
+              const src = typeof img === 'string' ? img : (img.src || '');
+              const fullSrc = src.startsWith('http') ? src : API_BASE + src;
+              return { src: fullSrc, name: img.name || '' };
+          });
+      } else {
+          images = typeof p.images === 'string' ? JSON.parse(p.images || '[]') : (p.images || []);
+      }
       let costs = typeof p.costs === 'string' ? JSON.parse(p.costs || '{}') : (p.costs || {});
       
       let orig = (prev.data.PRODUCTS || []).find(op => op.id === p.code || op.code === p.code || op.name === p.name);
@@ -144,10 +162,21 @@ export const useStore = create((set, get) => ({
       result.printType = p.print_type;
       result.sizes = sizes;
       result.colors = colors;
-      result.stock = p.stock;
+      result.stock = typeof p.stock === 'string' ? JSON.parse(p.stock || '{}') : (p.stock || {});
+      result.stockTotal = Object.values(result.stock).reduce((a, b) => a + (b || 0), 0);
       result.sold = p.sold;
       result.committed = p.committed || 0;
       result.target = p.target || 0;
+      result.hppLessXxlUnit = p.hpp_less_xxl_unit || 0;
+      result.hppMoreXxlUnit = p.hpp_more_xxl_unit || 0;
+      result.priceLessXxl = p.price_less_xxl || 0;
+      result.priceMoreXxl = p.price_more_xxl || 0;
+      result.priceLessXxlDiscount = p.price_less_xxl_discount || null;
+      result.priceMoreXxlDiscount = p.price_more_xxl_discount || null;
+      result.parentId = p.product_parent_id || null;
+      result.parentSku = p.product_parent?.sku || null;
+      result.totalSold = p.totalSold || 0;
+      result.totalRevenue = p.totalRevenue || 0;
       
       // Use DB images if available, else keep orig
       if (images.length > 0) {
@@ -164,15 +193,14 @@ export const useStore = create((set, get) => ({
           result.preorder = { sessionName: 'NEW SESSION', status: 'open', target: 50, committed: 0, eta: '-', buyers: [], price: p.price, compareAt: p.compare_at||0, sizes: sizes, colors: colors, costs: costs, split: {base: 'gross'} };
       }
       if (!result.productionSessions && p.type === 'ready') {
-          result.productionSessions = [{ name: 'PRODUKSI AWAL', date: 'Hari Ini', qty: p.stock||0, sold: p.sold||0, status: 'active', price: p.price, compareAt: p.compare_at||0, sizes: sizes, costs: costs }];
+          result.productionSessions = [{ name: 'PRODUKSI AWAL', date: 'Hari Ini', qty: result.stockTotal||0, sold: p.sold||0, status: 'active', price: p.price, compareAt: p.compare_at||0, sizes: sizes, costs: costs }];
       }
       result.sessionHistory = result.sessionHistory || [];
       result.views = result.views || 0;
       
       return result;
   });
-                newData.orders = orders.map(o => ({ ...o, order_items: o.items || [] }));
-                newData.orders = newData.orders.length > 1 ? newData.orders : (prev.data.orders && prev.data.orders.length > 0 ? prev.data.orders : newData.orders);
+                newData.orders = orders.length > 0 ? orders.map(o => ({ ...o, db_id: o.id, id: o.code || o.id })) : (prev.data.orders || []);
                 return { data: newData, dataLoading: false };
             });
         } catch (error) {
@@ -186,21 +214,21 @@ export const useStore = create((set, get) => ({
             await CategoryService.create({ name });
             await get().fetchInitialData();
             get().showToast('Kategori berhasil ditambahkan');
-        } catch (e) { console.error(e); }
+        } catch (e) { get().showToast(e.response?.data?.message || 'Gagal menambahkan kategori'); console.error(e); }
     },
     updateCategory: async (id, name) => {
         try {
             await CategoryService.update(id, { name });
             await get().fetchInitialData();
             get().showToast('Kategori diperbarui');
-        } catch (e) { console.error(e); }
+        } catch (e) { get().showToast(e.response?.data?.message || 'Gagal memperbarui kategori'); console.error(e); }
     },
     deleteCategory: async (id) => {
         try {
             await CategoryService.delete(id);
             await get().fetchInitialData();
             get().showToast('Kategori dihapus');
-        } catch (e) { console.error(e); }
+        } catch (e) { get().showToast(e.response?.data?.message || 'Gagal menghapus kategori'); console.error(e); }
     },
 
     // CRUD Actions for SizeSets
@@ -209,23 +237,21 @@ export const useStore = create((set, get) => ({
             await SizeSetService.create({ name, code: name.toLowerCase().replace(/\s+/g, '-') + '-' + Math.floor(Math.random() * 1000), active: true, sizes: JSON.stringify([]) });
             await get().fetchInitialData();
             get().showToast('Pilihan ukuran ditambahkan');
-        } catch (e) { console.error(e); }
+        } catch (e) { get().showToast(e.response?.data?.message || 'Gagal menambahkan ukuran'); console.error(e); }
     },
     updateSizeSet: async (id, data) => {
         try {
-            // If data contains sizes array, we should stringify it before sending to match our previous logic, or Laravel model casts will handle it?
-            // Actually Laravel casts it, so we can send array.
             await SizeSetService.update(id, data);
             await get().fetchInitialData();
             get().showToast('Pilihan ukuran diperbarui');
-        } catch (e) { console.error(e); }
+        } catch (e) { get().showToast(e.response?.data?.message || 'Gagal memperbarui ukuran'); console.error(e); }
     },
     deleteSizeSet: async (id) => {
         try {
             await SizeSetService.delete(id);
             await get().fetchInitialData();
             get().showToast('Pilihan ukuran dihapus');
-        } catch (e) { console.error(e); }
+        } catch (e) { get().showToast(e.response?.data?.message || 'Gagal menghapus ukuran'); console.error(e); }
     },
 
     // CRUD Actions for ColorOptions
@@ -234,21 +260,21 @@ export const useStore = create((set, get) => ({
             await ColorOptionService.create({ name, code: name.toLowerCase().replace(/\s+/g, '-') + '-' + Math.floor(Math.random() * 1000), hex, active: true });
             await get().fetchInitialData();
             get().showToast('Pilihan warna ditambahkan');
-        } catch (e) { console.error(e); }
+        } catch (e) { get().showToast(e.response?.data?.message || 'Gagal menambahkan warna'); console.error(e); }
     },
     updateColorOption: async (id, data) => {
         try {
             await ColorOptionService.update(id, data);
             await get().fetchInitialData();
             get().showToast('Pilihan warna diperbarui');
-        } catch (e) { console.error(e); }
+        } catch (e) { get().showToast(e.response?.data?.message || 'Gagal memperbarui warna'); console.error(e); }
     },
     deleteColorOption: async (id) => {
         try {
             await ColorOptionService.delete(id);
             await get().fetchInitialData();
             get().showToast('Pilihan warna dihapus');
-        } catch (e) { console.error(e); }
+        } catch (e) { get().showToast(e.response?.data?.message || 'Gagal menghapus warna'); console.error(e); }
     },
 
     // CRUD Actions for Owners
@@ -257,44 +283,52 @@ export const useStore = create((set, get) => ({
             await OwnerService.create({ name, pic, code: name.toLowerCase().replace(/\s+/g, '-') + '-' + Math.floor(Math.random() * 1000) });
             await get().fetchInitialData();
             get().showToast('Owner berhasil ditambahkan');
-        } catch (e) { console.error(e); }
+        } catch (e) { get().showToast(e.response?.data?.message || 'Gagal menambahkan owner'); console.error(e); }
     },
     updateOwner: async (id, data) => {
         try {
             await OwnerService.update(id, data);
             await get().fetchInitialData();
             get().showToast('Owner diperbarui');
-        } catch (e) { console.error(e); }
+        } catch (e) { get().showToast(e.response?.data?.message || 'Gagal memperbarui owner'); console.error(e); }
     },
     deleteOwner: async (id) => {
         try {
             await OwnerService.delete(id);
             await get().fetchInitialData();
             get().showToast('Owner dihapus');
-        } catch (e) { console.error(e); }
+        } catch (e) { get().showToast(e.response?.data?.message || 'Gagal menghapus owner'); console.error(e); }
     },
 
     // CRUD Actions for Products
     addProduct: async (data) => {
         try {
-            await ProductService.create(data);
+            if (data instanceof FormData) {
+                await ProductService.createWithFiles(data);
+            } else {
+                await ProductService.create(data);
+            }
             await get().fetchInitialData();
             get().showToast('Produk berhasil ditambahkan');
-        } catch (e) { console.error(e); }
+        } catch (e) { get().showToast(e.response?.data?.message || e.response?.data?.errors?.images?.[0] || e.message || 'Gagal menambahkan produk'); console.error(e); }
     },
     updateProduct: async (id, data) => {
         try {
-            await ProductService.update(id, data);
+            if (data instanceof FormData) {
+                await ProductService.updateWithFiles(id, data);
+            } else {
+                await ProductService.update(id, data);
+            }
             await get().fetchInitialData();
             get().showToast('Produk diperbarui');
-        } catch (e) { console.error(e); }
+        } catch (e) { get().showToast(e.response?.data?.message || e.response?.data?.errors?.images?.[0] || e.message || 'Gagal memperbarui produk'); console.error(e); }
     },
     deleteProduct: async (id) => {
         try {
             await ProductService.delete(id);
             await get().fetchInitialData();
             get().showToast('Produk dihapus');
-        } catch (e) { console.error(e); }
+        } catch (e) { get().showToast(e.response?.data?.message || 'Gagal menghapus produk'); console.error(e); }
     },
 
     // Submit Pre-Order
@@ -372,11 +406,13 @@ export const useStore = create((set, get) => ({
     },
 
     committedOf: (p) => {
-        const o = get().state.committedOverride[p.id];
+        if (!p) return 0;
+        const o = get().state.committedOverride?.[p.id];
         return o != null ? o : (p.committed || 0);
     },
 
     unitsOf: (p) => {
+        if (!p || typeof p !== 'object') return 0;
         return p.type === 'preorder' ? get().committedOf(p) : p.sold;
     },
 
@@ -410,14 +446,22 @@ export const useStore = create((set, get) => ({
         return { committed, paidIn, target, count: allSess.length };
     },
 
-    addToCart: () => {
-        const { data, state, updateState } = get();
+    addToCart: async () => {
+        const { data, state, updateState, showToast } = get();
+        const user = state.user;
         const p = data.PRODUCTS.find(x => x.id === state.activeId);
         if (!p) return;
         if (p.sizes.length > 1 && !state.selectedSize) return;
         if (p.colors && p.colors.length > 1 && !state.selectedColor) return;
         
         const size = state.selectedSize || p.sizes[0];
+        if (p.type === 'ready' && p.stock) {
+            const sizeStock = p.stock[size] || 0;
+            if (sizeStock <= 0) {
+                showToast('Stok ' + size + ' habis');
+                return;
+            }
+        }
         const color = state.selectedColor || (p.colors && p.colors[0]) || '';
         const key = p.id + '|' + size + '|' + color;
         const cart = [...state.cart];
@@ -429,12 +473,67 @@ export const useStore = create((set, get) => ({
             cart.push({ key, id: p.id, size, color, qty: state.qty });
         }
         updateState({ cart, cartOpen: true });
+
+        if (user) {
+            try {
+                await CartService.add({ product_id: p.db_id, size, color, qty: state.qty });
+                await get().loadCartFromDB();
+            } catch (e) {
+                console.error('Cart add failed:', e.response?.data || e.message);
+                get().showToast('Gagal simpan keranjang: ' + (e.response?.data?.message || e.message));
+            }
+        }
     },
 
-    changeQty: (key, d) => {
+    changeQty: async (key, d) => {
         const { state, updateState } = get();
+        const user = state.user;
+        const item = state.cart.find(c => c.key === key);
         let cart = state.cart.map(c => c.key === key ? { ...c, qty: c.qty + d } : c).filter(c => c.qty > 0);
         updateState({ cart });
+
+        if (user && item) {
+            const newQty = item.qty + d;
+            try {
+                if (newQty <= 0 && item.dbId) {
+                    await CartService.remove(item.dbId);
+                } else if (item.dbId) {
+                    await CartService.update(item.dbId, newQty);
+                }
+                await get().loadCartFromDB();
+            } catch (e) {}
+        }
+    },
+
+    removeCartItem: async (key) => {
+        const { state, updateState } = get();
+        const user = state.user;
+        const item = state.cart.find(c => c.key === key);
+        let cart = state.cart.filter(c => c.key !== key);
+        updateState({ cart });
+
+        if (user && item?.dbId) {
+            try { await CartService.remove(item.dbId); } catch (e) {}
+        }
+    },
+
+    loadCartFromDB: async () => {
+        try {
+            const items = await CartService.getAll();
+            const cart = items.map(item => {
+                const p = get().data.PRODUCTS.find(x => x.db_id === item.product_id);
+                const pid = p ? p.id : 'product-' + item.product_id;
+                return {
+                    key: pid + '|' + (item.size || '') + '|' + (item.color || ''),
+                    id: pid,
+                    size: item.size || '',
+                    color: item.color || '',
+                    qty: item.qty,
+                    dbId: item.id
+                };
+            });
+            set((prev) => ({ state: { ...prev.state, cart } }));
+        } catch (e) {}
     },
 
     findSession: (productId, sessionName) => {
