@@ -7,20 +7,30 @@ use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Models\OrderItem;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
     public function index()
     {
-        $products = Product::all();
+        $products = Product::with(['productImages', 'productParent'])->get();
         $committed = OrderItem::select('product_id', DB::raw('SUM(qty) as total_qty'))
             ->where('type', 'preorder')
             ->whereHas('order', fn($q) => $q->whereIn('status', ['Awaiting', 'Paid', 'Producing', 'Shipping']))
             ->groupBy('product_id')
             ->pluck('total_qty', 'product_id');
 
-        $products->each(function ($p) use ($committed) {
+        $paidStats = OrderItem::select('product_id', DB::raw('SUM(qty) as total_sold'), DB::raw('SUM(qty * price) as total_revenue'))
+            ->whereHas('order', fn($q) => $q->where('status', 'Paid'))
+            ->groupBy('product_id')
+            ->get()
+            ->keyBy('product_id');
+
+        $products->each(function ($p) use ($committed, $paidStats) {
             $p->committed = $committed->get($p->id, 0);
+            $stats = $paidStats->get($p->id);
+            $p->totalSold = $stats->total_sold ?? 0;
+            $p->totalRevenue = $stats->total_revenue ?? 0;
         });
 
         return response()->json($products);
@@ -28,44 +38,104 @@ class ProductController extends Controller
 
     public function store(Request $request)
     {
-        
         $data = Product::create($request->except(['images', 'defaultImg', 'heroImg']));
-        if ($request->has('images')) {
-            foreach($request->images as $img) {
-                $data->productImages()->create(['src' => is_string($img) ? $img : ($img['src'] ?? '')]);
+
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $idx => $file) {
+                if ($file && $file->isValid()) {
+                    $path = $file->store('products/' . $data->id, 'public');
+                    $data->productImages()->create(['src' => $path]);
+                } elseif ($file) {
+                    return response()->json([
+                        'message' => 'File "' . $file->getClientOriginalName() . '" gagal diupload (maks 10MB)',
+                    ], 422);
+                }
             }
         }
+
         return response()->json(['message' => 'Success', 'data' => $data]);
     }
 
     public function show($id)
     {
-        $data = Product::findOrFail($id);
+        $data = Product::with(['productImages', 'productParent'])->findOrFail($id);
         $committed = OrderItem::where('product_id', $id)
             ->where('type', 'preorder')
             ->whereHas('order', fn($q) => $q->whereIn('status', ['Awaiting', 'Paid', 'Producing', 'Shipping']))
             ->sum('qty');
+
+        $paidStats = OrderItem::where('product_id', $id)
+            ->whereHas('order', fn($q) => $q->where('status', 'Paid'))
+            ->selectRaw('SUM(qty) as total_sold, SUM(qty * price) as total_revenue')
+            ->first();
+
         $data->committed = $committed;
+        $data->totalSold = $paidStats->total_sold ?? 0;
+        $data->totalRevenue = $paidStats->total_revenue ?? 0;
+
         return response()->json($data);
     }
 
     public function update(Request $request, $id)
     {
         $data = Product::where('id', $id)->orWhere('code', $id)->firstOrFail();
-        
-        $data->update($request->except(['images', 'defaultImg', 'heroImg']));
-        if ($request->has('images')) {
+        $data->update($request->except(['images', 'defaultImg', 'heroImg', 'existingImages', 'removedImages']));
+
+        $hasNewFiles = $request->hasFile('images') && count(array_filter($request->file('images'), fn($f) => $f && $f->isValid())) > 0;
+        $existingImages = $request->input('existingImages', []);
+        $removedImages = $request->input('removedImages', []);
+
+        if ($hasNewFiles || count($existingImages) > 0 || count($removedImages) > 0) {
+            $existingPaths = is_string($existingImages) ? json_decode($existingImages, true) : $existingImages;
+            $removedPaths = is_string($removedImages) ? json_decode($removedImages, true) : $removedImages;
+
+            $normalizePath = function ($path) {
+                $path = trim($path);
+                $path = preg_replace('#^https?://[^/]+/storage/#', '', $path);
+                return $path;
+            };
+
+            $normalizedRemoved = array_map($normalizePath, $removedPaths);
+            $normalizedExisting = array_map($normalizePath, $existingPaths);
+
+            foreach ($data->productImages as $oldImage) {
+                if (in_array($normalizePath($oldImage->src), $normalizedRemoved)) {
+                    Storage::disk('public')->delete($oldImage->src);
+                }
+            }
             $data->productImages()->delete();
-            foreach($request->images as $img) {
-                $data->productImages()->create(['src' => is_string($img) ? $img : ($img['src'] ?? '')]);
+
+            foreach ($normalizedExisting as $path) {
+                if ($path && Storage::disk('public')->exists($path)) {
+                    $data->productImages()->create(['src' => $path]);
+                }
+            }
+
+            if ($request->hasFile('images')) {
+                foreach ($request->file('images') as $idx => $file) {
+                    if ($file && $file->isValid()) {
+                        $path = $file->store('products/' . $data->id, 'public');
+                        $data->productImages()->create(['src' => $path]);
+                    } elseif ($file) {
+                        return response()->json([
+                            'message' => 'File "' . $file->getClientOriginalName() . '" gagal diupload (maks 10MB)',
+                        ], 422);
+                    }
+                }
             }
         }
+
         return response()->json(['message' => 'Success', 'data' => $data]);
     }
 
     public function destroy($id)
     {
         $data = Product::where('id', $id)->orWhere('code', $id)->firstOrFail();
+
+        foreach ($data->productImages as $image) {
+            Storage::disk('public')->delete($image->src);
+        }
+
         $data->delete();
         return response()->json(['message' => 'Success']);
     }

@@ -11,34 +11,51 @@ function AnimatedNumber({ value, format, start }) {
 export default function Dashboard() {
   const { data, state, unitsOf } = useStore();
 
-  const totalRevenueN = data.PRODUCTS.reduce((s, p) => s + p.price * unitsOf(p), 0);
-  const totalCostN = data.PRODUCTS.reduce((s, p) => {
-    const units = unitsOf(p);
-    return s + ((p.costs.production || 0) + (p.costs.kemasan || 0) + (p.costs.stiker || 0)) * units;
-  }, 0);
-  const totalProfitN = totalRevenueN - totalCostN;
-  const preorderProducts = data.PRODUCTS.filter(p => p.type === 'preorder');
-  const preorderCommitted = preorderProducts.reduce((s, p) => s + unitsOf(p), 0);
-  const totalOrdersN = data.orders.length + 18;
+  let safeProducts = [];
+  let totalRevenueN = 0;
+  let totalCostN = 0;
+  let totalProfitN = 0;
+  let preorderProducts = [];
+  let preorderCommitted = 0;
+  let totalOrdersN = 0;
+  let kpis = [];
+  let orders = [];
+  let topProducts = [];
 
-  const kpis = [
-    { label: 'Pendapatan', value: totalRevenueN, format: (v) => rp(v), delta: '▲ Total tercatat', deltaColor: '#1f7a3d' },
-    { label: 'Total Pesanan', value: totalOrdersN, format: (v) => String(v), delta: '▲ 6 minggu ini', deltaColor: '#1f7a3d' },
-    { label: 'Pre-Order Terpesan', value: preorderCommitted, format: (v) => String(v) + ' unit', delta: `Lintas ${preorderProducts.length} drop`, deltaColor: '#6b655a' },
-    { label: 'Profit Kotor', value: totalProfitN, format: (v) => rp(v), delta: 'Setelah biaya', deltaColor: '#6b655a' }
-  ];
+  try {
+    safeProducts = (data.PRODUCTS || []).filter(Boolean);
+    totalRevenueN = safeProducts.reduce((s, p) => s + (p.price || 0) * unitsOf(p), 0);
+    totalCostN = safeProducts.reduce((s, p) => {
+      const units = unitsOf(p);
+      const costs = p.costs || {};
+      return s + ((costs.production || 0) + (costs.kemasan || 0) + (costs.stiker || 0)) * units;
+    }, 0);
+    totalProfitN = totalRevenueN - totalCostN;
+    preorderProducts = safeProducts.filter(p => p && p.type === 'preorder');
+    preorderCommitted = preorderProducts.reduce((s, p) => s + unitsOf(p), 0);
+    totalOrdersN = (data.orders || []).length + 18;
 
-  const statusStyleOf = (st) => {
-    if (st === 'Paid' || st === 'Shipped') return { background: '#14110D', color: '#F2EEE4' };
-    if (st === 'Packing') return { background: '#F2C015', color: '#14110D' };
-    return { background: '#fff', color: '#14110D', border: '1px solid #14110D' };
-  };
+    kpis = [
+      { label: 'Pendapatan', value: totalRevenueN, format: (v) => rp(v), delta: '▲ Total tercatat', deltaColor: '#1f7a3d' },
+      { label: 'Total Pesanan', value: totalOrdersN, format: (v) => String(v), delta: '▲ 6 minggu ini', deltaColor: '#1f7a3d' },
+      { label: 'Pre-Order Terpesan', value: preorderCommitted, format: (v) => String(v) + ' unit', delta: `Lintas ${preorderProducts.length} drop`, deltaColor: '#6b655a' },
+      { label: 'Profit Kotor', value: totalProfitN, format: (v) => rp(v), delta: 'Setelah biaya', deltaColor: '#6b655a' }
+    ];
 
-  const orders = data.orders.map(o => ({ ...o, totalFmt: rp(o.total), statusStyle: statusStyleOf(o.status) }));
+    const statusStyleOf = (st) => {
+      if (st === 'Paid' || st === 'Shipped') return { background: '#14110D', color: '#F2EEE4' };
+      if (st === 'Packing') return { background: '#F2C015', color: '#14110D' };
+      return { background: '#fff', color: '#14110D', border: '1px solid #14110D' };
+    };
 
-  const topSorted = [...data.PRODUCTS].sort((a, b) => unitsOf(b) - unitsOf(a)).slice(0, 4);
-  const maxU = unitsOf(topSorted[0]) || 1;
-  const topProducts = topSorted.map(p => ({ name: p.name, units: unitsOf(p), pct: Math.round((unitsOf(p) / maxU) * 100) }));
+    orders = (data.orders || []).map(o => ({ ...o, totalFmt: rp(o.total), statusStyle: statusStyleOf(o.status) }));
+
+    const topSorted = [...safeProducts].sort((a, b) => unitsOf(b) - unitsOf(a)).slice(0, 4);
+    const maxU = unitsOf(topSorted[0]) || 1;
+    topProducts = topSorted.map(p => ({ name: p.name || '-', units: unitsOf(p), pct: Math.round((unitsOf(p) / maxU) * 100) }));
+  } catch (err) {
+    console.error('Dashboard computation error:', err);
+  }
 
   return (
     <>
@@ -75,7 +92,7 @@ export default function Dashboard() {
             {orders.map((o, idx) => (
               <div key={idx} className="dash-order-row" style={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto auto', gap: '12px', alignItems: 'center', padding: '11px 0', borderBottom: '1px solid #ddd5c4' }}>
                 <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#6b655a' }}>{o.id}</span>
-                <span style={{ fontSize: '13px' }}>{o.customer} — {o.items}</span>
+                <span style={{ fontSize: '13px' }}>{o.customer} — {Array.isArray(o.items) ? o.items.map(it => `${it.product?.name || it.product_id} ×${it.qty}`).join(', ') : o.items}</span>
                 <span className="dash-order-total" style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', fontWeight: 700 }}>{o.totalFmt}</span>
                 <span className="dash-order-status" style={{ fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.06em', textTransform: 'uppercase', padding: '3px 8px', ...o.statusStyle }}>{o.status}</span>
               </div>
