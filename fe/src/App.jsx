@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { useStore } from './store';
 import StoreLayout from './components/store/StoreLayout';
@@ -12,6 +12,7 @@ function SyncRouter() {
   const navigate = useNavigate();
   const location = useLocation();
   const { state, updateState } = useStore();
+  const [hasSynced, setHasSynced] = useState(false);
   
   // Sync URL to Zustand (when user types URL or uses Back/Forward button)
   useEffect(() => {
@@ -29,10 +30,12 @@ function SyncRouter() {
             updateState({ view: 'store', route: storeRoute || 'home' });
         }
      }
+     if (!hasSynced) setHasSynced(true);
   }, [location.pathname]);
 
   // Sync Zustand to URL (when components call updateState)
   useEffect(() => {
+     if (!hasSynced) return;
      if (location.pathname === '/admin/login') return;
      if (location.pathname === '/profile') return;
      let expectedPath = '/';
@@ -46,7 +49,7 @@ function SyncRouter() {
      if (location.pathname !== expectedPath) {
          navigate(expectedPath);
      }
-  }, [state.view, state.route, state.adminRoute]);
+  }, [state.view, state.route, state.adminRoute, hasSynced]);
 
   return null;
 }

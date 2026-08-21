@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../../../store';
+import CityService from '../../../services/CityService';
 
 export default function AuthModal() {
   const { state, updateState, login, register } = useStore();
@@ -12,8 +13,49 @@ export default function AuthModal() {
   const [authCity, setAuthCity] = useState('');
   const [authPostalCode, setAuthPostalCode] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
+  const [citySearch, setCitySearch] = useState('');
+  const [cityResults, setCityResults] = useState([]);
+  const [showCityDropdown, setShowCityDropdown] = useState(false);
+  const [selectedCityObj, setSelectedCityObj] = useState(null);
+  const cityRef = useRef(null);
 
-  if (!state.authOpen) return null;
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (cityRef.current && !cityRef.current.contains(e.target)) {
+        setShowCityDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const searchCity = async (query) => {
+    setCitySearch(query);
+    setAuthCity(query);
+    setSelectedCityObj(null);
+    setAuthPostalCode('');
+    if (query.length < 2) {
+      setCityResults([]);
+      setShowCityDropdown(false);
+      return;
+    }
+    try {
+      const results = await CityService.getAll(query);
+      setCityResults(results);
+      setShowCityDropdown(true);
+    } catch (e) {
+      setCityResults([]);
+    }
+  };
+
+  const selectCity = (city) => {
+    const displayName = `${city.type === 'Kabupaten' ? 'Kab. ' : 'Kota '}${city.name}`;
+    setAuthCity(displayName);
+    setCitySearch(displayName);
+    setAuthPostalCode(String(city.postcode));
+    setSelectedCityObj({ id: city.id, name: displayName, postcode: city.postcode });
+    setShowCityDropdown(false);
+  };
 
   const closeAuth = () => {
     updateState({ authOpen: false, authName: '', authEmail: '' });
@@ -23,6 +65,9 @@ export default function AuthModal() {
     setAuthAddress('');
     setAuthCity('');
     setAuthPostalCode('');
+    setCitySearch('');
+    setCityResults([]);
+    setSelectedCityObj(null);
   };
 
   const setAuthLogin = () => updateState({ authMode: 'login' });
@@ -30,6 +75,8 @@ export default function AuthModal() {
 
   const authIsLogin = state.authMode === 'login';
   const authIsRegister = state.authMode === 'register';
+
+  if (!state.authOpen) return null;
 
   const segStyle = (on) => ({
     background: on ? '#14110D' : '#fff',
@@ -66,8 +113,7 @@ export default function AuthModal() {
       await register(state.authName, state.authEmail, authPassword, authPasswordConfirm, {
         phone: authPhone,
         address: authAddress,
-        city: authCity,
-        postal_code: authPostalCode,
+        city_id: selectedCityObj ? selectedCityObj.id : null,
       });
       closeAuth();
     } catch (e) {
@@ -116,10 +162,24 @@ export default function AuthModal() {
             <div className="auth-register-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
               <input placeholder="Nama lengkap" value={state.authName} onChange={e => updateState({ authName: e.target.value })} style={{ gridColumn: '1/3', padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
               <input placeholder="Email" value={state.authEmail} onChange={e => updateState({ authEmail: e.target.value })} style={{ gridColumn: '1/3', padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
-              <input placeholder="No. Telp / WhatsApp" value={authPhone} onChange={e => setAuthPhone(e.target.value)} style={{ padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
-              <input placeholder="Kode Pos" value={authPostalCode} onChange={e => setAuthPostalCode(e.target.value)} style={{ padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
+              <input placeholder="No. Telp / WhatsApp" value={authPhone} onChange={e => setAuthPhone(e.target.value)} style={{ gridColumn: '1/3', padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
+              <div ref={cityRef} style={{ gridColumn: '1/3', position: 'relative' }}>
+                <input placeholder="Kota / Kabupaten" value={authCity} onChange={e => searchCity(e.target.value)} onFocus={() => cityResults.length > 0 && setShowCityDropdown(true)} style={{ width: '100%', padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px', boxSizing: 'border-box' }} />
+                {showCityDropdown && cityResults.length > 0 && (
+                  <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#fff', border: '2px solid #14110D', borderTop: 'none', maxHeight: '200px', overflowY: 'auto', zIndex: 10 }}>
+                    {cityResults.slice(0, 30).map(city => (
+                      <div key={city.id} onClick={() => selectCity(city)} style={{ padding: '10px 13px', cursor: 'pointer', fontSize: '13px', borderBottom: '1px solid #ddd5c4' }}
+                        onMouseEnter={e => e.currentTarget.style.background = '#F2EEE4'}
+                        onMouseLeave={e => e.currentTarget.style.background = '#fff'}>
+                        <span style={{ fontWeight: 700 }}>{city.type === 'Kabupaten' ? 'Kab. ' : 'Kota '}{city.name}</span>
+                        <span style={{ color: '#6b655a', marginLeft: '6px' }}>{city.province}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <input placeholder="Kode Pos" value={authPostalCode} readOnly style={{ gridColumn: '1/3', padding: '13px', border: '2px solid #14110D', background: selectedCityObj ? '#e4ddcd' : '#fff', fontSize: '14px', cursor: selectedCityObj ? 'not-allowed' : 'text' }} />
               <input placeholder="Alamat lengkap" value={authAddress} onChange={e => setAuthAddress(e.target.value)} style={{ gridColumn: '1/3', padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
-              <input placeholder="Kota" value={authCity} onChange={e => setAuthCity(e.target.value)} style={{ gridColumn: '1/3', padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
               <input type="password" placeholder="Password (opsional)" value={authPassword} onChange={e => setAuthPassword(e.target.value)} style={{ gridColumn: '1/3', padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
               {authPassword && (
                 <input type="password" placeholder="Konfirmasi Password" value={authPasswordConfirm} onChange={e => setAuthPasswordConfirm(e.target.value)} style={{ gridColumn: '1/3', padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />

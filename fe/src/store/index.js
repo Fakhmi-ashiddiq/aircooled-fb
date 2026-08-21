@@ -332,7 +332,7 @@ export const useStore = create((set, get) => ({
     },
 
     // Submit Pre-Order
-    submitPreOrder: async ({ product, items, shippingCost, name, email, phone, address, city, postalCode, notes, userId }) => {
+    submitPreOrder: async ({ product, items, shippingCost, name, email, phone, address, cityId, notes, userId }) => {
         try {
             const totalQty = items.reduce((a, it) => a + (it.qty || 1), 0);
             const subtotal = (product.price || 0) * totalQty;
@@ -363,8 +363,7 @@ export const useStore = create((set, get) => ({
                 phone,
                 email,
                 address,
-                city,
-                postal_code: postalCode,
+                city_id: cityId || null,
                 shipping_cost: shippingCost,
                 notes: notes || '',
                 order_items: orderItems

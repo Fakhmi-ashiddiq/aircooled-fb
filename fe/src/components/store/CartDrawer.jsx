@@ -1,6 +1,7 @@
 import React, { useContext } from 'react';
 import { useStore } from '../../store';
 import { rp } from '../../utils/helpers';
+import { isSizeOverXxl } from '../../hooks/useProductVM';
 
 export default function CartDrawer() {
   const { state, updateState, data, go, changeQty } = useStore();
@@ -9,30 +10,36 @@ export default function CartDrawer() {
 
   const cartLines = state.cart.map(c => {
     const p = data.PRODUCTS.find(x => x.id === c.id);
+    if (!p) return null;
     const metaParts = [];
     if (c.color) metaParts.push(c.color);
     if (p.sizes.length > 1) metaParts.push('Ukuran ' + c.size);
     if (p.type === 'preorder') metaParts.push('Pre-Order');
     else metaParts.push('Ready Stock');
+    const unitPrice = isSizeOverXxl(c.size) ? (p.priceMoreXxl || p.price || 0) : (p.priceLessXxl || p.price || 0);
     return {
       key: c.key,
       name: p.name,
       meta: metaParts.join(' · '),
       qty: c.qty,
+      unitPrice,
       garment: p.garment,
       printLogo: p.print === 'logo',
       printText: p.print === 'text',
-      lineTotal: rp(p.price * c.qty),
+      image: p.images && p.images.length > 0 && p.images[0].src ? p.images[0].src : null,
+      lineTotal: rp(unitPrice * c.qty),
       inc: () => changeQty(c.key, 1),
       dec: () => changeQty(c.key, -1)
     };
-  });
+  }).filter(Boolean);
 
   const cartEmpty = state.cart.length === 0;
   const cartHasItems = state.cart.length > 0;
   const subtotal = state.cart.reduce((s, c) => {
     const p = data.PRODUCTS.find(x => x.id === c.id);
-    return s + p.price * c.qty;
+    if (!p) return s;
+    const unitPrice = isSizeOverXxl(c.size) ? (p.priceMoreXxl || p.price || 0) : (p.priceLessXxl || p.price || 0);
+    return s + unitPrice * c.qty;
   }, 0);
   const cartCount = state.cart.reduce((s, c) => s + c.qty, 0);
 
@@ -68,8 +75,13 @@ export default function CartDrawer() {
           {cartLines.map((ln) => (
             <div key={ln.key} style={{ display: 'flex', gap: '14px', padding: '16px 0', borderBottom: '1px solid #ddd5c4' }}>
               <div style={{ width: '64px', height: '64px', flex: 'none', background: ln.garment, border: '2px solid #14110D', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-                {ln.printLogo && <img src="/assets/logo.png" style={{ width: '60%' }} />}
-                {ln.printText && <div style={{ color: '#F2C015', fontFamily: "'Archivo'", fontWeight: 900, fontSize: '9px', lineHeight: 0.9, textAlign: 'center', textTransform: 'uppercase' }}>AC<br/>SYND</div>}
+                {ln.image ? (
+                  <img src={ln.image} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
+                ) : ln.printLogo ? (
+                  <img src="/assets/logo.png" style={{ width: '60%' }} />
+                ) : ln.printText ? (
+                  <div style={{ color: '#F2C015', fontFamily: "'Archivo'", fontWeight: 900, fontSize: '9px', lineHeight: 0.9, textAlign: 'center', textTransform: 'uppercase' }}>AC<br/>SYND</div>
+                ) : null}
               </div>
               <div style={{ flex: 1 }}>
                 <div style={{ fontFamily: "'Archivo'", fontWeight: 700, fontSize: '14px', textTransform: 'uppercase', lineHeight: 1.05 }}>{ln.name}</div>

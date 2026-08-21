@@ -18,8 +18,7 @@ class AuthController extends Controller
             'email' => 'required|email|unique:users,email',
             'phone' => 'nullable|string|max:255',
             'address' => 'nullable|string|max:255',
-            'city' => 'nullable|string|max:255',
-            'postal_code' => 'nullable|string|max:20',
+            'city_id' => 'nullable|integer|exists:city,id',
             'password' => 'nullable|string|min:6|confirmed',
         ]);
 
@@ -33,7 +32,7 @@ class AuthController extends Controller
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
-            'user' => $user,
+            'user' => $user->load('city'),
             'token' => $token,
         ], 201);
     }
@@ -69,6 +68,6 @@ class AuthController extends Controller
 
     public function me(Request $request)
     {
-        return response()->json($request->user());
+        return response()->json($request->user()->load('city'));
     }
 }

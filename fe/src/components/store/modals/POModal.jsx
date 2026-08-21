@@ -73,8 +73,7 @@ export default function POModal() {
         email: isLoggedIn ? poEmail : (authEmail || '').trim(),
         phone: isLoggedIn ? poPhone : inputPhone,
         address: isLoggedIn ? poAddress : inputAddress,
-        city: isLoggedIn ? poUserCity : poCity,
-        postalCode: isLoggedIn ? poPostalCode : inputPostalCode,
+        cityId: isLoggedIn ? (user?.city_id || null) : null,
         notes: inputNotes,
         userId: user?.id || null
       });
