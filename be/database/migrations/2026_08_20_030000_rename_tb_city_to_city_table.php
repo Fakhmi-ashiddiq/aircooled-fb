@@ -8,11 +8,23 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::rename('tb_city', 'cities');
+        // Jika tb_city ada, maka ganti nama. Jika tidak ada, langsung buat tabel cities.
+        if (Schema::hasTable('tb_city')) {
+            Schema::rename('tb_city', 'cities');
+        } elseif (!Schema::hasTable('cities')) {
+            Schema::create('cities', function (Blueprint $table) {
+                $table->id();
+                $table->string('province_id');
+                $table->string('province');
+                $table->string('type');
+                $table->string('name');
+                $table->string('postcode');
+            });
+        }
     }
 
     public function down(): void
     {
-        Schema::rename('cities', 'tb_city');
+        Schema::dropIfExists('cities');
     }
 };

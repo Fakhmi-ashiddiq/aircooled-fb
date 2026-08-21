@@ -3,6 +3,7 @@ import { useStore } from '../../store';
 import { rp } from '../../utils/helpers';
 import CityService from '../../services/CityService';
 import OrderService from '../../services/OrderService';
+import RajaOngkirService from '../../services/RajaOngkirService';
 import { isSizeOverXxl } from '../../hooks/useProductVM';
 
 export default function Checkout() {
@@ -31,6 +32,12 @@ export default function Checkout() {
   const [showCityDropdown, setShowCityDropdown] = useState(false);
   const [selectedCity, setSelectedCity] = useState(null);
   const [selectedPostalCode, setSelectedPostalCode] = useState(checkoutPostalCode);
+  
+  const [courier, setCourier] = useState('');
+  const [shippingOptions, setShippingOptions] = useState([]);
+  const [selectedShipping, setSelectedShipping] = useState(null);
+  const [shippingLoading, setShippingLoading] = useState(false);
+
   const cityRef = useRef(null);
 
   const authLabel = user ? `${user.name.split(' ')[0]} · Keluar` : 'Masuk | Daftar';
@@ -95,7 +102,31 @@ export default function Checkout() {
     setSelectedCity({ id: city.id, name: displayName, postcode: city.postcode });
     setShowCityDropdown(false);
   };
-  const shipping = subtotal > 0 ? 25000 : 0;
+
+  useEffect(() => {
+    if (selectedCity && courier) {
+      const fetchCost = async () => {
+        setShippingLoading(true);
+        try {
+          const totalQty = cart.reduce((acc, c) => acc + c.qty, 0);
+          const weight = totalQty * 500; // Asumsi 500g per produk
+          const costs = await RajaOngkirService.checkCost(selectedCity.id, weight, courier);
+          setShippingOptions(costs);
+          setSelectedShipping(null);
+        } catch (e) {
+          console.error(e);
+          setShippingOptions([]);
+        }
+        setShippingLoading(false);
+      };
+      fetchCost();
+    } else {
+      setShippingOptions([]);
+      setSelectedShipping(null);
+    }
+  }, [selectedCity, courier, cart]);
+
+  const shipping = selectedShipping ? selectedShipping.value : 0;
   const totalFmt = rp(subtotal + shipping);
 
   const PM = [
@@ -309,7 +340,34 @@ export default function Checkout() {
                   <textarea className="ck-span-full" placeholder="Keterangan (opsional) — ukuran, warna, catatan kurir…" rows="2" style={{ gridColumn: '1/3', padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px', resize: 'vertical' }}></textarea>
                 </div>
 
-                <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', letterSpacing: '0.14em', textTransform: 'uppercase', color: '#14110D', fontWeight: 700, marginBottom: '14px' }}>02 / Metode Pembayaran</div>
+                <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', letterSpacing: '0.14em', textTransform: 'uppercase', color: '#14110D', fontWeight: 700, marginBottom: '14px' }}>02 / Pengiriman (RajaOngkir)</div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '14px', marginBottom: '32px' }}>
+                  <select value={courier} onChange={(e) => setCourier(e.target.value)} disabled={!selectedCity} style={{ padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }}>
+                    <option value="">Pilih Kurir...</option>
+                    <option value="jne">JNE</option>
+                    <option value="pos">POS Indonesia</option>
+                    <option value="tiki">TIKI</option>
+                  </select>
+                  
+                  {shippingLoading && <div style={{ fontSize: '13px', color: '#6b655a' }}>Menghitung ongkos kirim...</div>}
+                  
+                  {!shippingLoading && shippingOptions.length > 0 && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      {shippingOptions.map((opt, i) => (
+                        <label key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px', border: '2px solid #14110D', cursor: 'pointer', background: selectedShipping?.service === opt.service ? '#F2C015' : '#fff' }}>
+                          <input type="radio" name="shipping" checked={selectedShipping?.service === opt.service} onChange={() => setSelectedShipping({ service: opt.service, value: opt.cost[0].value })} />
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontWeight: 'bold' }}>{opt.service}</div>
+                            <div style={{ fontSize: '12px', color: '#6b655a' }}>{opt.description} (Est: {opt.cost[0].etd} hari)</div>
+                          </div>
+                          <div style={{ fontWeight: 'bold' }}>{rp(opt.cost[0].value)}</div>
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', letterSpacing: '0.14em', textTransform: 'uppercase', color: '#14110D', fontWeight: 700, marginBottom: '14px' }}>03 / Metode Pembayaran</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   {payMethods.map((pm, idx) => (
                     <button key={idx} onClick={pm.pick} style={pm.style}>
@@ -342,9 +400,10 @@ export default function Checkout() {
               <span>TOTAL</span>
               <span style={{ fontFamily: "'Space Mono', monospace" }}>{totalFmt}</span>
             </div>
-            <button onClick={placeOrder} style={{ marginTop: '18px', width: '100%', background: '#F2C015', color: '#14110D', border: 'none', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '14px', letterSpacing: '0.06em', textTransform: 'uppercase', padding: '16px' }}>
+            <button disabled={!selectedShipping} onClick={placeOrder} style={{ marginTop: '18px', width: '100%', background: selectedShipping ? '#F2C015' : '#e4ddcd', color: selectedShipping ? '#14110D' : '#8a8377', border: 'none', cursor: selectedShipping ? 'pointer' : 'not-allowed', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '14px', letterSpacing: '0.06em', textTransform: 'uppercase', padding: '16px' }}>
               {checkoutCtaLabel}
             </button>
+            {!selectedShipping && <div style={{ marginTop: '8px', fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#9a3a2a', textAlign: 'center' }}>Pilih opsi pengiriman terlebih dahulu.</div>}
           </div>
         </div>
       )}

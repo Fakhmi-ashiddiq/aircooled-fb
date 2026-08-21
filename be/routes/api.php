@@ -36,4 +36,7 @@ Route::apiResource('product-parents', \App\Http\Controllers\API\ProductParentCon
 Route::apiResource('orders', \App\Http\Controllers\API\OrderController::class);
 Route::get('cities', [\App\Http\Controllers\API\CityController::class, 'index']);
 
-
+// Routes untuk API RajaOngkir
+Route::get('/rajaongkir/provinces', [\App\Http\Controllers\API\RajaOngkirController::class, 'getProvinces']);
+Route::get('/rajaongkir/cities/{province}', [\App\Http\Controllers\API\RajaOngkirController::class, 'getCities']);
+Route::post('/rajaongkir/cost', [\App\Http\Controllers\API\RajaOngkirController::class, 'checkCost']);
