@@ -34,5 +34,6 @@ Route::apiResource('size-sets', \App\Http\Controllers\API\SizeSetController::cla
 Route::apiResource('products', \App\Http\Controllers\API\ProductController::class);
 Route::apiResource('product-parents', \App\Http\Controllers\API\ProductParentController::class);
 Route::apiResource('orders', \App\Http\Controllers\API\OrderController::class);
+Route::get('cities', [\App\Http\Controllers\API\CityController::class, 'index']);
 
 

@@ -1,6 +1,9 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState, useEffect, useRef } from 'react';
 import { useStore } from '../../store';
 import { rp } from '../../utils/helpers';
+import CityService from '../../services/CityService';
+import OrderService from '../../services/OrderService';
+import { isSizeOverXxl } from '../../hooks/useProductVM';
 
 export default function Checkout() {
   const { state, updateState, data, go, login, register } = useStore();
@@ -23,36 +26,81 @@ export default function Checkout() {
   const checkoutCity = user ? (user.city || '') : '';
   const checkoutPostalCode = user ? (user.postal_code || '') : '';
 
+  const [citySearch, setCitySearch] = useState(checkoutCity);
+  const [cityResults, setCityResults] = useState([]);
+  const [showCityDropdown, setShowCityDropdown] = useState(false);
+  const [selectedCity, setSelectedCity] = useState(null);
+  const [selectedPostalCode, setSelectedPostalCode] = useState(checkoutPostalCode);
+  const cityRef = useRef(null);
+
   const authLabel = user ? `${user.name.split(' ')[0]} · Keluar` : 'Masuk | Daftar';
 
   const cartLines = cart.map(c => {
     const p = data.PRODUCTS.find(x => x.id === c.id);
+    if (!p) return null;
     const metaParts = [];
     if (c.color) metaParts.push(c.color);
     if (p.sizes.length > 1) metaParts.push('Ukuran ' + c.size);
     if (p.type === 'preorder') metaParts.push('Pre-Order');
     else metaParts.push('Ready Stock');
+    const unitPrice = isSizeOverXxl(c.size) ? (p.priceMoreXxl || p.price || 0) : (p.priceLessXxl || p.price || 0);
     return {
       name: p.name,
       meta: metaParts.join(' · '),
       label: p.name + (p.sizes.length > 1 ? ` (${c.size})` : ''),
       qty: c.qty,
-      lineTotal: rp(p.price * c.qty)
+      lineTotal: rp(unitPrice * c.qty)
     };
-  });
+  }).filter(Boolean);
 
   const subtotal = cart.reduce((s, c) => {
     const p = data.PRODUCTS.find(x => x.id === c.id);
-    return s + p.price * c.qty;
+    if (!p) return s;
+    const unitPrice = isSizeOverXxl(c.size) ? (p.priceMoreXxl || p.price || 0) : (p.priceLessXxl || p.price || 0);
+    return s + unitPrice * c.qty;
   }, 0);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (cityRef.current && !cityRef.current.contains(e.target)) {
+        setShowCityDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const searchCity = async (query) => {
+    setCitySearch(query);
+    setSelectedCity(null);
+    setSelectedPostalCode('');
+    if (query.length < 2) {
+      setCityResults([]);
+      setShowCityDropdown(false);
+      return;
+    }
+    try {
+      const results = await CityService.getAll(query);
+      setCityResults(results);
+      setShowCityDropdown(true);
+    } catch (e) {
+      setCityResults([]);
+    }
+  };
+
+  const selectCity = (city) => {
+    const displayName = `${city.type === 'Kabupaten' ? 'Kab. ' : 'Kota '}${city.name}`;
+    setCitySearch(displayName);
+    setSelectedPostalCode(String(city.postcode));
+    setSelectedCity({ id: city.id, name: displayName, postcode: city.postcode });
+    setShowCityDropdown(false);
+  };
   const shipping = subtotal > 0 ? 25000 : 0;
   const totalFmt = rp(subtotal + shipping);
 
   const PM = [
-    { id: 'va', name: 'Virtual Account', desc: 'BCA, Mandiri, BNI, BRI' },
-    { id: 'ewallet', name: 'E-Wallet', desc: 'GoPay, OVO, Dana, ShopeePay' },
-    { id: 'qris', name: 'QRIS', desc: 'Scan dari semua e-wallet & m-banking' },
-    { id: 'transfer', name: 'Transfer Bank Manual', desc: 'Konfirmasi manual via WhatsApp' }
+    { id: 'transfer_bca', name: 'Transfer Bank BCA', desc: 'Transfer ke rekening BCA' },
+    { id: 'qris', name: 'QRIS', desc: 'Scan dari semua e-wallet & m-banking' }
   ];
 
   const payMethods = PM.map(m => ({
@@ -92,17 +140,66 @@ export default function Checkout() {
   };
 
   const placeOrder = async () => {
+    console.log('placeOrder called', { checkoutMode, user, cart, selectedCity, statePayMethod: state.payMethod });
     if (checkoutMode === 'register' && !user) {
       const name = (authName || '').trim() || 'Member';
       try {
-        await register(name, authEmail || '', 'password123', 'password123');
+        await register(name, authEmail || '', 'password123', 'password123', {
+          city_id: selectedCity ? selectedCity.id : null,
+        });
       } catch (err) {
         updateState({ user: { name, email: authEmail || '' } });
       }
     }
-    const id = 'ASC-' + (1052 + Math.floor(Math.random() * 40));
-    updateState({ checkoutStep: 'done', orderId: id, cart: [], checkoutMode: 'guest', authName: '', authEmail: '' });
-    window.scrollTo(0, 0);
+
+    const name = (authName || user?.name || '').trim() || 'Member';
+    const email = (authEmail || user?.email || '').trim();
+    const code = 'ASC-' + Date.now().toString(36).toUpperCase() + Math.floor(Math.random() * 100);
+    const today = new Date();
+    const dateStr = today.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+
+    const orderItems = cart.map(c => {
+      const p = data.PRODUCTS.find(x => x.id === c.id);
+      const unitPrice = p ? (p.priceLessXxl || p.price || 0) : 0;
+      return {
+        product_id: p?.db_id || p?.id || null,
+        size: c.size,
+        color: c.color,
+        qty: c.qty,
+        price: unitPrice,
+        type: p?.type || 'ready'
+      };
+    });
+
+    const orderData = {
+      code,
+      customer: name,
+      total: subtotal + shipping,
+      date: dateStr,
+      type: 'ready',
+      status: 'Awaiting',
+      user_id: user?.id || null,
+      phone: user?.phone || '',
+      email,
+      address: '',
+      city_id: selectedCity?.id || null,
+      shipping_cost: shipping,
+      notes: '',
+      order_items: orderItems
+    };
+
+    try {
+      console.log('Creating order:', orderData);
+      const result = await OrderService.create(orderData);
+      console.log('Order created:', result);
+    } catch (e) {
+      console.error('Order create failed:', e.response?.data || e.message);
+      useStore.getState().showToast(e.response?.data?.message || 'Gagal menyimpan pesanan');
+      return;
+    }
+
+    updateState({ checkoutStep: 'done', orderId: code, cart: [], checkoutMode: 'guest', authName: '', authEmail: '' });
+    go('invoice/' + code);
   };
 
   return (
@@ -189,8 +286,22 @@ export default function Checkout() {
                   )}
 
                   <input className="ck-span-full" placeholder="Alamat lengkap" defaultValue={checkoutAddress} style={{ gridColumn: '1/3', padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
-                  <input placeholder="Kota" defaultValue={checkoutCity} style={{ padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
-                  <input placeholder="Kode pos" defaultValue={checkoutPostalCode} style={{ padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
+                  <div ref={cityRef} style={{ position: 'relative' }}>
+                    <input placeholder="Kota / Kabupaten" value={citySearch} onChange={e => searchCity(e.target.value)} onFocus={() => cityResults.length > 0 && setShowCityDropdown(true)} style={{ width: '100%', padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px', boxSizing: 'border-box' }} />
+                    {showCityDropdown && cityResults.length > 0 && (
+                      <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#fff', border: '2px solid #14110D', borderTop: 'none', maxHeight: '200px', overflowY: 'auto', zIndex: 10 }}>
+                        {cityResults.slice(0, 30).map(city => (
+                          <div key={city.id} onClick={() => selectCity(city)} style={{ padding: '10px 13px', cursor: 'pointer', fontSize: '13px', borderBottom: '1px solid #ddd5c4' }}
+                            onMouseEnter={e => e.currentTarget.style.background = '#F2EEE4'}
+                            onMouseLeave={e => e.currentTarget.style.background = '#fff'}>
+                            <span style={{ fontWeight: 700 }}>{city.type === 'Kabupaten' ? 'Kab. ' : 'Kota '}{city.name}</span>
+                            <span style={{ color: '#6b655a', marginLeft: '6px' }}>{city.province}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <input placeholder="Kode pos" value={selectedPostalCode} readOnly style={{ padding: '14px', border: '2px solid #14110D', background: selectedCity ? '#e4ddcd' : '#fff', fontSize: '14px', cursor: selectedCity ? 'not-allowed' : 'text' }} />
 
                   {checkoutIsRegister && (
                     <input className="ck-span-full" type="password" placeholder="Password (untuk akun baru)" style={{ gridColumn: '1/3', padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
