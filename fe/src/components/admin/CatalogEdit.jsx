@@ -238,7 +238,7 @@ export default function CatalogEdit() {
         onClick={cancel}
         style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontSize: '12px', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#6b655a', marginBottom: '18px' }}
       >
-        Ã¢â€ Â Kembali ke Katalog
+        Kembali ke Katalog
       </button>
 
       <div className="ce-header-row" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '20px', marginBottom: '28px', flexWrap: 'wrap' }}>

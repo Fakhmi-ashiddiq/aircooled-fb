@@ -131,7 +131,7 @@ export default function ProductDetail() {
               ) : !ap.heroImg && activeP.printLogo && (
                 <img src="/assets/logo.png" style={{ width: '50%' }} alt="" />
               )}
-            {!ap.heroImg && activeP.printText && (
+            {!ap.heroImg && activeP.images && activeP.images.some(im => im.src) ? null : !ap.heroImg && activeP.printText && (
               <div style={{ color: '#F2C015', fontFamily: "'Archivo'", fontWeight: 900, fontSize: '44px', lineHeight: 0.9, textAlign: 'center', textTransform: 'uppercase' }}>
                 Aircooled<br/>Syndicate
               </div>
@@ -147,7 +147,7 @@ export default function ProductDetail() {
                 ) : !ap.heroImg && activeP.printLogo && (
                   <img src="/assets/logo.png" style={{ width: '54%' }} alt="" />
                 )}
-                {!ap.heroImg && activeP.printText && (
+                {!ap.heroImg && (activeP.images && activeP.images.some(im => im.src)) ? null : !ap.heroImg && activeP.printText && (
                   <div style={{ color: '#F2C015', fontFamily: "'Archivo'", fontWeight: 900, fontSize: '13px', lineHeight: 0.9, textAlign: 'center', textTransform: 'uppercase' }}>
                     AC<br/>SYND
                   </div>
