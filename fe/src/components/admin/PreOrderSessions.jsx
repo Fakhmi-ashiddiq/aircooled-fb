@@ -7,12 +7,6 @@ export default function PreOrderSessions() {
 
   const poProducts = data.PRODUCTS.filter((p) => p.type === 'preorder');
 
-  const addOne = (p) => {
-    const ov = { ...state.committedOverride };
-    ov[p.id] = committedOf(p) + 1;
-    updateState({ committedOverride: ov });
-  };
-
   const statusLabel = (status) => (status === 'open' ? 'OPEN' : status === 'production' ? 'PRODUKSI' : status === 'shipping' ? 'PENGIRIMAN' : 'DITUTUP');
   const statusStyle = (status) => ({
     background: status === 'open' ? '#F2C015' : status === 'production' ? '#14110D' : status === 'shipping' ? '#2a5fb0' : '#fff',
@@ -128,12 +122,6 @@ export default function PreOrderSessions() {
                       {advanceLabel(sess.status)}
                     </button>
                   )}
-                  <button
-                    onClick={() => addOne(p)}
-                    style={{ background: '#fff', color: '#14110D', border: '2px solid #14110D', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '11px', letterSpacing: '0.06em', textTransform: 'uppercase', padding: '9px 14px' }}
-                  >
-                    + Pesanan
-                  </button>
                 </div>
               </div>
             </div>

@@ -123,10 +123,8 @@ export default function SessionModal() {
     };
 
     let updatedProduct = null;
-
-    setData((prev) => ({
-      ...prev,
-      PRODUCTS: prev.PRODUCTS.map((x) => {
+    setData((prev) => {
+      const nextProducts = prev.PRODUCTS.map((x) => {
         if (x.id !== p.id) return x;
         const updated = { ...x };
         if (updated.preorder) {
@@ -159,8 +157,13 @@ export default function SessionModal() {
         updated.costs = costs;
         updatedProduct = updated;
         return updated;
-      })
-    }));
+      });
+      return { ...prev, PRODUCTS: nextProducts };
+    });
+
+    if (updatedProduct) {
+      useStore.getState().updateProduct(p.id, updatedProduct);
+    }
 
     if (updatedProduct) {
       await updateProduct(updatedProduct.db_id || updatedProduct.id, updatedProduct);
