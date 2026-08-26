@@ -1,4 +1,5 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useStore } from '../../store';
 import UtilityBar from '../shared/UtilityBar';
 import AdminSidebar from './AdminSidebar';
@@ -22,9 +23,18 @@ import Preloader from '../shared/Preloader';
 import ScrollToTop from '../shared/ScrollToTop';
 
 export default function AdminLayout() {
-  const { state } = useStore();
+  const { state, isAdmin } = useStore();
+  const navigate = useNavigate();
   const route = state.adminRoute;
   const isEditingProduct = route === 'catalog-edit' && !!state.adminProdId;
+
+  useEffect(() => {
+    if (!state.user || !isAdmin()) {
+      navigate('/admin/login');
+    }
+  }, [state.user]);
+
+  if (!state.user || !isAdmin()) return null;
 
   return (
     <div style={{ background: '#F2EEE4', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
