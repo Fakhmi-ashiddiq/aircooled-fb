@@ -40,8 +40,9 @@ export default function Settings() {
   const handleUploadGuide = async (id, event) => {
     const file = event.target.files[0];
     if (!file) return;
-    const imageUrl = URL.createObjectURL(file);
-    await useStore.getState().updateSizeSet(id, { guideImg: imageUrl });
+    const fd = new FormData();
+    fd.append('guideImg', file);
+    await useStore.getState().updateSizeSet(id, fd);
   };
 
   const addColor = async () => {

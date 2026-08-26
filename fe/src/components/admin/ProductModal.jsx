@@ -8,7 +8,8 @@ const blankProd = () => ({
   sizeType: 'reg', manualSizes: 'S,M,L,XL',
   selectedColors: [],
   images: [],
-  print: 'logo', stockSizes: {}, produksi: '', kemasan: '', stiker: '',
+  print: 'logo', stockSizes: {}, weight: '1000', targetUnit: '',
+  produksi: '', kemasan: '', stiker: '',
   hppLess: '', hppMore: '',
   priceLess: '', priceMore: '',
   priceLessDiscount: '', priceMoreDiscount: ''
@@ -93,10 +94,12 @@ export default function ProductModal() {
       fd.append('type', np.type);
       fd.append('price', Number(np.price));
       fd.append('product_parent_id', np.parentId || '');
+      fd.append('target', np.type === 'preorder' ? Number(np.targetUnit) || 0 : 0);
       fd.append('sizes', JSON.stringify(finalSizes));
       fd.append('colors', JSON.stringify(finalColors));
       fd.append('print_type', np.print);
       fd.append('stock', JSON.stringify(isPre ? {} : np.stockSizes));
+      fd.append('weight', Number(np.weight) || 1000);
       fd.append('costs', JSON.stringify({
         production: Number(np.produksi||0),
         kemasan: Number(np.kemasan||0),
@@ -161,6 +164,22 @@ export default function ProductModal() {
             <input placeholder="mis. Targa Florio Tee" value={np.name} onChange={set('name')} style={inputStyle} />
           </div>
 
+          <div>
+            <div style={labelStyle}>Tipe Produk</div>
+            <div style={{ display: 'flex' }}>
+              <button onClick={() => setNp({ ...np, type: 'ready' })} style={segStyle(np.type === 'ready')}>Ready Stock</button>
+              <button onClick={() => setNp({ ...np, type: 'preorder' })} style={segStyle(np.type === 'preorder')}>Pre-Order</button>
+            </div>
+          </div>
+
+          {np.type === 'preorder' && (
+            <div>
+              <div style={labelStyle}>Target Unit</div>
+              <input type="number" placeholder="mis. 50" min="0" value={np.targetUnit} onChange={set('targetUnit')} style={{ ...inputStyle, maxWidth: '200px' }} />
+              <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#6b655a', marginTop: '4px' }}>Jumlah unit yang ingin diproduksi</div>
+            </div>
+          )}
+
           <div className="prodmodal-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
             <div>
               <div style={labelStyle}>Kategori</div>
@@ -185,7 +204,7 @@ export default function ProductModal() {
             </div>
           </div>
 
-          {np.type === 'ready' && (() => {
+          {(() => {
             const finalSizes = (data.sizeSets || []).find(s => s.code === np.sizeType)?.sizes || [];
             if (finalSizes.length === 0) return null;
             return (
@@ -209,6 +228,12 @@ export default function ProductModal() {
               </div>
             );
           })()}
+
+          <div style={{ borderTop: '1px solid #ddd5c4', paddingTop: '16px' }}>
+            <div style={labelStyle}>Berat Produk (gram)</div>
+            <input type="number" placeholder="1000" value={np.weight} onChange={set('weight')} style={{ ...inputStyle, maxWidth: '200px' }} />
+            <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#6b655a', marginTop: '4px' }}>Default 1000 gram (1 kg)</div>
+          </div>
 
           <div style={{ borderTop: '1px solid #ddd5c4', paddingTop: '16px' }}>
             <div style={labelStyle}>Harga & HPP per Ukuran</div>
@@ -248,14 +273,6 @@ export default function ProductModal() {
                 </div>
               );
             })()}
-          </div>
-
-          <div>
-            <div style={labelStyle}>Tipe Produk</div>
-            <div style={{ display: 'flex' }}>
-              <button onClick={() => setNp({ ...np, type: 'ready' })} style={segStyle(np.type === 'ready')}>Ready Stock</button>
-              <button onClick={() => setNp({ ...np, type: 'preorder' })} style={segStyle(np.type === 'preorder')}>Pre-Order</button>
-            </div>
           </div>
 
           <div className="prodmodal-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>

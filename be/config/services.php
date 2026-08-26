@@ -31,4 +31,9 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'rajaongkir' => [
+        'key' => env('RAJAONGKIR_KEY'),
+        'origin' => env('RAJAONGKIR_ORIGIN', '152'),
+    ],
+
 ];

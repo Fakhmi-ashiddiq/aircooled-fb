@@ -1,12 +1,19 @@
 import React, { useContext } from 'react';
 import { useStore } from '../../../store';
 
+const API_BASE = 'http://localhost:8000/storage/';
+
 export default function SizeGuideModal() {
-  const { state, updateState } = useStore();
+  const { state, updateState, data } = useStore();
 
   if (!state.sizeGuideOpen) return null;
 
   const closeSizeGuide = () => updateState({ sizeGuideOpen: false });
+
+  const activeProduct = data.PRODUCTS.find(x => x.id === state.activeId);
+  const sizeSetCode = activeProduct?.sizeType || 'reg';
+  const currentSizeSet = (data.sizeSets || []).find(s => s.code === sizeSetCode);
+  const sizes = currentSizeSet?.sizes || ['S', 'M', 'L', 'XL', 'XXL'];
 
   const sizeChart = [
     { size: 'S', chest: 48, length: 68 },
@@ -14,7 +21,9 @@ export default function SizeGuideModal() {
     { size: 'L', chest: 54, length: 73 },
     { size: 'XL', chest: 57, length: 75 },
     { size: 'XXL', chest: 60, length: 77 }
-  ];
+  ].filter(r => sizes.includes(r.size));
+
+  const allSizeSets = (data.sizeSets || []).filter(ss => ss.active !== false);
 
   return (
     <>
@@ -33,24 +42,17 @@ export default function SizeGuideModal() {
             <img src="/assets/logo-white.png" style={{ height: '30px', display: 'block' }} alt="Logo" />
           </div>
           <div className="sg-body" style={{ padding: '22px' }}>
-            <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#6b655a', marginBottom: '12px' }}>Apparel — pengukuran datar (cm)</div>
-            <div style={{ border: '2px solid #14110D' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', background: '#14110D', color: '#F2EEE4', fontFamily: "'Space Mono', monospace", fontSize: '11px', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-                <div style={{ padding: '10px 12px' }}>Ukuran</div>
-                <div style={{ padding: '10px 12px', borderLeft: '1px solid #3a352b' }}>Lebar Dada</div>
-                <div style={{ padding: '10px 12px', borderLeft: '1px solid #3a352b' }}>Panjang Badan</div>
-              </div>
-              {sizeChart.map((r, i) => (
-                <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', borderTop: '1px solid #ddd5c4', fontFamily: "'Space Mono', monospace", fontSize: '13px' }}>
-                  <div style={{ padding: '10px 12px', fontWeight: 700 }}>{r.size}</div>
-                  <div style={{ padding: '10px 12px', borderLeft: '1px solid #ddd5c4' }}>{r.chest} cm</div>
-                  <div style={{ padding: '10px 12px', borderLeft: '1px solid #ddd5c4' }}>{r.length} cm</div>
+
+            {allSizeSets.length > 0 && allSizeSets.map((ss) => {
+              const img = ss.guideImg ? (ss.guideImg.startsWith('http') ? ss.guideImg : API_BASE + ss.guideImg) : null;
+              if (!img) return null;
+              return (
+                <div key={ss.id} style={{ marginBottom: '20px' }}>
+                  <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', fontWeight: 700, color: '#14110D', marginBottom: '8px' }}>{ss.name}</div>
+                  <img src={img} alt={`Panduan ${ss.name}`} style={{ width: '100%', borderRadius: '4px', border: '2px solid #14110D' }} />
                 </div>
-              ))}
-            </div>
-            <p style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#6b655a', lineHeight: 1.6, margin: '14px 0 0' }}>
-              Toleransi ±1–2 cm karena pengukuran manual. Lebar dada diukur 2 cm di bawah ketiak. Ragu di antara dua ukuran? Ambil yang lebih besar.
-            </p>
+              );
+            })}
           </div>
         </div>
       </div>

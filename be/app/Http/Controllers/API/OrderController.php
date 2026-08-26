@@ -6,12 +6,13 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\Product;
 
 class OrderController extends Controller
 {
     public function index()
     {
-        return response()->json(Order::with(['items.product', 'product'])->get());
+        return response()->json(Order::with(['items.product', 'product'])->orderByDesc('created_at')->get());
     }
 
     public function store(Request $request)
@@ -29,13 +30,14 @@ class OrderController extends Controller
 
     public function show($id)
     {
-        $data = Order::with(['items.product', 'product'])->findOrFail($id);
+        $data = Order::with(['items.product', 'product'])->where('id', $id)->orWhere('code', $id)->firstOrFail();
         return response()->json($data);
     }
 
     public function update(Request $request, $id)
     {
-        $order = Order::findOrFail($id);
+        $order = Order::where('id', $id)->orWhere('code', $id)->firstOrFail();
+        $previousStatus = $order->status;
         $order->update($request->except('order_items'));
 
         if ($request->has('order_items') && is_array($request->order_items)) {
@@ -45,12 +47,30 @@ class OrderController extends Controller
             }
         }
 
+        if ($previousStatus !== 'Paid' && $request->input('status') === 'Paid') {
+            $items = $order->items()->with('product')->get();
+            foreach ($items as $item) {
+                if ($item->product && $item->product->type === 'ready' && !empty($item->size)) {
+                    $product = $item->product;
+                    $rawStock = $product->getRawOriginal('stock');
+                    $stock = is_string($rawStock) ? json_decode($rawStock, true) : (is_array($rawStock) ? $rawStock : []);
+                    $size = $item->size;
+                    $qty = $item->qty ?? 1;
+                    if (is_array($stock) && isset($stock[$size])) {
+                        $stock[$size] = max(0, $stock[$size] - $qty);
+                        $product->stock = $stock;
+                        $product->save();
+                    }
+                }
+            }
+        }
+
         return response()->json(['message' => 'Success', 'data' => $order->load(['items.product', 'product'])]);
     }
 
     public function destroy($id)
     {
-        $data = Order::findOrFail($id);
+        $data = Order::where('id', $id)->orWhere('code', $id)->firstOrFail();
         $data->delete();
         return response()->json(['message' => 'Success']);
     }

@@ -3,7 +3,8 @@ import { useStore } from '../../store';
 import { rp } from '../../utils/helpers';
 import CityService from '../../services/CityService';
 import OrderService from '../../services/OrderService';
-import RajaOngkirService from '../../services/RajaOngkirService';
+import CartService from '../../services/CartService';
+import ShippingService from '../../services/ShippingService';
 import { isSizeOverXxl } from '../../hooks/useProductVM';
 
 export default function Checkout() {
@@ -32,13 +33,12 @@ export default function Checkout() {
   const [showCityDropdown, setShowCityDropdown] = useState(false);
   const [selectedCity, setSelectedCity] = useState(null);
   const [selectedPostalCode, setSelectedPostalCode] = useState(checkoutPostalCode);
-  
-  const [courier, setCourier] = useState('');
   const [shippingOptions, setShippingOptions] = useState([]);
   const [selectedShipping, setSelectedShipping] = useState(null);
   const [shippingLoading, setShippingLoading] = useState(false);
-
+  const [submitting, setSubmitting] = useState(false);
   const cityRef = useRef(null);
+  const searchTimeout = useRef(null);
 
   const authLabel = user ? `${user.name.split(' ')[0]} · Keluar` : 'Masuk | Daftar';
 
@@ -77,7 +77,7 @@ export default function Checkout() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const searchCity = async (query) => {
+  const searchCity = (query) => {
     setCitySearch(query);
     setSelectedCity(null);
     setSelectedPostalCode('');
@@ -86,47 +86,45 @@ export default function Checkout() {
       setShowCityDropdown(false);
       return;
     }
-    try {
-      const results = await CityService.getAll(query);
-      setCityResults(results);
-      setShowCityDropdown(true);
-    } catch (e) {
-      setCityResults([]);
-    }
+    clearTimeout(searchTimeout.current);
+    searchTimeout.current = setTimeout(async () => {
+      try {
+        const results = await CityService.getAll(query);
+        setCityResults(results);
+        setShowCityDropdown(true);
+      } catch (e) {
+        setCityResults([]);
+      }
+    }, 500);
   };
 
-  const selectCity = (city) => {
-    const displayName = `${city.type === 'Kabupaten' ? 'Kab. ' : 'Kota '}${city.name}`;
+  const selectCity = async (city) => {
+    const displayName = city.label || city.city_name;
     setCitySearch(displayName);
-    setSelectedPostalCode(String(city.postcode));
-    setSelectedCity({ id: city.id, name: displayName, postcode: city.postcode });
+    setSelectedPostalCode(String(city.zip_code || ''));
+    setSelectedCity({ id: city.id, name: displayName });
     setShowCityDropdown(false);
+
+    setShippingLoading(true);
+    setSelectedShipping(null);
+    try {
+      const totalWeight = cart.reduce((sum, c) => {
+        const p = data.PRODUCTS.find(x => x.id === c.id);
+        return sum + ((p?.weight || 1000) * c.qty);
+      }, 0);
+      const result = await ShippingService.getCost(city.id, Math.max(totalWeight, 100));
+      const regOnly = (result.results || []).filter(o => o.service && o.service.toUpperCase().includes('REG'));
+      setShippingOptions(regOnly);
+      if (regOnly.length > 0) {
+        setSelectedShipping(regOnly[0]);
+      }
+    } catch (e) {
+      setShippingOptions([]);
+    }
+    setShippingLoading(false);
   };
 
-  useEffect(() => {
-    if (selectedCity && courier) {
-      const fetchCost = async () => {
-        setShippingLoading(true);
-        try {
-          const totalQty = cart.reduce((acc, c) => acc + c.qty, 0);
-          const weight = totalQty * 500; // Asumsi 500g per produk
-          const costs = await RajaOngkirService.checkCost(selectedCity.id, weight, courier);
-          setShippingOptions(costs);
-          setSelectedShipping(null);
-        } catch (e) {
-          console.error(e);
-          setShippingOptions([]);
-        }
-        setShippingLoading(false);
-      };
-      fetchCost();
-    } else {
-      setShippingOptions([]);
-      setSelectedShipping(null);
-    }
-  }, [selectedCity, courier, cart]);
-
-  const shipping = selectedShipping ? selectedShipping.value : 0;
+  const shipping = selectedShipping ? selectedShipping.cost : 0;
   const totalFmt = rp(subtotal + shipping);
 
   const PM = [
@@ -171,67 +169,71 @@ export default function Checkout() {
   };
 
   const placeOrder = async () => {
-    console.log('placeOrder called', { checkoutMode, user, cart, selectedCity, statePayMethod: state.payMethod });
-    if (checkoutMode === 'register' && !user) {
-      const name = (authName || '').trim() || 'Member';
-      try {
-        await register(name, authEmail || '', 'password123', 'password123', {
-          city_id: selectedCity ? selectedCity.id : null,
-        });
-      } catch (err) {
-        updateState({ user: { name, email: authEmail || '' } });
-      }
-    }
-
-    const name = (authName || user?.name || '').trim() || 'Member';
-    const email = (authEmail || user?.email || '').trim();
-    const code = 'ASC-' + Date.now().toString(36).toUpperCase() + Math.floor(Math.random() * 100);
-    const today = new Date();
-    const dateStr = today.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
-
-    const orderItems = cart.map(c => {
-      const p = data.PRODUCTS.find(x => x.id === c.id);
-      const unitPrice = p ? (p.priceLessXxl || p.price || 0) : 0;
-      return {
-        product_id: p?.db_id || p?.id || null,
-        size: c.size,
-        color: c.color,
-        qty: c.qty,
-        price: unitPrice,
-        type: p?.type || 'ready'
-      };
-    });
-
-    const orderData = {
-      code,
-      customer: name,
-      total: subtotal + shipping,
-      date: dateStr,
-      type: 'ready',
-      status: 'Awaiting',
-      user_id: user?.id || null,
-      phone: user?.phone || '',
-      email,
-      address: '',
-      city_id: selectedCity?.id || null,
-      shipping_cost: shipping,
-      notes: '',
-      order_items: orderItems
-    };
-
+    setSubmitting(true);
     try {
-      console.log('Creating order:', orderData);
-      const result = await OrderService.create(orderData);
-      console.log('Order created:', result);
-    } catch (e) {
-      console.error('Order create failed:', e.response?.data || e.message);
-      useStore.getState().showToast(e.response?.data?.message || 'Gagal menyimpan pesanan');
-      return;
-    }
+      if (checkoutMode === 'register' && !user) {
+        const name = (authName || '').trim() || 'Member';
+        try {
+          await register(name, authEmail || '', 'password123', 'password123', {
+            city_id: selectedCity ? selectedCity.id : null,
+          });
+        } catch (err) {
+          updateState({ user: { name, email: authEmail || '' } });
+        }
+      }
 
-    updateState({ checkoutStep: 'done', orderId: code, cart: [], checkoutMode: 'guest', authName: '', authEmail: '' });
-    go('invoice/' + code);
+      const name = (authName || user?.name || '').trim() || 'Member';
+      const email = (authEmail || user?.email || '').trim();
+      const code = 'ASC-' + Date.now().toString(36).toUpperCase() + Math.floor(Math.random() * 100);
+      const today = new Date();
+      const dateStr = today.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+
+      const orderItems = cart.map(c => {
+        const p = data.PRODUCTS.find(x => x.id === c.id);
+        const unitPrice = p ? (p.priceLessXxl || p.price || 0) : 0;
+        return {
+          product_id: p?.db_id || p?.id || null,
+          size: c.size,
+          color: c.color,
+          qty: c.qty,
+          price: unitPrice,
+          type: p?.type || 'ready'
+        };
+      });
+
+      const orderData = {
+        code,
+        customer: name,
+        total: subtotal + shipping,
+        date: dateStr,
+        type: 'ready',
+        status: 'Awaiting',
+        user_id: user?.id || null,
+        phone: user?.phone || '',
+        email,
+        address: '',
+        city_id: user ? (selectedCity?.id || null) : null,
+        shipping_cost: shipping,
+        payment_method: state.payMethod || '',
+        notes: '',
+        order_items: orderItems
+      };
+
+      const result = await OrderService.create(orderData);
+      if (user) {
+        try { await CartService.clear(); } catch (e) {}
+      }
+
+      updateState({ checkoutStep: 'done', orderId: code, cart: [], checkoutMode: 'guest', authName: '', authEmail: '' });
+      go('invoice/' + code);
+    } catch (e) {
+      useStore.getState().showToast(e.response?.data?.message || 'Gagal menyimpan pesanan');
+    } finally {
+      setSubmitting(false);
+    }
   };
+
+  const canSubmit = selectedCity && state.payMethod && !submitting;
 
   return (
     <main className="ck-main-pad" style={{ padding: '48px' }}>
@@ -325,8 +327,8 @@ export default function Checkout() {
                           <div key={city.id} onClick={() => selectCity(city)} style={{ padding: '10px 13px', cursor: 'pointer', fontSize: '13px', borderBottom: '1px solid #ddd5c4' }}
                             onMouseEnter={e => e.currentTarget.style.background = '#F2EEE4'}
                             onMouseLeave={e => e.currentTarget.style.background = '#fff'}>
-                            <span style={{ fontWeight: 700 }}>{city.type === 'Kabupaten' ? 'Kab. ' : 'Kota '}{city.name}</span>
-                            <span style={{ color: '#6b655a', marginLeft: '6px' }}>{city.province}</span>
+                            <span style={{ fontWeight: 700 }}>{city.label || city.city_name}</span>
+                            <span style={{ color: '#6b655a', marginLeft: '6px' }}>{city.province_name}</span>
                           </div>
                         ))}
                       </div>
@@ -340,32 +342,31 @@ export default function Checkout() {
                   <textarea className="ck-span-full" placeholder="Keterangan (opsional) — ukuran, warna, catatan kurir…" rows="2" style={{ gridColumn: '1/3', padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px', resize: 'vertical' }}></textarea>
                 </div>
 
-                <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', letterSpacing: '0.14em', textTransform: 'uppercase', color: '#14110D', fontWeight: 700, marginBottom: '14px' }}>02 / Pengiriman (RajaOngkir)</div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '14px', marginBottom: '32px' }}>
-                  <select value={courier} onChange={(e) => setCourier(e.target.value)} disabled={!selectedCity} style={{ padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }}>
-                    <option value="">Pilih Kurir...</option>
-                    <option value="jne">JNE</option>
-                    <option value="pos">POS Indonesia</option>
-                    <option value="tiki">TIKI</option>
-                  </select>
-                  
-                  {shippingLoading && <div style={{ fontSize: '13px', color: '#6b655a' }}>Menghitung ongkos kirim...</div>}
-                  
-                  {!shippingLoading && shippingOptions.length > 0 && (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      {shippingOptions.map((opt, i) => (
-                        <label key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px', border: '2px solid #14110D', cursor: 'pointer', background: selectedShipping?.service === opt.service ? '#F2C015' : '#fff' }}>
-                          <input type="radio" name="shipping" checked={selectedShipping?.service === opt.service} onChange={() => setSelectedShipping({ service: opt.service, value: opt.cost[0].value })} />
-                          <div style={{ flex: 1 }}>
-                            <div style={{ fontWeight: 'bold' }}>{opt.service}</div>
-                            <div style={{ fontSize: '12px', color: '#6b655a' }}>{opt.description} (Est: {opt.cost[0].etd} hari)</div>
-                          </div>
-                          <div style={{ fontWeight: 'bold' }}>{rp(opt.cost[0].value)}</div>
-                        </label>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', letterSpacing: '0.14em', textTransform: 'uppercase', color: '#14110D', fontWeight: 700, marginBottom: '14px' }}>02 / Pengiriman (JNE)</div>
+                {shippingLoading ? (
+                  <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '13px', color: '#6b655a', marginBottom: '16px' }}>Menghitung ongkir...</div>
+                ) : shippingOptions.length > 0 ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '16px' }}>
+                    {shippingOptions.map((opt, idx) => (
+                      <button key={idx} onClick={() => setSelectedShipping(opt)} style={{
+                        border: '2px solid #14110D',
+                        background: selectedShipping?.service === opt.service ? '#F2C015' : '#fff',
+                        cursor: 'pointer', textAlign: 'left', padding: '14px 16px',
+                        display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+                      }}>
+                        <div>
+                          <span style={{ fontFamily: "'Archivo'", fontWeight: 700, fontSize: '14px' }}>{opt.service}</span>
+                          <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#6b655a', marginLeft: '8px' }}>Est. {opt.etd} hari</span>
+                        </div>
+                        <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '14px', fontWeight: 700 }}>{rp(opt.cost)}</span>
+                      </button>
+                    ))}
+                  </div>
+                ) : selectedCity ? (
+                  <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '13px', color: '#6b655a', marginBottom: '16px' }}>Tidak ada opsi pengiriman</div>
+                ) : (
+                  <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '13px', color: '#6b655a', marginBottom: '16px' }}>Pilih kota tujuan terlebih dahulu</div>
+                )}
 
                 <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', letterSpacing: '0.14em', textTransform: 'uppercase', color: '#14110D', fontWeight: 700, marginBottom: '14px' }}>03 / Metode Pembayaran</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -400,8 +401,8 @@ export default function Checkout() {
               <span>TOTAL</span>
               <span style={{ fontFamily: "'Space Mono', monospace" }}>{totalFmt}</span>
             </div>
-            <button disabled={!selectedShipping} onClick={placeOrder} style={{ marginTop: '18px', width: '100%', background: selectedShipping ? '#F2C015' : '#e4ddcd', color: selectedShipping ? '#14110D' : '#8a8377', border: 'none', cursor: selectedShipping ? 'pointer' : 'not-allowed', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '14px', letterSpacing: '0.06em', textTransform: 'uppercase', padding: '16px' }}>
-              {checkoutCtaLabel}
+            <button onClick={placeOrder} disabled={!canSubmit} style={{ marginTop: '18px', width: '100%', background: canSubmit ? '#F2C015' : '#d4d4d4', color: '#14110D', border: 'none', cursor: canSubmit ? 'pointer' : 'not-allowed', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '14px', letterSpacing: '0.06em', textTransform: 'uppercase', padding: '16px', opacity: submitting ? 0.7 : 1 }}>
+              {submitting ? 'Memproses...' : checkoutCtaLabel}
             </button>
             {!selectedShipping && <div style={{ marginTop: '8px', fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#9a3a2a', textAlign: 'center' }}>Pilih opsi pengiriman terlebih dahulu.</div>}
           </div>

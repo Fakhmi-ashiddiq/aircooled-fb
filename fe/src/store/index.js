@@ -99,6 +99,9 @@ export const useStore = create((set, get) => ({
             } catch (error) {
                 localStorage.removeItem('auth_token');
                 localStorage.removeItem('auth_user');
+                if (window.location.pathname.startsWith('/admin')) {
+                    window.location.href = '/admin/login';
+                }
             }
         }
     },
@@ -124,7 +127,11 @@ export const useStore = create((set, get) => ({
                 const newData = { ...prev.data };
                 // Mapping DB data to match expected frontend structure if needed
                 newData.categories = categories.map(c => c.name);
-                newData.sizeSets = sizeSets.map(ss => ({ ...ss, sizes: typeof ss.sizes === 'string' ? JSON.parse(ss.sizes || '[]') : ss.sizes }));
+                newData.sizeSets = sizeSets.map(ss => ({
+                    ...ss,
+                    sizes: typeof ss.sizes === 'string' ? JSON.parse(ss.sizes || '[]') : ss.sizes,
+                    guideImg: ss.guideImg ? (ss.guideImg.startsWith('http') ? ss.guideImg : 'http://localhost:8000/storage/' + ss.guideImg) : null
+                }));
                 newData.colorOptions = colorOptions;
                 newData.owners = owners;
                 newData.productParents = productParents;
@@ -165,6 +172,7 @@ export const useStore = create((set, get) => ({
       result.stock = typeof p.stock === 'string' ? JSON.parse(p.stock || '{}') : (p.stock || {});
       result.stockTotal = Object.values(result.stock).reduce((a, b) => a + (b || 0), 0);
       result.sold = p.sold;
+      result.weight = p.weight || 1000;
       result.committed = p.committed || 0;
       result.target = p.target || 0;
       result.hppLessXxlUnit = p.hpp_less_xxl_unit || 0;
@@ -196,7 +204,7 @@ export const useStore = create((set, get) => ({
           result.productionSessions = [{ name: 'PRODUKSI AWAL', date: 'Hari Ini', qty: result.stockTotal||0, sold: p.sold||0, status: 'active', price: p.price, compareAt: p.compare_at||0, sizes: sizes, costs: costs }];
       }
       result.sessionHistory = result.sessionHistory || [];
-      result.views = result.views || 0;
+      result.views = p.views || result.views || 0;
       
       return result;
   });
@@ -412,7 +420,7 @@ export const useStore = create((set, get) => ({
 
     unitsOf: (p) => {
         if (!p || typeof p !== 'object') return 0;
-        return p.type === 'preorder' ? get().committedOf(p) : p.sold;
+        return p.type === 'preorder' ? get().committedOf(p) : p.totalSold || 0;
     },
 
     poBuyers: (sess) => {

@@ -58,7 +58,7 @@ export const AppProvider = ({ children }) => {
   };
 
   const unitsOf = (p) => {
-    return p.type === 'preorder' ? committedOf(p) : p.sold;
+    return p.type === 'preorder' ? committedOf(p) : p.totalSold;
   };
 
   const poAggregate = (p) => {
