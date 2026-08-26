@@ -8,6 +8,7 @@ import Shop from './Shop';
 import ProductDetail from './ProductDetail';
 import Checkout from './Checkout';
 import InvoiceTrack from './InvoiceTrack';
+import MyOrders from './MyOrders';
 import CartDrawer from './CartDrawer';
 import AuthModal from './modals/AuthModal';
 import POModal from './modals/POModal';
@@ -31,6 +32,7 @@ export default function StoreLayout() {
       {route === 'product' && <ProductDetail />}
       {route === 'checkout' && <Checkout />}
       {route.startsWith('invoice/') && <InvoiceTrack />}
+      {route === 'orders' && <MyOrders />}
 
       <StoreFooter />
 

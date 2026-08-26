@@ -39,13 +39,11 @@ export default function StoreHeader() {
   const navBtnStyle = {
     background: 'none', border: 'none', cursor: 'pointer',
     fontFamily: "'Space Mono', monospace", fontSize: '12px', letterSpacing: '0.12em',
-    textTransform: 'uppercase', color: '#14110D', padding: 0
+    textTransform: 'uppercase', color: '#14110D', padding: 0, fontWeight: 400
   };
   const navBtnActive = {
     ...navBtnStyle,
     fontWeight: 700,
-    borderBottom: '2px solid #14110D',
-    paddingBottom: '2px'
   };
 
   const goAnd = (fn) => () => { fn(); setMenuOpen(false); };
@@ -79,11 +77,12 @@ export default function StoreHeader() {
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
               <button onClick={() => setMenuOpen(false)} style={{ background: 'none', border: 'none', fontSize: '26px', cursor: 'pointer', lineHeight: 1 }}>×</button>
             </div>
-            <button onClick={goAnd(() => { updateState({ shopFilter: 'all' }); go('shop'); })} style={{ ...(isAll ? navBtnActive : navBtnStyle), textAlign: 'left', padding: isAll ? '14px 4px 12px' : '14px 4px', fontWeight: isAll ? 700 : 400, borderBottom: isAll ? '2px solid #14110D' : 'none', paddingBottom: isAll ? '12px' : undefined }}>Shop</button>
-            <button onClick={goAnd(() => { updateState({ shopFilter: 'ready' }); go('shop'); })} style={{ ...(isReady ? navBtnActive : navBtnStyle), textAlign: 'left', padding: isReady ? '14px 4px 12px' : '14px 4px', fontWeight: isReady ? 700 : 400, borderBottom: isReady ? '2px solid #14110D' : '1px solid #ddd5c4', paddingBottom: isReady ? '12px' : undefined }}>Ready Stock</button>
-            <button onClick={goAnd(() => { updateState({ shopFilter: 'preorder' }); go('shop'); })} style={{ ...(isPreorder ? navBtnActive : navBtnStyle), textAlign: 'left', padding: isPreorder ? '14px 4px 12px' : '14px 4px', fontWeight: isPreorder ? 700 : 400, borderBottom: isPreorder ? '2px solid #14110D' : 'none', paddingBottom: isPreorder ? '12px' : undefined }}>Pre-Order</button>
+            <button onClick={goAnd(() => { updateState({ shopFilter: 'all' }); go('shop'); })} style={{ ...navBtnStyle, textAlign: 'left', padding: '14px 4px', fontWeight: isAll ? 700 : 400 }}>Shop</button>
+            <button onClick={goAnd(() => { updateState({ shopFilter: 'ready' }); go('shop'); })} style={{ ...navBtnStyle, textAlign: 'left', padding: '14px 4px', fontWeight: isReady ? 700 : 400, borderBottom: '1px solid #ddd5c4' }}>Ready Stock</button>
+            <button onClick={goAnd(() => { updateState({ shopFilter: 'preorder' }); go('shop'); })} style={{ ...navBtnStyle, textAlign: 'left', padding: '14px 4px', fontWeight: isPreorder ? 700 : 400 }}>Pre-Order</button>
             {user ? (
               <>
+                <button onClick={goAnd(() => go('orders'))} style={{ ...navBtnStyle, textAlign: 'left', padding: '14px 4px' }}>Pesanan Saya</button>
                 <button onClick={goAnd(onProfileClick)} style={{ ...navBtnStyle, textAlign: 'left', padding: '14px 4px', display: 'flex', alignItems: 'center', gap: '7px' }}>
                   <PingDot />
                   {user.name.split(' ')[0]}
@@ -121,6 +120,7 @@ export default function StoreHeader() {
           <button onClick={() => { updateState({ shopFilter: 'preorder' }); go('shop'); }} style={isPreorder ? navBtnActive : navBtnStyle}>Pre-Order</button>
           {user ? (
             <>
+              <button onClick={() => go('orders')} style={{ ...navBtnStyle, letterSpacing: '0.1em' }}>Pesanan Saya</button>
               <button onClick={onProfileClick} style={{ ...navBtnStyle, display: 'flex', alignItems: 'center', gap: '7px', letterSpacing: '0.1em', color: '#F2C015' }}>
                 <PingDot />
                 {user.name.split(' ')[0]}

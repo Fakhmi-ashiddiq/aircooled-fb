@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use App\Models\SizeSet;
 
 class SizeSetController extends Controller
@@ -28,7 +29,18 @@ class SizeSetController extends Controller
     public function update(Request $request, $id)
     {
         $data = SizeSet::findOrFail($id);
-        $data->update($request->all());
+
+        if ($request->hasFile('guideImg')) {
+            if ($data->guideImg && Storage::disk('public')->exists($data->guideImg)) {
+                Storage::disk('public')->delete($data->guideImg);
+            }
+            $path = $request->file('guideImg')->store('size-sets', 'public');
+            $data->guideImg = $path;
+            $data->save();
+        } else {
+            $data->update($request->except(['guideImg']));
+        }
+
         return response()->json(['message' => 'Success', 'data' => $data]);
     }
 

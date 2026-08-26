@@ -25,6 +25,7 @@ export default function CatalogEdit() {
     sizeType: (data.sizeSets || []).find(s => JSON.stringify(s.sizes) === JSON.stringify(p.sizes))?.code || ((data.sizeSets || [])[0]?.code || ''),
     manualSizes: (p.sizes || []).join(','),
     stock: typeof p.stock === 'object' ? p.stock : {},
+    weight: String(p.weight || 1000),
     produksi: String(p.costs?.production || ''),
     kemasan: String(p.costs?.kemasan || ''),
     stiker: String(p.costs?.stiker || ''),
@@ -61,26 +62,26 @@ export default function CatalogEdit() {
         const fd = new FormData();
         fd.append('name', e.name || p.name);
         fd.append('category', e.cat || p.category);
-        if (!isPre) {
-          fd.append('price', parseInt(e.price) || 0);
-          const ca = parseInt(e.compareAt) || 0;
-          fd.append('compare_at', ca > (parseInt(e.price) || 0) ? ca : '');
-          const sizes = (data.sizeSets || []).find(s => s.code === e.sizeType)?.sizes || [];
-          fd.append('sizes', JSON.stringify(sizes.length ? sizes : ['One Size']));
-          fd.append('stock', JSON.stringify(typeof e.stock === 'object' ? e.stock : {}));
-          fd.append('costs', JSON.stringify({
-            production: parseInt(e.produksi) || 0,
-            kemasan: parseInt(e.kemasan) || 0,
-            stiker: parseInt(e.stiker) || 0
-          }));
-          const showDualPrice = hasOverXxlSizes(sizes);
-          fd.append('hpp_less_xxl_unit', parseInt(e.hppLess) || 0);
-          fd.append('hpp_more_xxl_unit', showDualPrice ? (parseInt(e.hppMore) || 0) : (parseInt(e.hppLess) || 0));
-          fd.append('price_less_xxl', parseInt(e.priceLess) || 0);
-          fd.append('price_more_xxl', showDualPrice ? (parseInt(e.priceMore) || 0) : (parseInt(e.priceLess) || 0));
-          if (e.priceLessDiscount) fd.append('price_less_xxl_discount', parseInt(e.priceLessDiscount));
-          fd.append('price_more_xxl_discount', showDualPrice ? (e.priceMoreDiscount ? parseInt(e.priceMoreDiscount) : '') : (e.priceLessDiscount ? parseInt(e.priceLessDiscount) : ''));
-        }
+        fd.append('price', parseInt(e.price) || 0);
+        const ca = parseInt(e.compareAt) || 0;
+        fd.append('compare_at', ca > (parseInt(e.price) || 0) ? ca : '');
+        const sizes = (data.sizeSets || []).find(s => s.code === e.sizeType)?.sizes || [];
+        fd.append('sizes', JSON.stringify(sizes.length ? sizes : ['One Size']));
+        fd.append('stock', JSON.stringify(typeof e.stock === 'object' ? e.stock : {}));
+        fd.append('weight', parseInt(e.weight) || 1000);
+        fd.append('costs', JSON.stringify({
+          production: parseInt(e.produksi) || 0,
+          kemasan: parseInt(e.kemasan) || 0,
+          stiker: parseInt(e.stiker) || 0
+        }));
+        const showDualPrice = hasOverXxlSizes(sizes);
+        fd.append('hpp_less_xxl_unit', parseInt(e.hppLess) || 0);
+        fd.append('hpp_more_xxl_unit', showDualPrice ? (parseInt(e.hppMore) || 0) : (parseInt(e.hppLess) || 0));
+        fd.append('price_less_xxl', parseInt(e.priceLess) || 0);
+        fd.append('price_more_xxl', showDualPrice ? (parseInt(e.priceMore) || 0) : (parseInt(e.priceLess) || 0));
+        if (e.priceLessDiscount) fd.append('price_less_xxl_discount', parseInt(e.priceLessDiscount));
+        fd.append('price_more_xxl_discount', showDualPrice ? (e.priceMoreDiscount ? parseInt(e.priceMoreDiscount) : '') : (e.priceLessDiscount ? parseInt(e.priceLessDiscount) : ''));
+
         fd.append('product_parent_id', e.parentId || '');
         fd.append('print_type', e.printType || 'logo');
         fd.append('colors', JSON.stringify((e.selectedColors || []).map(c => ({ name: c.name, hex: c.hex }))));
@@ -99,26 +100,25 @@ export default function CatalogEdit() {
         await useStore.getState().updateProduct(p.db_id || p.id, fd);
       } else {
         const updated = { name: e.name || p.name, category: e.cat || p.category };
-        if (!isPre) {
-          updated.price = parseInt(e.price) || 0;
-          const ca = parseInt(e.compareAt) || 0;
-          updated.compare_at = ca > updated.price ? ca : null;
-          updated.sizes = (data.sizeSets || []).find(s => s.code === e.sizeType)?.sizes || [];
-          if (!updated.sizes.length) updated.sizes = ['One Size'];
-          updated.stock = typeof e.stock === 'object' ? e.stock : {};
-          updated.costs = {
-            production: parseInt(e.produksi) || 0,
-            kemasan: parseInt(e.kemasan) || 0,
-            stiker: parseInt(e.stiker) || 0
-          };
-          updated.hpp_less_xxl_unit = parseInt(e.hppLess) || 0;
-          const showDualPrice = hasOverXxlSizes(updated.sizes || []);
-          updated.hpp_more_xxl_unit = showDualPrice ? (parseInt(e.hppMore) || 0) : (parseInt(e.hppLess) || 0);
-          updated.price_less_xxl = parseInt(e.priceLess) || 0;
-          updated.price_more_xxl = showDualPrice ? (parseInt(e.priceMore) || 0) : (parseInt(e.priceLess) || 0);
-          updated.price_less_xxl_discount = parseInt(e.priceLessDiscount) || null;
-          updated.price_more_xxl_discount = showDualPrice ? (parseInt(e.priceMoreDiscount) || null) : (parseInt(e.priceLessDiscount) || null);
-        }
+        updated.price = parseInt(e.price) || 0;
+        const ca = parseInt(e.compareAt) || 0;
+        updated.compare_at = ca > updated.price ? ca : null;
+        updated.sizes = (data.sizeSets || []).find(s => s.code === e.sizeType)?.sizes || [];
+        if (!updated.sizes.length) updated.sizes = ['One Size'];
+        updated.stock = typeof e.stock === 'object' ? e.stock : {};
+        updated.weight = parseInt(e.weight) || 1000;
+        updated.costs = {
+          production: parseInt(e.produksi) || 0,
+          kemasan: parseInt(e.kemasan) || 0,
+          stiker: parseInt(e.stiker) || 0
+        };
+        updated.hpp_less_xxl_unit = parseInt(e.hppLess) || 0;
+        const showDualPrice = hasOverXxlSizes(updated.sizes || []);
+        updated.hpp_more_xxl_unit = showDualPrice ? (parseInt(e.hppMore) || 0) : (parseInt(e.hppLess) || 0);
+        updated.price_less_xxl = parseInt(e.priceLess) || 0;
+        updated.price_more_xxl = showDualPrice ? (parseInt(e.priceMore) || 0) : (parseInt(e.priceLess) || 0);
+        updated.price_less_xxl_discount = parseInt(e.priceLessDiscount) || null;
+        updated.price_more_xxl_discount = showDualPrice ? (parseInt(e.priceMoreDiscount) || null) : (parseInt(e.priceLessDiscount) || null);
         updated.images = (e.images || []).map(im => im.src || im);
         updated.existingImages = (e.images || []).filter(im => im.src && !im.file && !im._deleted).map(im => im.src);
         updated.removedImages = e.removedImages || [];
@@ -128,6 +128,7 @@ export default function CatalogEdit() {
         updated.product_parent_id = e.parentId || null;
         updated.print_type = e.printType || 'logo';
         updated.colors = (e.selectedColors || []).map(c => ({ name: c.name, hex: c.hex }));
+        updated.target = parseInt(e.target) || 0;
         
         await useStore.getState().updateProduct(p.db_id || p.id, updated);
       }
@@ -260,7 +261,7 @@ export default function CatalogEdit() {
             </span>
             <h1 style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '32px', margin: '8px 0 0', textTransform: 'uppercase', lineHeight: 1 }}>{p.name}</h1>
             <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#6b655a', marginTop: '5px' }}>
-              {p.cat} â€¢ {rp(p.price)}
+              {p.cat} - {rp(p.price)}
             </div>
           </div>
         </div>
@@ -301,7 +302,7 @@ export default function CatalogEdit() {
           Edit Detail Produk
         </div>
         <div style={{ padding: '22px 20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div className="ce-form-grid-2" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '14px' }}>
+          <div className="ce-form-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
             <div>
               <div style={labelStyle}>Nama Produk</div>
               <input value={e.name} onChange={(ev) => setEdit({ name: ev.target.value })} style={inputStyle} />
@@ -315,70 +316,66 @@ export default function CatalogEdit() {
                 ))}
               </select>
             </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
             <div>
               <div style={labelStyle}>Kategori</div>
               <select value={e.cat} onChange={(ev) => setEdit({ cat: ev.target.value })} style={inputStyle}>
                 {data.categories.map((c) => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
+            <div>
+              <div style={labelStyle}>Pilihan Ukuran</div>
+              <select value={e.sizeType} onChange={(ev) => setEdit({ sizeType: ev.target.value })} style={inputStyle}>
+                {(data.sizeSets || []).map(sz => (
+                  <option key={sz.code} value={sz.code}>{sz.name} ({sz.sizes.join(', ')})</option>
+                ))}
+              </select>
+            </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: !isPre ? '1fr 1fr' : '1fr', gap: '14px' }}>
-            {!isPre && (
+          {(() => {
+            const currentSizes = (data.sizeSets || []).find(s => s.code === e.sizeType)?.sizes || [];
+            if (currentSizes.length === 0) return null;
+            return (
               <div>
-                <div style={labelStyle}>Pilihan Ukuran</div>
-                <select value={e.sizeType} onChange={(ev) => setEdit({ sizeType: ev.target.value })} style={inputStyle}>
-                  {(data.sizeSets || []).map(sz => (
-                    <option key={sz.code} value={sz.code}>{sz.name} ({sz.sizes.join(', ')})</option>
-                  ))}
-                </select>
-              </div>
-            )}
-          </div>
-
-          {!isPre && (
-            <>
-              {(() => {
-                const currentSizes = (data.sizeSets || []).find(s => s.code === e.sizeType)?.sizes || [];
-                if (currentSizes.length === 0) return null;
-                return (
-                  <div>
-                    <div style={labelStyle}>Stok per Ukuran</div>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '8px' }}>
-                      {currentSizes.map(sz => (
-                        <div key={sz}>
-                          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '10px', fontWeight: 700, marginBottom: '3px' }}>{sz}</div>
-                          <input type="number" min="0"
-                            value={(e.stock || {})[sz] ?? ''}
-                            placeholder="0"
-                            onChange={(ev) => setEdit({ stock: { ...e.stock, [sz]: Number(ev.target.value) || 0 } })}
-                            style={{ ...inputStyle, padding: '9px', fontSize: '13px' }}
-                          />
-                        </div>
-                      ))}
+                <div style={labelStyle}>Stok per Ukuran</div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '8px' }}>
+                  {currentSizes.map(sz => (
+                    <div key={sz}>
+                      <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '10px', fontWeight: 700, marginBottom: '3px' }}>{sz}</div>
+                      <input type="number" min="0"
+                        value={(e.stock || {})[sz] ?? ''}
+                        placeholder="0"
+                        onChange={(ev) => setEdit({ stock: { ...e.stock, [sz]: Number(ev.target.value) || 0 } })}
+                        style={{ ...inputStyle, padding: '9px', fontSize: '13px' }}
+                      />
                     </div>
-                  </div>
-                );
-              })()}
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
 
-              <div>
-                <div style={labelStyle}>Harga & HPP per Ukuran</div>
-                {(() => {
-                  const currentSizes = (data.sizeSets || []).find(s => s.code === e.sizeType)?.sizes || [];
-                  const showDual = hasOverXxlSizes(currentSizes);
-                  if (showDual) {
-                    return (
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                        <div style={{ border: '2px solid #14110D', padding: '14px', background: '#fff' }}>
-                          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', fontWeight: 700, marginBottom: '10px', color: '#14110D' }}>&lt; XXL (XS, S, M, L, XL)</div>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                            <input type="number" placeholder="HPP / Satuan" value={e.hppLess} onChange={(ev) => setEdit({ hppLess: ev.target.value })} style={inputStyle} />
-                            <input type="number" placeholder="Harga Jual" value={e.priceLess} onChange={(ev) => setEdit({ priceLess: ev.target.value })} style={inputStyle} />
-                            <input type="number" placeholder="Harga Coret (opsional)" value={e.priceLessDiscount} onChange={(ev) => setEdit({ priceLessDiscount: ev.target.value })} style={inputStyle} />
-                          </div>
-                        </div>
-                        <div style={{ border: '2px solid #14110D', padding: '14px', background: '#fff' }}>
-                          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', fontWeight: 700, marginBottom: '10px', color: '#14110D' }}>&gt;= XXL (XXL, 3L, 4L, 5L, 6L)</div>
+          <div>
+            <div style={labelStyle}>Harga & HPP per Ukuran</div>
+            {(() => {
+              const currentSizes = (data.sizeSets || []).find(s => s.code === e.sizeType)?.sizes || [];
+              const showDual = hasOverXxlSizes(currentSizes);
+              if (showDual) {
+                return (
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                    <div style={{ border: '2px solid #14110D', padding: '14px', background: '#fff' }}>
+                      <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', fontWeight: 700, marginBottom: '10px', color: '#14110D' }}>&lt; XXL (XS, S, M, L, XL)</div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <input type="number" placeholder="HPP / Satuan" value={e.hppLess} onChange={(ev) => setEdit({ hppLess: ev.target.value })} style={inputStyle} />
+                        <input type="number" placeholder="Harga Jual" value={e.priceLess} onChange={(ev) => setEdit({ priceLess: ev.target.value })} style={inputStyle} />
+                        <input type="number" placeholder="Harga Coret (opsional)" value={e.priceLessDiscount} onChange={(ev) => setEdit({ priceLessDiscount: ev.target.value })} style={inputStyle} />
+                      </div>
+                    </div>
+                    <div style={{ border: '2px solid #14110D', padding: '14px', background: '#fff' }}>
+                      <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', fontWeight: 700, marginBottom: '10px', color: '#14110D' }}>&gt;= XXL (XXL, 3L, 4L, 5L, 6L)</div>
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                             <input type="number" placeholder="HPP / Satuan" value={e.hppMore} onChange={(ev) => setEdit({ hppMore: ev.target.value })} style={inputStyle} />
                             <input type="number" placeholder="Harga Jual" value={e.priceMore} onChange={(ev) => setEdit({ priceMore: ev.target.value })} style={inputStyle} />
@@ -400,10 +397,22 @@ export default function CatalogEdit() {
                   );
                 })()}
               </div>
-            </>
+
+          <div style={{ borderTop: '1px solid #ddd5c4', paddingTop: '16px' }}>
+            <div style={labelStyle}>Berat Produk (gram)</div>
+            <input type="number" placeholder="1000" value={e.weight} onChange={(ev) => setEdit({ weight: ev.target.value })} style={{ ...inputStyle, maxWidth: '200px' }} />
+            <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#6b655a', marginTop: '4px' }}>Default 1000 gram (1 kg)</div>
+          </div>
+
+          {isPre && (
+            <div>
+              <div style={labelStyle}>Target Unit</div>
+              <input type="number" placeholder="mis. 50" min="0" value={p.target || ''} onChange={(ev) => updateState({ editProd: { ...e, target: ev.target.value } })} style={{ ...inputStyle, maxWidth: '200px' }} />
+              <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#6b655a', marginTop: '4px' }}>Jumlah unit yang ingin diproduksi</div>
+            </div>
           )}
 
-          {isPre ? (
+          {/* {isPre ? (
             <div style={{ background: '#F2EEE4', border: '2px solid #14110D', padding: '13px 16px', fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#6b655a', lineHeight: 1.5 }}>
               Harga, ukuran, warna &amp; biaya produk pre-order diatur per <strong style={{ color: '#14110D' }}>sesi pre-order</strong> di bawah — buat sesi baru untuk mengubahnya.
             </div>
@@ -411,18 +420,16 @@ export default function CatalogEdit() {
             <div style={{ background: '#F2EEE4', border: '2px solid #14110D', padding: '13px 16px', fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#6b655a', lineHeight: 1.5 }}>
               Harga jual, harga coret &amp; ukuran diatur per <strong style={{ color: '#14110D' }}>sesi produksi</strong> di bawah — buat sesi produksi baru untuk mengubahnya. Stok mengikuti total jumlah produksi.
             </div>
-          )}
+          )} */}
 
-          {!isPre && (
-            <div style={{ borderTop: '1px solid #ddd5c4', paddingTop: '16px' }}>
-              <div style={labelStyle}>Biaya per Unit</div>
-              <div className="ce-cost-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
-                <input type="number" placeholder="Produksi" value={e.produksi} onChange={(ev) => setEdit({ produksi: ev.target.value })} style={inputStyle} />
-                <input type="number" placeholder="Kemasan" value={e.kemasan} onChange={(ev) => setEdit({ kemasan: ev.target.value })} style={inputStyle} />
-                <input type="number" placeholder="Stiker & Aks." value={e.stiker} onChange={(ev) => setEdit({ stiker: ev.target.value })} style={inputStyle} />
-              </div>
+          <div style={{ borderTop: '1px solid #ddd5c4', paddingTop: '16px' }}>
+            <div style={labelStyle}>Biaya per Unit</div>
+            <div className="ce-cost-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
+              <input type="number" placeholder="Produksi" value={e.produksi} onChange={(ev) => setEdit({ produksi: ev.target.value })} style={inputStyle} />
+              <input type="number" placeholder="Kemasan" value={e.kemasan} onChange={(ev) => setEdit({ kemasan: ev.target.value })} style={inputStyle} />
+              <input type="number" placeholder="Stiker & Aks." value={e.stiker} onChange={(ev) => setEdit({ stiker: ev.target.value })} style={inputStyle} />
             </div>
-          )}
+          </div>
 
           <div style={{ borderTop: '1px solid #ddd5c4', paddingTop: '16px' }}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
@@ -600,7 +607,7 @@ export default function CatalogEdit() {
                         onClick={() => openSessionDetail(s.sessionName)}
                         style={{ background: '#14110D', color: '#F2EEE4', border: 'none', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '10px', letterSpacing: '0.05em', textTransform: 'uppercase', padding: '7px 12px', whiteSpace: 'nowrap' }}
                       >
-                        Kelola Ã¢â‚¬Âº
+                        Kelola Sesi
                       </button>
                     </div>
                   </div>
@@ -629,7 +636,7 @@ export default function CatalogEdit() {
                       <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${pct}%`, background: com >= s.target ? '#1f7a3d' : '#14110D' }} />
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#6b655a', marginTop: '7px' }}>
-                      <span>{com} / {s.target} unit â€¢ Pendapatan {rp((s.price || 0) * com)}</span>
+                      <span>{com} / {s.target} unit - Pendapatan {rp((s.price || 0) * com)}</span>
                       <span>{pct}%</span>
                     </div>
                   </div>
@@ -646,7 +653,7 @@ export default function CatalogEdit() {
             <div>
               <div style={{ fontFamily: "'Archivo'", fontWeight: 800, fontSize: '16px', textTransform: 'uppercase' }}>Sesi Produksi</div>
               <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#6b655a', marginTop: '2px' }}>
-                {prodSessions.length} batch â€¢ {prodSessions.reduce((a, s) => a + (s.qty || 0), 0)} unit diproduksi
+                {prodSessions.length} batch - {prodSessions.reduce((a, s) => a + (s.qty || 0), 0)} unit diproduksi
               </div>
             </div>
             <button
@@ -702,7 +709,7 @@ export default function CatalogEdit() {
                       <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${pct}%`, background: sold >= qty ? '#1f7a3d' : '#14110D' }} />
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#6b655a', marginTop: '7px' }}>
-                      <span>{sold} terjual â€¢ Sisa {sisa} â€¢ Pendapatan {rp((s.price || p.price) * sold)}</span>
+                      <span>{sold} terjual - Sisa {sisa} - Pendapatan {rp((s.price || p.price) * sold)}</span>
                       <span>{pct}%</span>
                     </div>
                   </div>

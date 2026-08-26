@@ -13,24 +13,41 @@ class ProductController extends Controller
 {
     public function index()
     {
-        $products = Product::with(['productImages', 'productParent'])->get();
+        $products = Product::with(['productImages', 'productParent'])->orderByDesc('created_at')->get();
         $committed = OrderItem::select('product_id', DB::raw('SUM(qty) as total_qty'))
             ->where('type', 'preorder')
             ->whereHas('order', fn($q) => $q->whereIn('status', ['Awaiting', 'Paid', 'Producing', 'Shipping']))
             ->groupBy('product_id')
             ->pluck('total_qty', 'product_id');
 
-        $paidStats = OrderItem::select('product_id', DB::raw('SUM(qty) as total_sold'), DB::raw('SUM(qty * price) as total_revenue'))
+        $paidStats = OrderItem::select('product_id', DB::raw('SUM(qty) as total_sold'))
             ->whereHas('order', fn($q) => $q->where('status', 'Paid'))
             ->groupBy('product_id')
             ->get()
             ->keyBy('product_id');
 
-        $products->each(function ($p) use ($committed, $paidStats) {
+        $paidOrderIds = OrderItem::select('order_id')
+            ->whereHas('order', fn($q) => $q->where('status', 'Paid'))
+            ->groupBy('order_id')
+            ->pluck('order_id');
+
+        $orderTotals = DB::table('orders')
+            ->whereIn('id', $paidOrderIds)
+            ->pluck('total', 'id');
+
+        $productOrders = OrderItem::select('product_id', 'order_id')
+            ->whereIn('order_id', $paidOrderIds)
+            ->groupBy('product_id', 'order_id')
+            ->get()
+            ->groupBy('product_id')
+            ->map(fn($items) => $items->pluck('order_id')->toArray());
+
+        $products->each(function ($p) use ($committed, $paidStats, $orderTotals, $productOrders) {
             $p->committed = $committed->get($p->id, 0);
             $stats = $paidStats->get($p->id);
             $p->totalSold = $stats->total_sold ?? 0;
-            $p->totalRevenue = $stats->total_revenue ?? 0;
+            $orderIds = $productOrders->get($p->id, []);
+            $p->totalRevenue = collect($orderIds)->sum(fn($oid) => $orderTotals->get($oid, 0));
         });
 
         return response()->json($products);
@@ -58,20 +75,31 @@ class ProductController extends Controller
 
     public function show($id)
     {
-        $data = Product::with(['productImages', 'productParent'])->findOrFail($id);
-        $committed = OrderItem::where('product_id', $id)
+        $data = Product::with(['productImages', 'productParent'])->where('id', $id)->orWhere('code', $id)->firstOrFail();
+        $data->increment('views');
+        $committed = OrderItem::where('product_id', $data->id)
             ->where('type', 'preorder')
             ->whereHas('order', fn($q) => $q->whereIn('status', ['Awaiting', 'Paid', 'Producing', 'Shipping']))
             ->sum('qty');
 
-        $paidStats = OrderItem::where('product_id', $id)
+        $paidStats = OrderItem::where('product_id', $data->id)
             ->whereHas('order', fn($q) => $q->where('status', 'Paid'))
-            ->selectRaw('SUM(qty) as total_sold, SUM(qty * price) as total_revenue')
+            ->selectRaw('SUM(qty) as total_sold')
             ->first();
+
+        $orderIds = OrderItem::where('product_id', $data->id)
+            ->whereHas('order', fn($q) => $q->where('status', 'Paid'))
+            ->select('order_id')
+            ->distinct()
+            ->pluck('order_id');
+
+        $totalRevenue = DB::table('orders')
+            ->whereIn('id', $orderIds)
+            ->sum('total');
 
         $data->committed = $committed;
         $data->totalSold = $paidStats->total_sold ?? 0;
-        $data->totalRevenue = $paidStats->total_revenue ?? 0;
+        $data->totalRevenue = $totalRevenue;
 
         return response()->json($data);
     }

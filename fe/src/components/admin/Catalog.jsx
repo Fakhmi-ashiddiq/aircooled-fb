@@ -1,10 +1,16 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState, useMemo, useEffect } from 'react';
 import { useStore } from '../../store';
 import { rp } from '../../utils/helpers';
+import Pagination from '../shared/Pagination';
+
+const PER_PAGE = 10;
 
 export default function Catalog() {
   const { data, state, updateState } = useStore();
   const { catalogTab, catalogSearch, catalogCat, catalogSort } = state;
+  const [catalogPage, setCatalogPage] = useState(1);
+
+  useEffect(() => { setCatalogPage(1); }, [catalogSearch, catalogCat, catalogTab]);
 
   const isReady = catalogTab !== 'preorder';
 
@@ -36,7 +42,7 @@ export default function Catalog() {
     }, 0);
     return { committed, paidIn };
   };
-  const unitsOf = (p) => (p.type === 'preorder' ? committedOf(p) : p.sold || 0);
+  const unitsOf = (p) => (p.type === 'preorder' ? committedOf(p) : p.totalSold || 0);
 
   let display = data.PRODUCTS.filter((p) => (isReady ? p.type === 'ready' : p.type === 'preorder'));
   const q = (catalogSearch || '').trim().toLowerCase();
@@ -47,7 +53,7 @@ export default function Catalog() {
   display = [...display].sort((a, b) => {
     if (sort === 'terpopuler') return (b.views || 0) - (a.views || 0);
     if (sort === 'terlaris') return unitsOf(b) - unitsOf(a);
-    return (b._seq || 0) - (a._seq || 0);
+    return new Date(b.created_at || 0) - new Date(a.created_at || 0);
   });
 
   const editProduct = (p) => {
@@ -83,6 +89,9 @@ export default function Catalog() {
   });
 
   const catalogCountLabel = `${display.length} produk`;
+
+  const catalogTotalPages = Math.ceil(display.length / PER_PAGE);
+  const pagedDisplay = display.slice((catalogPage - 1) * PER_PAGE, catalogPage * PER_PAGE);
 
   return (
     <>
@@ -179,14 +188,14 @@ export default function Catalog() {
           {isReady ? 'Ready Stock' : 'Pre-Order'} — {catalogCountLabel}
         </div>
         <div style={{ padding: '0 20px' }}>
-          {display.map((p) => {
+          {pagedDisplay.map((p) => {
             const isPre = p.type === 'preorder';
             const agg = poAggregate(p);
             const sold = unitsOf(p);
             const stockLabel = isPre ? `${agg.committed} terpesan` : `${p.stockTotal || 0} stok`;
             const revenueLabel = isPre
               ? `Pendapatan masuk ${rp(agg.paidIn)}`
-              : `Terjual ${p.sold || 0} · ${rp(p.price * (p.sold || 0))}`;
+              : `Terjual ${p.totalSold || 0} · ${rp(p.totalRevenue || 0)}`;
             const viewsLabel = `${(p.views || 0).toLocaleString('id-ID')} views`;
             const soldShort = isPre ? `· ${sold} terpesan` : `· ${sold} terjual`;
 
@@ -238,11 +247,14 @@ export default function Catalog() {
               </div>
             );
           })}
-          {display.length === 0 && (
+          {pagedDisplay.length === 0 && (
             <div style={{ padding: '40px 0', textAlign: 'center', fontFamily: "'Space Mono', monospace", fontSize: '13px', color: '#6b655a' }}>
               Tidak ada produk yang cocok dengan pencarian / filter.
             </div>
           )}
+        </div>
+        <div style={{ padding: '0 20px 16px' }}>
+          <Pagination currentPage={catalogPage} totalPages={catalogTotalPages} onPageChange={setCatalogPage} />
         </div>
       </div>
     </>

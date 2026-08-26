@@ -18,6 +18,7 @@ export default function AuthModal() {
   const [showCityDropdown, setShowCityDropdown] = useState(false);
   const [selectedCityObj, setSelectedCityObj] = useState(null);
   const cityRef = useRef(null);
+  const searchTimeout = useRef(null);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -29,7 +30,7 @@ export default function AuthModal() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const searchCity = async (query) => {
+  const searchCity = (query) => {
     setCitySearch(query);
     setAuthCity(query);
     setSelectedCityObj(null);
@@ -39,21 +40,24 @@ export default function AuthModal() {
       setShowCityDropdown(false);
       return;
     }
-    try {
-      const results = await CityService.getAll(query);
-      setCityResults(results);
-      setShowCityDropdown(true);
-    } catch (e) {
-      setCityResults([]);
-    }
+    clearTimeout(searchTimeout.current);
+    searchTimeout.current = setTimeout(async () => {
+      try {
+        const results = await CityService.getAll(query);
+        setCityResults(results);
+        setShowCityDropdown(true);
+      } catch (e) {
+        setCityResults([]);
+      }
+    }, 500);
   };
 
   const selectCity = (city) => {
-    const displayName = `${city.type === 'Kabupaten' ? 'Kab. ' : 'Kota '}${city.name}`;
+    const displayName = city.label || city.city_name;
     setAuthCity(displayName);
     setCitySearch(displayName);
-    setAuthPostalCode(String(city.postcode));
-    setSelectedCityObj({ id: city.id, name: displayName, postcode: city.postcode });
+    setAuthPostalCode(String(city.zip_code || ''));
+    setSelectedCityObj({ id: city.id, name: displayName, postcode: city.zip_code || '' });
     setShowCityDropdown(false);
   };
 
@@ -113,7 +117,6 @@ export default function AuthModal() {
       await register(state.authName, state.authEmail, authPassword, authPasswordConfirm, {
         phone: authPhone,
         address: authAddress,
-        city_id: selectedCityObj ? selectedCityObj.id : null,
       });
       closeAuth();
     } catch (e) {
@@ -171,8 +174,8 @@ export default function AuthModal() {
                       <div key={city.id} onClick={() => selectCity(city)} style={{ padding: '10px 13px', cursor: 'pointer', fontSize: '13px', borderBottom: '1px solid #ddd5c4' }}
                         onMouseEnter={e => e.currentTarget.style.background = '#F2EEE4'}
                         onMouseLeave={e => e.currentTarget.style.background = '#fff'}>
-                        <span style={{ fontWeight: 700 }}>{city.type === 'Kabupaten' ? 'Kab. ' : 'Kota '}{city.name}</span>
-                        <span style={{ color: '#6b655a', marginLeft: '6px' }}>{city.province}</span>
+                        <span style={{ fontWeight: 700 }}>{city.label || city.city_name}</span>
+                        <span style={{ color: '#6b655a', marginLeft: '6px' }}>{city.province_name}</span>
                       </div>
                     ))}
                   </div>
