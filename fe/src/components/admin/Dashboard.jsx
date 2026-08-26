@@ -24,11 +24,11 @@ export default function Dashboard() {
 
   try {
     safeProducts = (data.PRODUCTS || []).filter(Boolean);
-    totalRevenueN = safeProducts.reduce((s, p) => s + (p.price || 0) * unitsOf(p), 0);
+    totalRevenueN = (data.orders || []).filter(o => o.status === 'Paid').reduce((s, o) => s + (o.total || 0), 0);
     totalCostN = safeProducts.reduce((s, p) => {
-      const units = unitsOf(p);
+      const paidUnits = p.totalSold || 0;
       const costs = p.costs || {};
-      return s + ((costs.production || 0) + (costs.kemasan || 0) + (costs.stiker || 0)) * units;
+      return s + ((costs.production || 0) + (costs.kemasan || 0) + (costs.stiker || 0)) * paidUnits;
     }, 0);
     totalProfitN = totalRevenueN - totalCostN;
     preorderProducts = safeProducts.filter(p => p && p.type === 'preorder');

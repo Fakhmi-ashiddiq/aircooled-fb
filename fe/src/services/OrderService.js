@@ -14,7 +14,13 @@ export default {
         return res.data;
     },
     update: async (id, data) => {
-        const res = await apiClient.put(/orders/ + id, data);
+        if (data instanceof FormData) {
+            const res = await apiClient.post('/orders/' + id + '?_method=PUT', data, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            });
+            return res.data;
+        }
+        const res = await apiClient.put('/orders/' + id, data);
         return res.data;
     },
     delete: async (id) => {

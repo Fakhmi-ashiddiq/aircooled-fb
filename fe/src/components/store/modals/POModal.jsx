@@ -1,16 +1,37 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState, useEffect, useRef } from 'react';
 import { useStore } from '../../../store';
 import { rp } from '../../../utils/helpers';
 import useProductVM from '../../../hooks/useProductVM';
+import CityService from '../../../services/CityService';
+import ShippingService from '../../../services/ShippingService';
 
 export default function POModal() {
   const { state, updateState, data, submitPreOrder } = useStore();
   const { getProductVM } = useProductVM();
-  const [poLoading, setPoLoading] = React.useState(false);
-  const [inputPhone, setInputPhone] = React.useState('');
-  const [inputAddress, setInputAddress] = React.useState('');
-  const [inputPostalCode, setInputPostalCode] = React.useState('');
-  const [inputNotes, setInputNotes] = React.useState('');
+  const [poLoading, setPoLoading] = useState(false);
+  const [inputPhone, setInputPhone] = useState('');
+  const [inputAddress, setInputAddress] = useState('');
+  const [inputPostalCode, setInputPostalCode] = useState('');
+  const [inputNotes, setInputNotes] = useState('');
+  const [citySearch, setCitySearch] = useState('');
+  const [cityResults, setCityResults] = useState([]);
+  const [showCityDropdown, setShowCityDropdown] = useState(false);
+  const [selectedCity, setSelectedCity] = useState(null);
+  const [shippingOptions, setShippingOptions] = useState([]);
+  const [selectedShipping, setSelectedShipping] = useState(null);
+  const [shippingLoading, setShippingLoading] = useState(false);
+  const cityRef = useRef(null);
+  const searchTimeout = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (cityRef.current && !cityRef.current.contains(e.target)) {
+        setShowCityDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   if (!state.poModal) return null;
 
@@ -42,9 +63,54 @@ export default function POModal() {
 
   const poTotalQty = (poItems || []).reduce((a, it) => a + (it.qty || 1), 0);
   const poSubtotalN = (ap ? ap.price : 0) * poTotalQty;
-  const poShipN = parseInt(poShip) || 0;
+  const poShipN = selectedShipping ? selectedShipping.cost : (parseInt(poShip) || 0);
   const poTotalN = poSubtotalN + poShipN;
   const poCanSub = poShipN > 0 && (poItems || []).length > 0;
+
+  const searchCity = (query) => {
+    setCitySearch(query);
+    setSelectedCity(null);
+    setSelectedShipping(null);
+    setShippingOptions([]);
+    if (query.length < 2) {
+      setCityResults([]);
+      setShowCityDropdown(false);
+      return;
+    }
+    clearTimeout(searchTimeout.current);
+    searchTimeout.current = setTimeout(async () => {
+      try {
+        const results = await CityService.getAll(query);
+        setCityResults(results);
+        setShowCityDropdown(true);
+      } catch (e) {
+        setCityResults([]);
+      }
+    }, 500);
+  };
+
+  const selectCity = async (city) => {
+    const displayName = city.label || city.city_name;
+    setCitySearch(displayName);
+    setInputPostalCode(String(city.zip_code || ''));
+    setSelectedCity({ id: city.id, name: displayName, postcode: city.zip_code });
+    setShowCityDropdown(false);
+
+    setShippingLoading(true);
+    setSelectedShipping(null);
+    try {
+      const totalWeight = (poItems || []).reduce((sum, it) => sum + ((ap?.weight || 1000) * (it.qty || 1)), 0);
+      const result = await ShippingService.getCost(city.id, Math.max(totalWeight, 100));
+      const regOnly = (result.results || []).filter(o => o.service && o.service.toUpperCase().includes('REG'));
+      setShippingOptions(regOnly);
+      if (regOnly.length > 0) {
+        setSelectedShipping(regOnly[0]);
+      }
+    } catch (e) {
+      setShippingOptions([]);
+    }
+    setShippingLoading(false);
+  };
 
   const poSubmitStyle = {
     background: poCanSub ? '#F2C015' : '#d8d2c4',
@@ -226,12 +292,7 @@ export default function POModal() {
                       <input placeholder="Kota" value={poUserCity} readOnly style={{ padding: '13px', border: '2px solid #14110D', background: '#e8e4da', fontSize: '14px', color: '#3d382f' }} />
                       <input placeholder="Kode pos" value={poPostalCode} readOnly style={{ padding: '13px', border: '2px solid #14110D', background: '#e8e4da', fontSize: '14px', color: '#3d382f' }} />
                     </>
-                  ) : (
-                    <>
-                      <input placeholder="Kota" value={poCity} onChange={(e) => updateState({ poCity: e.target.value })} style={{ padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
-                      <input placeholder="Kode pos" value={inputPostalCode} onChange={(e) => setInputPostalCode(e.target.value)} style={{ padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
-                    </>
-                  )}
+                  ) : null}
                   {poModeRegister && (
                     <input type="password" placeholder="Password (untuk akun baru)" style={{ gridColumn: '1/3', padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
                   )}
@@ -239,11 +300,48 @@ export default function POModal() {
                 </div>
 
                 <div style={{ border: '2px solid #14110D', background: '#F2EEE4', padding: '14px', marginTop: '14px' }}>
-                  <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#6b655a', marginBottom: '8px' }}>Ongkos Kirim</div>
-                  <div style={{ display: 'flex', alignItems: 'center', border: '2px solid #14110D', background: '#fff' }}>
-                    <span style={{ padding: '0 12px', fontFamily: "'Space Mono', monospace", fontSize: '14px', color: '#6b655a' }}>Rp</span>
-                    <input type="number" placeholder="mis. 10000" value={poShip} onChange={(e) => updateState({ poShip: e.target.value })} style={{ flex: 1, border: 'none', borderLeft: '2px solid #14110D', padding: '13px', fontFamily: "'Space Mono', monospace", fontSize: '14px', background: '#fff' }} />
+                  <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#6b655a', marginBottom: '8px' }}>Kota Tujuan</div>
+                  <div ref={cityRef} style={{ position: 'relative' }}>
+                    <input placeholder="Cari kota/kabupaten..." value={citySearch} onChange={e => searchCity(e.target.value)} onFocus={() => cityResults.length > 0 && setShowCityDropdown(true)} style={{ width: '100%', padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px', boxSizing: 'border-box' }} />
+                    {showCityDropdown && cityResults.length > 0 && (
+                      <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#fff', border: '2px solid #14110D', borderTop: 'none', maxHeight: '150px', overflowY: 'auto', zIndex: 10 }}>
+                        {cityResults.slice(0, 20).map(city => (
+                          <div key={city.id} onClick={() => selectCity(city)} style={{ padding: '8px 12px', cursor: 'pointer', fontSize: '12px', borderBottom: '1px solid #ddd5c4' }}
+                            onMouseEnter={e => e.currentTarget.style.background = '#F2EEE4'}
+                            onMouseLeave={e => e.currentTarget.style.background = '#fff'}>
+                            <span style={{ fontWeight: 700 }}>{city.label || city.city_name}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
+                  {selectedCity && (
+                    <input placeholder="Kode pos" value={inputPostalCode} readOnly style={{ width: '100%', padding: '13px', border: '2px solid #14110D', background: '#e4ddcd', fontSize: '14px', marginTop: '8px', cursor: 'not-allowed', boxSizing: 'border-box' }} />
+                  )}
+                </div>
+
+                <div style={{ border: '2px solid #14110D', background: '#F2EEE4', padding: '14px', marginTop: '10px' }}>
+                  <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#6b655a', marginBottom: '8px' }}>Pengiriman (JNE REG)</div>
+                  {shippingLoading ? (
+                    <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#6b655a' }}>Menghitung ongkir...</div>
+                  ) : shippingOptions.length > 0 ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      {shippingOptions.map((opt, idx) => (
+                        <div key={idx} onClick={() => setSelectedShipping(opt)} style={{
+                          border: '2px solid #14110D', padding: '10px 12px', cursor: 'pointer',
+                          background: selectedShipping?.service === opt.service ? '#F2C015' : '#fff',
+                          display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+                        }}>
+                          <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', fontWeight: 700 }}>{opt.service}</span>
+                          <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px' }}>{rp(opt.cost)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : selectedCity ? (
+                    <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#6b655a' }}>Tidak ada opsi pengiriman</div>
+                  ) : (
+                    <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#6b655a' }}>Pilih kota tujuan terlebih dahulu</div>
+                  )}
                 </div>
 
                 <div style={{ border: '2px solid #14110D', background: '#fff', padding: '16px', marginTop: '18px' }}>

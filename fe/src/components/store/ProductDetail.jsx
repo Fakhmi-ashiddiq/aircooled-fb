@@ -1,12 +1,20 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { useStore } from '../../store';
 import useProductVM from '../../hooks/useProductVM';
+import ProductService from '../../services/ProductService';
 
 export default function ProductDetail() {
   const { state, updateState, data, openProduct, addToCart, go } = useStore();
   const { getProductVM } = useProductVM();
 
   const ap = data.PRODUCTS.find(x => x.id === state.activeId);
+
+  useEffect(() => {
+    if (ap && ap.db_id) {
+      ProductService.getById(ap.db_id).catch(() => {});
+    }
+  }, [ap?.db_id]);
+
   if (!ap) return null;
 
   const activeP = getProductVM(ap, state.selectedSize);

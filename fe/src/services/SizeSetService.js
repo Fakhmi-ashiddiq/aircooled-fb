@@ -14,7 +14,13 @@ export default {
         return res.data;
     },
     update: async (id, data) => {
-        const res = await apiClient.put(/size-sets/ + id, data);
+        if (data instanceof FormData) {
+            const res = await apiClient.post('/size-sets/' + id + '?_method=PUT', data, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            });
+            return res.data;
+        }
+        const res = await apiClient.put('/size-sets/' + id, data);
         return res.data;
     },
     delete: async (id) => {

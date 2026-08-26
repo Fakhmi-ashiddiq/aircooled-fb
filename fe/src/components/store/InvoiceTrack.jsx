@@ -32,7 +32,9 @@ export default function InvoiceTrack() {
   if (loading) {
     return (
       <main style={{ padding: '48px', textAlign: 'center' }}>
-        <p style={{ fontFamily: "'Space Mono', monospace", fontSize: '14px', color: '#6b655a' }}>Memuat data pesanan...</p>
+        <div style={{ display: 'flex', height: '80vh', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
+          <p style={{ fontFamily: "'Space Mono', monospace", fontSize: '14px', color: '#6b655a' }}>Memuat data pesanan...</p>
+        </div>
       </main>
     );
   }
@@ -133,9 +135,64 @@ export default function InvoiceTrack() {
         </div>
 
         {order.status === 'Awaiting' && (
-          <div style={{ marginTop: '24px', padding: '16px', background: '#FEF3C7', border: '1px solid #F59E0B', borderRadius: '4px', fontSize: '13px', color: '#92400E' }}>
-            <strong>Menunggu Pembayaran</strong><br />
-            Silakan lakukan pembayaran sesuai metode yang dipilih. Pembayaran akan dikonfirmasi otomatis.
+          <div style={{ marginTop: '24px', padding: '20px', background: '#FEF3C7', border: '1px solid #F59E0B', borderRadius: '4px', fontSize: '13px', color: '#92400E' }}>
+            <strong style={{ fontSize: '15px' }}>Menunggu Pembayaran</strong>
+            <p style={{ margin: '8px 0 16px', lineHeight: 1.5 }}>Silakan lakukan pembayaran sesuai metode yang dipilih.</p>
+
+            {order.payment_method === 'transfer_bca' && (
+              <div style={{ background: '#fff', border: '1px solid #F59E0B', borderRadius: '4px', padding: '16px', marginTop: '12px' }}>
+                <div style={{ fontFamily: "'Archivo'", fontWeight: 700, fontSize: '14px', marginBottom: '8px' }}>Transfer Bank BCA</div>
+                <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', marginBottom: '4px' }}>
+                  <strong>No. Rekening:</strong> 1234567890
+                </div>
+                <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', marginBottom: '4px' }}>
+                  <strong>Atas Nama:</strong> PT Aircooled Syndicate
+                </div>
+                <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', marginBottom: '8px' }}>
+                  <strong>Jumlah Transfer:</strong> <span style={{ fontWeight: 700 }}>{rp(order.total || 0)}</span>
+                </div>
+                <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#6b655a' }}>
+                  Harap kirim bukti pembayaran ke{' '}
+                  <a href={`https://wa.me/6281234567890?text=${encodeURIComponent('Halo, saya sudah transfer untuk pesanan ' + order.code)}`} target="_blank" rel="noopener noreferrer" style={{ color: '#14110D', fontWeight: 700, textDecoration: 'underline' }}>
+                    0812-3456-7890
+                  </a>
+                </div>
+              </div>
+            )}
+
+            {order.payment_method === 'qris' && (
+              <div style={{ background: '#fff', border: '1px solid #F59E0B', borderRadius: '4px', padding: '16px', marginTop: '12px', textAlign: 'center' }}>
+                <div style={{ fontFamily: "'Archivo'", fontWeight: 700, fontSize: '14px', marginBottom: '12px' }}>QRIS</div>
+                <div style={{ width: '200px', height: '200px', margin: '0 auto 12px', border: '2px solid #14110D', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#fff', overflow: 'hidden' }}>
+                  <img src="/assets/qr_bayar.jpeg" alt="QRIS" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                </div>
+                <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', marginBottom: '4px' }}>
+                  <strong>Total:</strong> <span style={{ fontWeight: 700 }}>{rp(order.total || 0)}</span>
+                </div>
+                <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#6b655a' }}>
+                  Scan QR Code dari aplikasi e-wallet atau m-banking kamu.
+                </div>
+                <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#6b655a' }}>
+                  Harap kirim bukti pembayaran ke{' '}
+                  <a href={`https://wa.me/6281234567890?text=${encodeURIComponent('Halo, saya sudah transfer untuk pesanan ' + order.code)}`} target="_blank" rel="noopener noreferrer" style={{ color: '#14110D', fontWeight: 700, textDecoration: 'underline' }}>
+                    0812-3456-7890
+                  </a>
+                </div>
+              </div>
+            )}
+
+            {!order.payment_method && (
+              <div style={{ marginTop: '8px', fontFamily: "'Space Mono', monospace", fontSize: '12px' }}>
+                Silakan hubungi admin untuk informasi pembayaran.
+              </div>
+            )}
+          </div>
+        )}
+
+        {order.status === 'Paid' && (
+          <div style={{ marginTop: '24px', padding: '16px', background: '#D1FAE5', border: '1px solid #10B981', borderRadius: '4px', fontSize: '13px', color: '#065F46' }}>
+            <strong>Pembayaran Diterima</strong><br />
+            Pembayaran kamu sudah terkonfirmasi. Pesanan akan segera diproses.
           </div>
         )}
       </div>
