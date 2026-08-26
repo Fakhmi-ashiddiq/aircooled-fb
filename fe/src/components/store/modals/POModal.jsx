@@ -1,26 +1,90 @@
-import React, { useContext } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useStore } from '../../../store';
 import { rp } from '../../../utils/helpers';
 import useProductVM from '../../../hooks/useProductVM';
+import CityService from '../../../services/CityService';
+import RajaOngkirService from '../../../services/RajaOngkirService';
 
 export default function POModal() {
   const { state, updateState, data, submitPreOrder } = useStore();
   const { getProductVM } = useProductVM();
-  const [poLoading, setPoLoading] = React.useState(false);
-  const [inputPhone, setInputPhone] = React.useState('');
-  const [inputAddress, setInputAddress] = React.useState('');
-  const [inputPostalCode, setInputPostalCode] = React.useState('');
-  const [inputNotes, setInputNotes] = React.useState('');
+  const [poLoading, setPoLoading] = useState(false);
+  const [inputPhone, setInputPhone] = useState('');
+  const [inputAddress, setInputAddress] = useState('');
+  const [inputNotes, setInputNotes] = useState('');
+
+  // RajaOngkir States
+  const [citySearch, setCitySearch] = useState('');
+  const [cityResults, setCityResults] = useState([]);
+  const [showCityDropdown, setShowCityDropdown] = useState(false);
+  const [selectedCity, setSelectedCity] = useState(null);
+  const [selectedPostalCode, setSelectedPostalCode] = useState('');
+  const [courier, setCourier] = useState('');
+  const [shippingOptions, setShippingOptions] = useState([]);
+  const [selectedShipping, setSelectedShipping] = useState(null);
+  const [shippingLoading, setShippingLoading] = useState(false);
+  const cityRef = useRef(null);
+
+  // Variables needed for hooks
+  const ap = data.PRODUCTS.find(x => x.id === state.activeId);
+  const activeP = ap ? getProductVM(ap) : null;
+  const { user, poDone, poOrderId, poMode, authEmail, authName, poCity, poShip, poItems } = state;
+  const isLoggedIn = !!user;
+  const poTotalQty = (poItems || []).reduce((a, it) => a + (it.qty || 1), 0);
+
+  // RajaOngkir Logic
+  useEffect(() => {
+    if (citySearch.length > 2) {
+      CityService.getAll(citySearch).then(res => setCityResults(res)).catch(() => {});
+    } else {
+      setCityResults([]);
+    }
+  }, [citySearch]);
+
+  useEffect(() => {
+    const fetchShippingCost = async () => {
+      const cityId = selectedCity ? selectedCity.id : (user?.city_id || null);
+      if (cityId && courier && poTotalQty > 0) {
+        setShippingLoading(true);
+        try {
+          const totalWeight = poTotalQty * (ap?.weight || 500);
+          const res = await RajaOngkirService.checkCost(cityId, totalWeight, courier);
+          setShippingOptions(res || []);
+          setSelectedShipping(null);
+        } catch (error) {
+          console.error("Error fetching shipping cost", error);
+        }
+        setShippingLoading(false);
+      } else {
+        setShippingOptions([]);
+        setSelectedShipping(null);
+      }
+    };
+    fetchShippingCost();
+  }, [selectedCity, courier, poTotalQty, ap?.weight, user?.city_id]);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (cityRef.current && !cityRef.current.contains(e.target)) setShowCityDropdown(false);
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Initialize form fields with user data if logged in
+  useEffect(() => {
+    if (state.poModal && isLoggedIn) {
+      if (!inputPhone && user.phone) setInputPhone(user.phone);
+      if (!inputAddress && user.address) setInputAddress(user.address);
+      if (!citySearch && user.city) setCitySearch(user.city);
+      if (!selectedPostalCode && user.postal_code) setSelectedPostalCode(user.postal_code);
+    }
+  }, [state.poModal, isLoggedIn, user]);
 
   if (!state.poModal) return null;
 
   const closePoModal = () => updateState({ poModal: false, poDone: false, poMode: 'guest' });
 
-  const ap = data.PRODUCTS.find(x => x.id === state.activeId);
-  const activeP = ap ? getProductVM(ap) : null;
-  const { user, poDone, poOrderId, poMode, authEmail, authName, poCity, poShip, poItems } = state;
-
-  const isLoggedIn = !!user;
   const poName = user ? user.name : '';
   const poEmail = user ? (user.email || '') : '';
   const poPhone = user ? (user.phone || '') : '';
@@ -40,11 +104,17 @@ export default function POModal() {
     sessionName: activeP ? activeP.sessionName : ''
   };
 
-  const poTotalQty = (poItems || []).reduce((a, it) => a + (it.qty || 1), 0);
   const poSubtotalN = (ap ? ap.price : 0) * poTotalQty;
-  const poShipN = parseInt(poShip) || 0;
+  const poShipN = selectedShipping ? selectedShipping.value : 0;
   const poTotalN = poSubtotalN + poShipN;
   const poCanSub = poShipN > 0 && (poItems || []).length > 0;
+
+  const selectCity = (city) => {
+    setSelectedCity(city);
+    setCitySearch(city.name);
+    setSelectedPostalCode(city.postcode || '');
+    setShowCityDropdown(false);
+  };
 
   const poSubmitStyle = {
     background: poCanSub ? '#F2C015' : '#d8d2c4',
@@ -71,9 +141,9 @@ export default function POModal() {
         shippingCost: poShipN,
         name: isLoggedIn ? poName : (authName || '').trim() || 'Member',
         email: isLoggedIn ? poEmail : (authEmail || '').trim(),
-        phone: isLoggedIn ? poPhone : inputPhone,
-        address: isLoggedIn ? poAddress : inputAddress,
-        cityId: isLoggedIn ? (user?.city_id || null) : null,
+        phone: inputPhone || poPhone,
+        address: inputAddress || poAddress,
+        cityId: selectedCity ? selectedCity.id : (user?.city_id || null),
         notes: inputNotes,
         userId: user?.id || null
       });
@@ -204,11 +274,8 @@ export default function POModal() {
                   ) : (
                     <input placeholder="Nama lengkap" value={authName} onChange={(e) => updateState({ authName: e.target.value })} style={{ gridColumn: '1/3', padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
                   )}
-                  {isLoggedIn ? (
-                    <input placeholder="No. Telp / WhatsApp" value={poPhone} readOnly style={{ padding: '13px', border: '2px solid #14110D', background: '#e8e4da', fontSize: '14px', color: '#3d382f' }} />
-                  ) : (
-                    <input placeholder="No. Telp / WhatsApp" value={inputPhone} onChange={(e) => setInputPhone(e.target.value)} style={{ padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
-                  )}
+                  <input placeholder="No. Telp / WhatsApp" value={inputPhone} onChange={(e) => setInputPhone(e.target.value)} style={{ padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
+                  
                   {isLoggedIn ? (
                     <input placeholder="Email" value={poEmail} readOnly style={{ padding: '13px', border: '2px solid #14110D', background: '#e8e4da', fontSize: '14px', color: '#3d382f' }} />
                   ) : poModeRegister ? (
@@ -216,22 +283,27 @@ export default function POModal() {
                   ) : (
                     <input placeholder="Email" value={authEmail} onChange={(e) => updateState({ authEmail: e.target.value })} style={{ padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
                   )}
-                  {isLoggedIn ? (
-                    <input placeholder="Alamat lengkap" value={poAddress} readOnly style={{ gridColumn: '1/3', padding: '13px', border: '2px solid #14110D', background: '#e8e4da', fontSize: '14px', color: '#3d382f' }} />
-                  ) : (
-                    <input placeholder="Alamat lengkap" value={inputAddress} onChange={(e) => setInputAddress(e.target.value)} style={{ gridColumn: '1/3', padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
-                  )}
-                  {isLoggedIn ? (
-                    <>
-                      <input placeholder="Kota" value={poUserCity} readOnly style={{ padding: '13px', border: '2px solid #14110D', background: '#e8e4da', fontSize: '14px', color: '#3d382f' }} />
-                      <input placeholder="Kode pos" value={poPostalCode} readOnly style={{ padding: '13px', border: '2px solid #14110D', background: '#e8e4da', fontSize: '14px', color: '#3d382f' }} />
-                    </>
-                  ) : (
-                    <>
-                      <input placeholder="Kota" value={poCity} onChange={(e) => updateState({ poCity: e.target.value })} style={{ padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
-                      <input placeholder="Kode pos" value={inputPostalCode} onChange={(e) => setInputPostalCode(e.target.value)} style={{ padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
-                    </>
-                  )}
+
+                  <input placeholder="Alamat lengkap" value={inputAddress} onChange={(e) => setInputAddress(e.target.value)} style={{ gridColumn: '1/3', padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
+                  
+                  <>
+                    <div ref={cityRef} style={{ position: 'relative' }}>
+                      <input placeholder="Kota / Kabupaten" value={citySearch} onChange={e => { setCitySearch(e.target.value); setSelectedCity(null); setSelectedPostalCode(''); if (!showCityDropdown) setShowCityDropdown(true); }} onFocus={() => cityResults.length > 0 && setShowCityDropdown(true)} style={{ width: '100%', padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px', boxSizing: 'border-box' }} />
+                      {showCityDropdown && cityResults.length > 0 && (
+                        <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#fff', border: '2px solid #14110D', borderTop: 'none', maxHeight: '200px', overflowY: 'auto', zIndex: 10 }}>
+                          {cityResults.slice(0, 30).map(city => (
+                            <div key={city.id} onClick={() => selectCity(city)} style={{ padding: '10px 13px', cursor: 'pointer', fontSize: '13px', borderBottom: '1px solid #ddd5c4' }}
+                              onMouseEnter={e => e.currentTarget.style.background = '#F2EEE4'}
+                              onMouseLeave={e => e.currentTarget.style.background = '#fff'}>
+                              <span style={{ fontWeight: 700 }}>{city.type === 'Kabupaten' ? 'Kab. ' : 'Kota '}{city.name}</span>
+                              <span style={{ color: '#6b655a', marginLeft: '6px' }}>{city.province}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <input placeholder="Kode pos" value={selectedPostalCode} readOnly style={{ padding: '13px', border: '2px solid #14110D', background: selectedCity ? '#e4ddcd' : '#fff', fontSize: '14px', cursor: selectedCity ? 'not-allowed' : 'text' }} />
+                  </>
                   {poModeRegister && (
                     <input type="password" placeholder="Password (untuk akun baru)" style={{ gridColumn: '1/3', padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
                   )}
@@ -239,10 +311,32 @@ export default function POModal() {
                 </div>
 
                 <div style={{ border: '2px solid #14110D', background: '#F2EEE4', padding: '14px', marginTop: '14px' }}>
-                  <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#6b655a', marginBottom: '8px' }}>Ongkos Kirim</div>
-                  <div style={{ display: 'flex', alignItems: 'center', border: '2px solid #14110D', background: '#fff' }}>
-                    <span style={{ padding: '0 12px', fontFamily: "'Space Mono', monospace", fontSize: '14px', color: '#6b655a' }}>Rp</span>
-                    <input type="number" placeholder="mis. 10000" value={poShip} onChange={(e) => updateState({ poShip: e.target.value })} style={{ flex: 1, border: 'none', borderLeft: '2px solid #14110D', padding: '13px', fontFamily: "'Space Mono', monospace", fontSize: '14px', background: '#fff' }} />
+                  <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#6b655a', marginBottom: '8px' }}>Pengiriman (RajaOngkir)</div>
+                  
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <select value={courier} onChange={(e) => setCourier(e.target.value)} disabled={!selectedCity && !(isLoggedIn && user?.city_id)} style={{ padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }}>
+                      <option value="">Pilih Kurir...</option>
+                      <option value="jne">JNE</option>
+                      <option value="pos">POS Indonesia</option>
+                      <option value="tiki">TIKI</option>
+                    </select>
+
+                    {shippingLoading && <div style={{ fontSize: '13px', padding: '10px' }}>Memuat ongkos kirim...</div>}
+                    
+                    {!shippingLoading && shippingOptions.length > 0 && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }}>
+                        {shippingOptions.map((opt, i) => (
+                          <label key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', border: '2px solid #14110D', background: selectedShipping?.service === opt.service ? '#F2C015' : '#fff', cursor: 'pointer' }}>
+                            <input type="radio" name="po_shipping" checked={selectedShipping?.service === opt.service} onChange={() => setSelectedShipping(opt.cost[0])} style={{ accentColor: '#14110D', width: '16px', height: '16px' }} />
+                            <div style={{ flex: 1 }}>
+                              <div style={{ fontWeight: 700, fontSize: '14px', textTransform: 'uppercase' }}>{opt.service}</div>
+                              <div style={{ fontSize: '12px', color: '#6b655a' }}>{opt.description} ({opt.cost[0].etd} hari)</div>
+                            </div>
+                            <div style={{ fontFamily: "'Space Mono', monospace", fontWeight: 700 }}>{rp(opt.cost[0].value)}</div>
+                          </label>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
 
