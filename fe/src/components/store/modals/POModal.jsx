@@ -37,11 +37,6 @@ export default function POModal() {
 
   const closePoModal = () => updateState({ poModal: false, poDone: false, poMode: 'guest' });
 
-  const ap = data.PRODUCTS.find(x => x.id === state.activeId);
-  const activeP = ap ? getProductVM(ap) : null;
-  const { user, poDone, poOrderId, poMode, authEmail, authName, poCity, poShip, poItems } = state;
-
-  const isLoggedIn = !!user;
   const poName = user ? user.name : '';
   const poEmail = user ? (user.email || '') : '';
   const poPhone = user ? (user.phone || '') : '';
@@ -61,7 +56,6 @@ export default function POModal() {
     sessionName: activeP ? activeP.sessionName : ''
   };
 
-  const poTotalQty = (poItems || []).reduce((a, it) => a + (it.qty || 1), 0);
   const poSubtotalN = (ap ? ap.price : 0) * poTotalQty;
   const poShipN = selectedShipping ? selectedShipping.cost : (parseInt(poShip) || 0);
   const poTotalN = poSubtotalN + poShipN;
@@ -137,9 +131,9 @@ export default function POModal() {
         shippingCost: poShipN,
         name: isLoggedIn ? poName : (authName || '').trim() || 'Member',
         email: isLoggedIn ? poEmail : (authEmail || '').trim(),
-        phone: isLoggedIn ? poPhone : inputPhone,
-        address: isLoggedIn ? poAddress : inputAddress,
-        cityId: isLoggedIn ? (user?.city_id || null) : null,
+        phone: inputPhone || poPhone,
+        address: inputAddress || poAddress,
+        cityId: selectedCity ? selectedCity.id : (user?.city_id || null),
         notes: inputNotes,
         userId: user?.id || null
       });
@@ -270,11 +264,8 @@ export default function POModal() {
                   ) : (
                     <input placeholder="Nama lengkap" value={authName} onChange={(e) => updateState({ authName: e.target.value })} style={{ gridColumn: '1/3', padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
                   )}
-                  {isLoggedIn ? (
-                    <input placeholder="No. Telp / WhatsApp" value={poPhone} readOnly style={{ padding: '13px', border: '2px solid #14110D', background: '#e8e4da', fontSize: '14px', color: '#3d382f' }} />
-                  ) : (
-                    <input placeholder="No. Telp / WhatsApp" value={inputPhone} onChange={(e) => setInputPhone(e.target.value)} style={{ padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
-                  )}
+                  <input placeholder="No. Telp / WhatsApp" value={inputPhone} onChange={(e) => setInputPhone(e.target.value)} style={{ padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
+                  
                   {isLoggedIn ? (
                     <input placeholder="Email" value={poEmail} readOnly style={{ padding: '13px', border: '2px solid #14110D', background: '#e8e4da', fontSize: '14px', color: '#3d382f' }} />
                   ) : poModeRegister ? (

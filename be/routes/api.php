@@ -38,4 +38,7 @@ Route::get('cities', [\App\Http\Controllers\API\CityController::class, 'index'])
 Route::post('shipping/cost', [\App\Http\Controllers\API\ShippingController::class, 'cost']);
 Route::get('shipping/search-destination', [\App\Http\Controllers\API\ShippingController::class, 'searchDestination']);
 
-
+// Routes untuk API RajaOngkir
+Route::get('/rajaongkir/provinces', [\App\Http\Controllers\API\RajaOngkirController::class, 'getProvinces']);
+Route::get('/rajaongkir/cities/{province}', [\App\Http\Controllers\API\RajaOngkirController::class, 'getCities']);
+Route::post('/rajaongkir/cost', [\App\Http\Controllers\API\RajaOngkirController::class, 'checkCost']);

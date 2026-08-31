@@ -18,7 +18,7 @@ const blankSession = (defaultSizeSetId) => ({
 const PCT_OPTIONS = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50];
 
 export default function SessionModal() {
-  const { data, setData, state, updateState } = useStore();
+  const { data, setData, state, updateState, updateProduct } = useStore();
   const [ns, setNs] = useState(blankSession());
 
   const preorderProducts = data.PRODUCTS.filter((x) => x.type === 'preorder');
@@ -102,7 +102,7 @@ export default function SessionModal() {
     flex: 1
   });
 
-  const createSession = () => {
+  const createSession = async () => {
     if (!p) return;
     const priceN = parseInt(ns.price) || 0;
     const ca = parseInt(ns.compareAt) || 0;
@@ -122,9 +122,9 @@ export default function SessionModal() {
       storePct: Number(ns.storePct) || 0
     };
 
-    setData((prev) => ({
-      ...prev,
-      PRODUCTS: prev.PRODUCTS.map((x) => {
+    let updatedProduct = null;
+    setData((prev) => {
+      const nextProducts = prev.PRODUCTS.map((x) => {
         if (x.id !== p.id) return x;
         const updated = { ...x };
         if (updated.preorder) {
@@ -155,9 +155,19 @@ export default function SessionModal() {
         updated.sizes = sizes;
         updated.colors = colors;
         updated.costs = costs;
+        updatedProduct = updated;
         return updated;
-      })
-    }));
+      });
+      return { ...prev, PRODUCTS: nextProducts };
+    });
+
+    if (updatedProduct) {
+      useStore.getState().updateProduct(p.id, updatedProduct);
+    }
+
+    if (updatedProduct) {
+      await updateProduct(updatedProduct.db_id || updatedProduct.id, updatedProduct);
+    }
 
     const ov = { ...state.committedOverride, [p.id]: 0 };
     updateState({ sessionModal: false, sessionModalPid: null, committedOverride: ov });

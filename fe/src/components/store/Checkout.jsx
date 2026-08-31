@@ -404,6 +404,7 @@ export default function Checkout() {
             <button onClick={placeOrder} disabled={!canSubmit} style={{ marginTop: '18px', width: '100%', background: canSubmit ? '#F2C015' : '#d4d4d4', color: '#14110D', border: 'none', cursor: canSubmit ? 'pointer' : 'not-allowed', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '14px', letterSpacing: '0.06em', textTransform: 'uppercase', padding: '16px', opacity: submitting ? 0.7 : 1 }}>
               {submitting ? 'Memproses...' : checkoutCtaLabel}
             </button>
+            {!selectedShipping && <div style={{ marginTop: '8px', fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#9a3a2a', textAlign: 'center' }}>Pilih opsi pengiriman terlebih dahulu.</div>}
           </div>
         </div>
       )}
