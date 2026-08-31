@@ -13,7 +13,7 @@ class ProductController extends Controller
 {
     public function index()
     {
-        $products = Product::with(['productImages', 'productParent'])->orderByDesc('created_at')->get();
+        $products = Product::with(['productImages', 'productParent', 'preorderSessions'])->orderByDesc('created_at')->get();
         $committed = OrderItem::select('product_id', DB::raw('SUM(qty) as total_qty'))
             ->where('type', 'preorder')
             ->whereHas('order', fn($q) => $q->whereIn('status', ['Awaiting', 'Paid', 'Producing', 'Shipping']))
@@ -75,7 +75,7 @@ class ProductController extends Controller
 
     public function show($id)
     {
-        $data = Product::with(['productImages', 'productParent'])->where('id', $id)->orWhere('code', $id)->firstOrFail();
+        $data = Product::with(['productImages', 'productParent', 'preorderSessions'])->where('id', $id)->orWhere('code', $id)->firstOrFail();
         $data->increment('views');
         $committed = OrderItem::where('product_id', $data->id)
             ->where('type', 'preorder')

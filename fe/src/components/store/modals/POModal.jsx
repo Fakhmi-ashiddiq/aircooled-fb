@@ -7,7 +7,13 @@ import ShippingService from '../../../services/ShippingService';
 
 export default function POModal() {
   const { state, updateState, data, submitPreOrder } = useStore();
+  const user = state.user;
+  const { poMode, authName, authEmail, poDone, poOrderId, poShip, poItems, activeId, selectedSize } = state;
+  const isLoggedIn = !!user;
   const { getProductVM } = useProductVM();
+  const ap = data.PRODUCTS.find(p => p.id === activeId);
+  const activeP = ap ? getProductVM(ap, selectedSize) : null;
+  const poTotalQty = (poItems || []).reduce((sum, item) => sum + (item.qty || 1), 0);
   const [poLoading, setPoLoading] = useState(false);
   const [inputPhone, setInputPhone] = useState('');
   const [inputAddress, setInputAddress] = useState('');

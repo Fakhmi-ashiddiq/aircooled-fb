@@ -32,7 +32,7 @@ return [
     ],
 
     'rajaongkir' => [
-        'key' => env('RAJAONGKIR_KEY'),
+        'key' => env('RAJAONGKIR_KEY', env('RAJAONGKIR_API_KEY')),
         'origin' => env('RAJAONGKIR_ORIGIN', '152'),
     ],
 
