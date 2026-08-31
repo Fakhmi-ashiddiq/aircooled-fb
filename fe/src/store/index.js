@@ -10,6 +10,7 @@ import ProductParentService from '../services/ProductParentService';
 import OrderService from '../services/OrderService';
 import CartService from '../services/CartService';
 import AuthService from '../services/AuthService';
+import PreorderSessionService from '../services/PreorderSessionService';
 
 const deepClone = (obj) => {
     if (typeof structuredClone === 'function') return structuredClone(obj);
@@ -186,10 +187,36 @@ export const useStore = create((set, get) => ({
       result.totalSold = p.totalSold || 0;
       result.totalRevenue = p.totalRevenue || 0;
       
-      result.preorder = typeof p.preorder === 'string' ? JSON.parse(p.preorder || 'null') : p.preorder;
-      result.productionSessions = typeof p.productionSessions === 'string' ? JSON.parse(p.productionSessions || '[]') : p.productionSessions;
-      result.sessionHistory = typeof p.sessionHistory === 'string' ? JSON.parse(p.sessionHistory || '[]') : p.sessionHistory;
+      const sessions = p.preorder_sessions || [];
+      const openSession = sessions.find(s => s.status !== 'done');
       
+      if (openSession) {
+          result.preorder = {
+              id: openSession.id,
+              sessionName: openSession.session_name,
+              opens: openSession.opened_at,
+              closes: openSession.closed_at,
+              target: openSession.target_min,
+              eta: openSession.estimated_delivery,
+              status: openSession.status,
+              split: typeof openSession.profit_split === 'string' ? JSON.parse(openSession.profit_split || '{}') : (openSession.profit_split || {}),
+              committed: result.committed
+          };
+      } else {
+          result.preorder = null;
+      }
+      
+      result.sessionHistory = sessions.filter(s => s.status === 'done').map(s => ({
+          id: s.id,
+          sessionName: s.session_name,
+          opens: s.opened_at,
+          closes: s.closed_at,
+          target: s.target_min,
+          eta: s.estimated_delivery,
+          status: s.status,
+          split: typeof s.profit_split === 'string' ? JSON.parse(s.profit_split || '{}') : (s.profit_split || {})
+      }));
+
       // Use DB images if available, else keep orig
       if (images.length > 0) {
           result.images = images;
@@ -201,9 +228,7 @@ export const useStore = create((set, get) => ({
       
       result.costs = Object.keys(costs).length > 0 ? costs : (result.costs || {});
       
-      if (!result.preorder && p.type === 'preorder') {
-          result.preorder = { sessionName: 'NEW SESSION', status: 'open', target: 50, committed: 0, eta: '-', buyers: [], price: p.price, compareAt: p.compare_at||0, sizes: sizes, colors: colors, costs: costs, split: {base: 'gross'} };
-      }
+
       if (!result.productionSessions && p.type === 'ready') {
           result.productionSessions = [{ name: 'PRODUKSI AWAL', date: 'Hari Ini', qty: result.stockTotal||0, sold: p.sold||0, status: 'active', price: p.price, compareAt: p.compare_at||0, sizes: sizes, costs: costs }];
       }
@@ -447,8 +472,8 @@ export const useStore = create((set, get) => ({
     poAggregate: (p) => {
         const _this = get();
         if (p.type !== 'preorder') return { committed: 0, paidIn: 0, target: 0, count: 0 };
-        const allSess = [p.preorder].concat(p.sessionHistory || []);
-        const committed = allSess.reduce((a, sess, i) => a + (i === 0 ? _this.committedOf(p) : (sess.committed || 0)), 0);
+        const allSess = [p.preorder].concat(p.sessionHistory || []).filter(Boolean);
+        const committed = allSess.reduce((a, sess) => a + (sess === p.preorder ? _this.committedOf(p) : (sess.committed || 0)), 0);
         const target = allSess.reduce((a, sess) => a + (sess.target || 0), 0);
         const paidIn = allSess.reduce((a, sess) => {
             const buyers = _this.poBuyers(sess);
@@ -559,7 +584,9 @@ export const useStore = create((set, get) => ({
 
     mutateSession: async (productId, sessionName, mutator) => {
         const _this = get();
-        let updatedProduct = null;
+        let targetSessId = null;
+        let updatedSess = null;
+        
         _this.setData((prevData) => {
             const next = deepClone(prevData);
             const p = next.PRODUCTS.find((x) => x.id === productId);
@@ -568,12 +595,28 @@ export const useStore = create((set, get) => ({
                 ? p.preorder
                 : (p.sessionHistory || []).find((s) => s.sessionName === sessionName);
             if (!sess) return prevData;
+            
+            targetSessId = sess.id;
             mutator(sess);
-            updatedProduct = p;
+            updatedSess = sess;
             return next;
         });
-        if (updatedProduct) {
-            await _this.updateProduct(updatedProduct.db_id || updatedProduct.id, updatedProduct);
+        
+        if (targetSessId && updatedSess) {
+            try {
+                await PreorderSessionService.update(targetSessId, {
+                    session_name: updatedSess.sessionName,
+                    opened_at: updatedSess.opens,
+                    closed_at: updatedSess.closes,
+                    target_min: updatedSess.target,
+                    estimated_delivery: updatedSess.eta,
+                    status: updatedSess.status,
+                    profit_split: JSON.stringify(updatedSess.split || {})
+                });
+                await _this.fetchInitialData();
+            } catch (e) {
+                console.error("Failed to update session", e);
+            }
         }
     },
 

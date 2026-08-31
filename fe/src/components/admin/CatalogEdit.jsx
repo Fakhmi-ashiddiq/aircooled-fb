@@ -204,9 +204,9 @@ export default function CatalogEdit() {
   const stockMetaFormat = isPre ? (v) => `${v} unit` : (v) => `${v} unit`;
   const sessionsCountLabel = isPre ? `${agg.count} sesi` : '';
 
-  const activeOpen = isPre && p.preorder.status === 'open';
+  const activeOpen = isPre && p.preorder && p.preorder.status === 'open';
   const preSessions = isPre
-    ? [{ ...p.preorder, active: true }, ...((p.sessionHistory || []).map((s) => ({ ...s, active: false })))]
+    ? [p.preorder ? { ...p.preorder, active: true } : null, ...((p.sessionHistory || []).map((s) => ({ ...s, active: false })))].filter(Boolean)
     : [];
   const prodSessions = !isPre ? (p.productionSessions || []) : [];
 

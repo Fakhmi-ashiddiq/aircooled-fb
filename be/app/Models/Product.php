@@ -19,11 +19,18 @@ class Product extends Model
     ];
 
     protected $casts = ['sizes' => 'array', 'costs' => 'array', 'gallery' => 'array', 'preorder' => 'array', 'productionSessions' => 'array', 'sessionHistory' => 'array', 'colors' => 'array', 'images' => 'array', 'stock' => 'array'];
-    public function productImages() { return $this->hasMany(ProductImage::class); }
-    public function productParent() { return $this->belongsTo(ProductParent::class); }
+    public function productImages()
+    {
+        return $this->hasMany(ProductImage::class);
+    }
+
+    public function productParent()
+    {
+        return $this->belongsTo(ProductParent::class);
+    }
+
+    public function preorderSessions()
+    {
+        return $this->hasMany(PreorderSession::class)->orderByDesc('created_at');
+    }
 }
-
-
-
-
-

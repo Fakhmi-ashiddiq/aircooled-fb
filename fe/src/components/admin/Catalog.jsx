@@ -24,9 +24,9 @@ export default function Catalog() {
   };
   const poAggregate = (p) => {
     if (p.type !== 'preorder') return { committed: 0, paidIn: 0 };
-    const allSess = [p.preorder].concat(p.sessionHistory || []);
+    const allSess = [p.preorder].concat(p.sessionHistory || []).filter(Boolean);
     const committed = allSess.reduce(
-      (a, sess, i) => a + (i === 0 ? committedOf(p) : sess.committed || 0),
+      (a, sess) => a + (sess === p.preorder ? committedOf(p) : sess.committed || 0),
       0
     );
     const paidIn = allSess.reduce((a, sess) => {
