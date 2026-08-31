@@ -47,7 +47,7 @@ export default function ProductDetail() {
       : 'Stok habis');
   const ctaLabel = ap.type === 'preorder' ? 'Pesan Pre-Order' : 'Tambah ke Keranjang';
   const specs = ap.type === 'preorder'
-    ? [{ k: 'Kategori', v: ap.cat }, { k: 'Sesi', v: ap.preorder.sessionName }, { k: 'Estimasi Kirim', v: ap.preorder.eta }, { k: 'Pembayaran', v: 'Penuh di muka' }]
+    ? [{ k: 'Kategori', v: ap.cat }, { k: 'Sesi', v: ap.preorder?.sessionName || '-' }, { k: 'Estimasi Kirim', v: ap.preorder?.eta || '-' }, { k: 'Pembayaran', v: 'Penuh di muka' }]
     : [{ k: 'Kategori', v: ap.cat }, { k: 'Bahan', v: 'Premium' }, { k: 'Pengiriman', v: '1–2 hari kerja' }, { k: 'Stok', v: ap.sizes.map(sz => `${sz}: ${ap.stock?.[sz] || 0}`).join(' / ') + ' unit' }];
 
   const colorList = (ap.colors && ap.colors.length) ? ap.colors : [{ name: 'Default', hex: ap.garment }];
@@ -70,14 +70,15 @@ export default function ProductDetail() {
   const needsColor = colorList.length > 1;
   const sizeOk = !needsSize || !!state.selectedSize;
   const colorOk = !needsColor || !!selColor;
-  const canBuy = sizeOk && colorOk;
+  const sessionOpen = ap.type !== 'preorder' || (ap.preorder && ap.preorder.status === 'open');
+  const canBuy = sizeOk && colorOk && sessionOpen;
 
   const ctaStyle = {
     flex: 1, border: 'none', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '14px', letterSpacing: '0.06em', textTransform: 'uppercase', padding: '0 24px',
     background: canBuy ? '#14110D' : '#d8d2c4', color: canBuy ? '#F2EEE4' : '#8a8377', cursor: canBuy ? 'pointer' : 'not-allowed'
   };
 
-  const ctaHint = canBuy ? '' : ((!sizeOk && !colorOk) ? 'Pilih warna & ukuran dulu.' : (!sizeOk ? 'Pilih ukuran dulu.' : 'Pilih warna dulu.'));
+  const ctaHint = canBuy ? '' : (!sessionOpen ? 'Sesi Pre-Order sedang ditutup.' : (!sizeOk && !colorOk) ? 'Pilih warna & ukuran dulu.' : (!sizeOk ? 'Pilih ukuran dulu.' : 'Pilih warna dulu.'));
 
   const galleryVMs = (ap.gallery && ap.gallery.length ? ap.gallery : ['Depan']).map((g, i) => ({
     label: g, bg: pDisplayGarment, idx: i + 1,
@@ -205,8 +206,8 @@ export default function ProductDetail() {
                 <span>{activeP.committed} / {activeP.target} unit terpesan</span>
                 <span>Min. {activeP.target} agar produksi jalan</span>
               </div>
-              {state.view === 'admin' && (
-                <button onClick={() => { updateState({ sessionModal: true }) }} style={{ marginTop: '16px', width: '100%', background: '#fff', color: '#14110D', border: '2px dashed #14110D', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '11px', letterSpacing: '0.06em', textTransform: 'uppercase', padding: '11px' }}>
+              {state.view === 'admin' && !activeP.preorder && (
+                <button onClick={() => { updateState({ sessionModal: true, sessionModalPid: activeP.id }) }} style={{ marginTop: '16px', width: '100%', background: '#fff', color: '#14110D', border: '2px dashed #14110D', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '11px', letterSpacing: '0.06em', textTransform: 'uppercase', padding: '11px' }}>
                   + Buat Sesi Pre-Order Baru (Admin)
                 </button>
               )}

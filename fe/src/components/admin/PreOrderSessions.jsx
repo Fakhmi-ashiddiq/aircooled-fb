@@ -5,7 +5,7 @@ import { rp, normStage, stageOrder } from '../../utils/helpers';
 export default function PreOrderSessions() {
   const { data, state, updateState, committedOf, advanceSess } = useStore();
 
-  const poProducts = data.PRODUCTS.filter((p) => p.type === 'preorder');
+  const poProducts = data.PRODUCTS.filter((p) => p.type === 'preorder' && p.preorder);
 
   const statusLabel = (status) => (status === 'open' ? 'OPEN' : status === 'production' ? 'PRODUKSI' : status === 'shipping' ? 'PENGIRIMAN' : 'DITUTUP');
   const statusStyle = (status) => ({
