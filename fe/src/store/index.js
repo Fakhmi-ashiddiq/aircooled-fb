@@ -190,14 +190,24 @@ export const useStore = create((set, get) => ({
       const sessions = p.preorder_sessions || [];
       const openSession = sessions.find(s => s.status !== 'done');
       
+      const formatDbDate = (str) => {
+          if (!str) return '';
+          const parts = str.split('-');
+          if (parts.length !== 3) return str;
+          const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+          const m = parseInt(parts[1], 10) - 1;
+          const d = parseInt(parts[2], 10);
+          return `${d} ${months[m]}`;
+      };
+
       if (openSession) {
           result.preorder = {
               id: openSession.id,
               sessionName: openSession.session_name,
-              opens: openSession.opened_at,
-              closes: openSession.closed_at,
+              opens: formatDbDate(openSession.opened_at),
+              closes: formatDbDate(openSession.closed_at),
               target: openSession.target_min,
-              eta: openSession.estimated_delivery,
+              eta: formatDbDate(openSession.estimated_delivery),
               status: openSession.status,
               split: typeof openSession.profit_split === 'string' ? JSON.parse(openSession.profit_split || '{}') : (openSession.profit_split || {}),
               committed: result.committed
@@ -209,12 +219,26 @@ export const useStore = create((set, get) => ({
       result.sessionHistory = sessions.filter(s => s.status === 'done').map(s => ({
           id: s.id,
           sessionName: s.session_name,
-          opens: s.opened_at,
-          closes: s.closed_at,
+          opens: formatDbDate(s.opened_at),
+          closes: formatDbDate(s.closed_at),
           target: s.target_min,
-          eta: s.estimated_delivery,
+          eta: formatDbDate(s.estimated_delivery),
           status: s.status,
-          split: typeof s.profit_split === 'string' ? JSON.parse(s.profit_split || '{}') : (s.profit_split || {})
+          split: typeof s.profit_split === 'string' ? JSON.parse(s.profit_split || '{}') : (s.profit_split || {}),
+          committed: p.committed || 0
+      }));
+      
+      result.productionSessions = sessions.map(s => ({
+          id: s.id,
+          sessionName: s.session_name,
+          opens: formatDbDate(s.opened_at),
+          closes: formatDbDate(s.closed_at),
+          target: s.target_min,
+          eta: formatDbDate(s.estimated_delivery),
+          status: s.status,
+          active: s.status !== 'done',
+          split: typeof s.profit_split === 'string' ? JSON.parse(s.profit_split || '{}') : (s.profit_split || {}),
+          committed: p.committed || 0
       }));
 
       // Use DB images if available, else keep orig

@@ -20,45 +20,7 @@ const PCT_OPTIONS = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50];
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-function DatePickerInput({ value, onChange, placeholder, style }) {
-  const dateValue = React.useMemo(() => {
-    if (!value) return '';
-    const parts = value.split(' ');
-    if (parts.length !== 2) return '';
-    const monthIdx = MONTHS.indexOf(parts[1]);
-    if (monthIdx === -1) return '';
-    const d = parseInt(parts[0], 10);
-    const y = new Date().getFullYear();
-    const mm = String(monthIdx + 1).padStart(2, '0');
-    const dd = String(d).padStart(2, '0');
-    return `${y}-${mm}-${dd}`;
-  }, [value]);
 
-  const handleDateChange = (e) => {
-    if (!e.target.value) return;
-    const parts = e.target.value.split('-');
-    if (parts.length !== 3) return;
-    const day = parseInt(parts[2], 10);
-    const monthIdx = parseInt(parts[1], 10) - 1;
-    const formatted = `${day} ${MONTHS[monthIdx]}`;
-    onChange({ target: { value: formatted } });
-  };
-
-  return (
-    <div style={{ position: 'relative' }}>
-      <input type="text" placeholder={placeholder} value={value} onChange={onChange} style={style} />
-      <div style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#6b655a' }}>
-        📅
-      </div>
-      <input 
-        type="date" 
-        value={dateValue}
-        style={{ position: 'absolute', right: 0, top: 0, opacity: 0, width: '100%', height: '100%', cursor: 'pointer' }} 
-        onChange={handleDateChange}
-      />
-    </div>
-  );
-}
 
 export default function SessionModal() {
   const { data, setData, state, updateState, updateProduct } = useStore();
@@ -230,23 +192,32 @@ export default function SessionModal() {
         </div>
 
         <div className="sessmodal-body" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div>
-            <div style={labelStyle}>Product</div>
-            <select
-              value={pid}
-              onChange={(ev) => updateState({ sessionModalPid: ev.target.value })}
-              style={inputStyle}
-              disabled={preorderProducts.length === 0}
-            >
-              {preorderProducts.length === 0 ? (
-                <option value="">-- All products have active sessions --</option>
-              ) : (
-                preorderProducts.map((prod) => (
-                  <option key={prod.id} value={prod.id}>{prod.name}</option>
-                ))
-              )}
-            </select>
-          </div>
+          {state.adminRoute === 'catalog-edit' ? (
+            <div>
+              <div style={labelStyle}>Product</div>
+              <div style={{ ...inputStyle, background: '#e4ddcd', color: '#6b655a' }}>
+                {data.PRODUCTS.find(prod => String(prod.id) === String(pid))?.name || 'Loading...'}
+              </div>
+            </div>
+          ) : (
+            <div>
+              <div style={labelStyle}>Product</div>
+              <select
+                value={pid}
+                onChange={(ev) => updateState({ sessionModalPid: ev.target.value })}
+                style={inputStyle}
+                disabled={preorderProducts.length === 0}
+              >
+                {preorderProducts.length === 0 ? (
+                  <option value="">-- All products have active sessions --</option>
+                ) : (
+                  preorderProducts.map((prod) => (
+                    <option key={prod.id} value={prod.id}>{prod.name}</option>
+                  ))
+                )}
+              </select>
+            </div>
+          )}
 
           <div>
             <div style={labelStyle}>Session Name / Drop</div>
@@ -256,11 +227,11 @@ export default function SessionModal() {
           <div className="sessmodal-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
             <div>
               <div style={labelStyle}>Opened</div>
-              <DatePickerInput placeholder="1 Jul" value={ns.opens} onChange={set('opens')} style={inputStyle} />
+              <input type="date" value={ns.opens} onChange={set('opens')} style={inputStyle} />
             </div>
             <div>
-              <div style={labelStyle}>Closed</div>
-              <DatePickerInput placeholder="31 Jul" value={ns.closes} onChange={set('closes')} style={inputStyle} />
+              <div style={labelStyle}>Tutup Sesi</div>
+              <input type="date" value={ns.closes} onChange={set('closes')} style={inputStyle} />
             </div>
           </div>
 
@@ -270,8 +241,8 @@ export default function SessionModal() {
               <input type="number" placeholder="40" value={ns.target} onChange={set('target')} style={inputStyle} />
             </div>
             <div>
-              <div style={labelStyle}>Est. Delivery</div>
-              <DatePickerInput placeholder="25 Aug" value={ns.eta} onChange={set('eta')} style={inputStyle} />
+              <div style={labelStyle}>Estimasi Kirim (ETA)</div>
+              <input type="date" value={ns.eta} onChange={set('eta')} style={inputStyle} />
             </div>
           </div>
 
