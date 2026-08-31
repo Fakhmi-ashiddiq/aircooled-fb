@@ -186,6 +186,10 @@ export const useStore = create((set, get) => ({
       result.totalSold = p.totalSold || 0;
       result.totalRevenue = p.totalRevenue || 0;
       
+      result.preorder = typeof p.preorder === 'string' ? JSON.parse(p.preorder || 'null') : p.preorder;
+      result.productionSessions = typeof p.productionSessions === 'string' ? JSON.parse(p.productionSessions || '[]') : p.productionSessions;
+      result.sessionHistory = typeof p.sessionHistory === 'string' ? JSON.parse(p.sessionHistory || '[]') : p.sessionHistory;
+      
       // Use DB images if available, else keep orig
       if (images.length > 0) {
           result.images = images;
