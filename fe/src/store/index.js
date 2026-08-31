@@ -229,7 +229,7 @@ export const useStore = create((set, get) => ({
       result.costs = Object.keys(costs).length > 0 ? costs : (result.costs || {});
       
       if (!result.preorder && p.type === 'preorder') {
-          result.preorder = { sessionName: 'NEW SESSION', status: 'open', target: p.target || 50, committed: 0, eta: '-', buyers: [], price: p.price || p.priceLessXxl || 0, compareAt: p.compare_at||0, opens: '-', closes: '-', sizes: sizes, colors: colors, costs: costs, split: {base: 'gross'} };
+          result.preorder = null;
       }
       if (!result.productionSessions && p.type === 'ready') {
           result.productionSessions = [{ name: 'PRODUKSI AWAL', date: 'Hari Ini', qty: result.stockTotal||0, sold: p.sold||0, status: 'active', price: p.price, compareAt: p.compare_at||0, sizes: sizes, costs: costs }];
