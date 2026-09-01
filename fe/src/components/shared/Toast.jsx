@@ -42,7 +42,7 @@ export default function Toast() {
           to { transform: translateY(0); opacity: 1; }
         }
       `}</style>
-      {toast.message}
+      {typeof toast === 'string' ? toast : toast.message}
     </div>
   );
 }

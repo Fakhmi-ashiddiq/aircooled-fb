@@ -15,14 +15,14 @@ export default function POModal() {
   const activeP = ap ? getProductVM(ap, selectedSize) : null;
   const poTotalQty = (poItems || []).reduce((sum, item) => sum + (item.qty || 1), 0);
   const [poLoading, setPoLoading] = useState(false);
-  const [inputPhone, setInputPhone] = useState('');
-  const [inputAddress, setInputAddress] = useState('');
-  const [inputPostalCode, setInputPostalCode] = useState('');
+  const [inputPhone, setInputPhone] = useState(user?.phone || '');
+  const [inputAddress, setInputAddress] = useState(user?.address || '');
+  const [inputPostalCode, setInputPostalCode] = useState(user?.postal_code || '');
   const [inputNotes, setInputNotes] = useState('');
-  const [citySearch, setCitySearch] = useState('');
+  const [citySearch, setCitySearch] = useState(user?.city_name || '');
   const [cityResults, setCityResults] = useState([]);
   const [showCityDropdown, setShowCityDropdown] = useState(false);
-  const [selectedCity, setSelectedCity] = useState(null);
+  const [selectedCity, setSelectedCity] = useState(user?.city_id ? { id: user.city_id, name: user.city_name || '', postcode: user.postal_code || '' } : null);
   const [shippingOptions, setShippingOptions] = useState([]);
   const [selectedShipping, setSelectedShipping] = useState(null);
   const [shippingLoading, setShippingLoading] = useState(false);
@@ -38,6 +38,42 @@ export default function POModal() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    if (user) {
+      setInputPhone(user.phone || '');
+      setInputAddress(user.address || '');
+      setInputPostalCode(user.postal_code || '');
+      setCitySearch(user.city_name || '');
+      if (user.city_id) {
+        setSelectedCity({ id: user.city_id, name: user.city_name || '', postcode: user.postal_code || '' });
+      }
+    }
+  }, [user]);
+
+  const fetchShipping = async (cityId) => {
+    setShippingLoading(true);
+    setSelectedShipping(null);
+    try {
+      const totalWeight = (poItems || []).reduce((sum, it) => sum + ((ap?.weight || 1000) * (it.qty || 1)), 0);
+      const result = await ShippingService.getCost(cityId, Math.max(totalWeight, 100));
+      const regOnly = (result.results || []).filter(o => o.service && o.service.toUpperCase().includes('REG'));
+      setShippingOptions(regOnly);
+      if (regOnly.length > 0) {
+        setSelectedShipping(regOnly[0]);
+      }
+    } catch (e) {
+      setShippingOptions([]);
+    }
+    setShippingLoading(false);
+  };
+
+  useEffect(() => {
+    if (selectedCity?.id && shippingOptions.length === 0) {
+      fetchShipping(selectedCity.id);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCity?.id]);
 
   if (!state.poModal) return null;
 
@@ -89,27 +125,14 @@ export default function POModal() {
     }, 500);
   };
 
+
   const selectCity = async (city) => {
     const displayName = city.label || city.city_name;
     setCitySearch(displayName);
     setInputPostalCode(String(city.zip_code || ''));
     setSelectedCity({ id: city.id, name: displayName, postcode: city.zip_code });
     setShowCityDropdown(false);
-
-    setShippingLoading(true);
-    setSelectedShipping(null);
-    try {
-      const totalWeight = (poItems || []).reduce((sum, it) => sum + ((ap?.weight || 1000) * (it.qty || 1)), 0);
-      const result = await ShippingService.getCost(city.id, Math.max(totalWeight, 100));
-      const regOnly = (result.results || []).filter(o => o.service && o.service.toUpperCase().includes('REG'));
-      setShippingOptions(regOnly);
-      if (regOnly.length > 0) {
-        setSelectedShipping(regOnly[0]);
-      }
-    } catch (e) {
-      setShippingOptions([]);
-    }
-    setShippingLoading(false);
+    await fetchShipping(city.id);
   };
 
   const poSubmitStyle = {
@@ -140,6 +163,8 @@ export default function POModal() {
         phone: inputPhone || poPhone,
         address: inputAddress || poAddress,
         cityId: selectedCity ? selectedCity.id : (user?.city_id || null),
+        cityName: selectedCity ? (selectedCity.name || selectedCity.label || selectedCity.city_name || '') : (user?.city_name || ''),
+        postalCode: inputPostalCode || (selectedCity?.postcode || ''),
         notes: inputNotes,
         userId: user?.id || null
       });
@@ -263,37 +288,15 @@ export default function POModal() {
             {poOrderForm && (
               <>
                 <div className="po-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                  {isLoggedIn ? (
-                    <input placeholder="Nama lengkap" value={poName} readOnly style={{ gridColumn: '1/3', padding: '13px', border: '2px solid #14110D', background: '#e8e4da', fontSize: '14px', color: '#3d382f' }} />
-                  ) : poModeRegister ? (
-                    <input placeholder="Nama lengkap" value={authName} onChange={(e) => updateState({ authName: e.target.value })} style={{ gridColumn: '1/3', padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
-                  ) : (
-                    <input placeholder="Nama lengkap" value={authName} onChange={(e) => updateState({ authName: e.target.value })} style={{ gridColumn: '1/3', padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
-                  )}
+
+                  <input placeholder="Nama lengkap" value={isLoggedIn ? poName : authName} onChange={(e) => !isLoggedIn && updateState({ authName: e.target.value })} readOnly={isLoggedIn} style={{ gridColumn: '1/3', padding: '13px', border: '2px solid #14110D', background: isLoggedIn ? '#e8e4da' : '#fff', fontSize: '14px', color: isLoggedIn ? '#3d382f' : '#14110D' }} />
                   <input placeholder="No. Telp / WhatsApp" value={inputPhone} onChange={(e) => setInputPhone(e.target.value)} style={{ padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
-                  
-                  {isLoggedIn ? (
-                    <input placeholder="Email" value={poEmail} readOnly style={{ padding: '13px', border: '2px solid #14110D', background: '#e8e4da', fontSize: '14px', color: '#3d382f' }} />
-                  ) : poModeRegister ? (
-                    <input placeholder="Email" value={authEmail} onChange={(e) => updateState({ authEmail: e.target.value })} style={{ padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
-                  ) : (
-                    <input placeholder="Email" value={authEmail} onChange={(e) => updateState({ authEmail: e.target.value })} style={{ padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
-                  )}
-                  {isLoggedIn ? (
-                    <input placeholder="Alamat lengkap" value={poAddress} readOnly style={{ gridColumn: '1/3', padding: '13px', border: '2px solid #14110D', background: '#e8e4da', fontSize: '14px', color: '#3d382f' }} />
-                  ) : (
-                    <input placeholder="Alamat lengkap" value={inputAddress} onChange={(e) => setInputAddress(e.target.value)} style={{ gridColumn: '1/3', padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
-                  )}
-                  {isLoggedIn ? (
-                    <>
-                      <input placeholder="Kota" value={poUserCity} readOnly style={{ padding: '13px', border: '2px solid #14110D', background: '#e8e4da', fontSize: '14px', color: '#3d382f' }} />
-                      <input placeholder="Kode pos" value={poPostalCode} readOnly style={{ padding: '13px', border: '2px solid #14110D', background: '#e8e4da', fontSize: '14px', color: '#3d382f' }} />
-                    </>
-                  ) : null}
+                  <input placeholder="Email" value={isLoggedIn ? poEmail : authEmail} onChange={(e) => !isLoggedIn && updateState({ authEmail: e.target.value })} readOnly={isLoggedIn} style={{ padding: '13px', border: '2px solid #14110D', background: isLoggedIn ? '#e8e4da' : '#fff', fontSize: '14px', color: isLoggedIn ? '#3d382f' : '#14110D' }} />
+                  <input className="ck-span-full" placeholder="Alamat lengkap" value={inputAddress} onChange={(e) => setInputAddress(e.target.value)} style={{ gridColumn: '1/3', padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
                   {poModeRegister && (
-                    <input type="password" placeholder="Password (untuk akun baru)" style={{ gridColumn: '1/3', padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
+                    <input className="ck-span-full" type="password" placeholder="Password (untuk akun baru)" style={{ gridColumn: '1/3', padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
                   )}
-                  <textarea placeholder="Keterangan (opsional)" value={inputNotes} onChange={(e) => setInputNotes(e.target.value)} rows="2" style={{ gridColumn: '1/3', padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px', resize: 'vertical' }}></textarea>
+                  <textarea className="ck-span-full" placeholder="Keterangan (opsional)" value={inputNotes} onChange={(e) => setInputNotes(e.target.value)} rows="2" style={{ gridColumn: '1/3', padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px', resize: 'vertical' }}></textarea>
                 </div>
 
                 <div style={{ border: '2px solid #14110D', background: '#F2EEE4', padding: '14px', marginTop: '14px' }}>
@@ -312,9 +315,7 @@ export default function POModal() {
                       </div>
                     )}
                   </div>
-                  {selectedCity && (
-                    <input placeholder="Kode pos" value={inputPostalCode} readOnly style={{ width: '100%', padding: '13px', border: '2px solid #14110D', background: '#e4ddcd', fontSize: '14px', marginTop: '8px', cursor: 'not-allowed', boxSizing: 'border-box' }} />
-                  )}
+                  <input placeholder="Kode pos" value={inputPostalCode} readOnly style={{ width: '100%', padding: '13px', border: '2px solid #14110D', background: selectedCity ? '#e4ddcd' : '#fff', fontSize: '14px', marginTop: '8px', cursor: selectedCity ? 'not-allowed' : 'text', boxSizing: 'border-box' }} />
                 </div>
 
                 <div style={{ border: '2px solid #14110D', background: '#F2EEE4', padding: '14px', marginTop: '10px' }}>
