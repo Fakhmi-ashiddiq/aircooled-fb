@@ -27,7 +27,7 @@ export default function SessionModal() {
   const [ns, setNs] = useState(blankSession());
 
   const preorderProducts = data.PRODUCTS.filter((x) => x.type === 'preorder' && !x.preorder);
-  const pid = state.sessionModalPid || ns.productId || (preorderProducts.length > 0 ? preorderProducts[0].id : '');
+  const pid = state.sessionModalPid || (preorderProducts.length > 0 ? preorderProducts[0].id : '');
   const p = data.PRODUCTS.find((x) => x.id === pid);
   const colorOptions = (data.colorOptions || []).filter((c) => c.active !== false);
   const roles = data.owners || [];

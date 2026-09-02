@@ -51,7 +51,7 @@ export default function PreOrderSessions() {
           Sesi Pre-Order
         </h1>
         <button
-          onClick={() => updateState({ sessionModal: true, sessionModalPid: poProducts[0]?.id || '' })}
+          onClick={() => updateState({ sessionModal: true, sessionModalPid: null })}
           style={{ background: '#F2C015', color: '#14110D', border: 'none', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '12px', letterSpacing: '0.06em', textTransform: 'uppercase', padding: '13px 20px' }}
         >
           + Sesi Baru

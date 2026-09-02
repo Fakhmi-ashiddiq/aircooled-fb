@@ -19,6 +19,19 @@ class OrderController extends Controller
     {
         $order = Order::create($request->except('order_items'));
 
+        if ($request->has('user_id') && $request->user_id) {
+            $user = \App\Models\User::find($request->user_id);
+            if ($user) {
+                $user->update([
+                    'phone' => $request->input('phone', $user->phone),
+                    'address' => $request->input('address', $user->address),
+                    'city_id' => $request->input('city_id', $user->city_id),
+                    'city_name' => $request->input('city_name', $user->city_name),
+                    'postal_code' => $request->input('postal_code', $user->postal_code)
+                ]);
+            }
+        }
+
         if ($request->has('order_items') && is_array($request->order_items)) {
             foreach ($request->order_items as $item) {
                 $order->items()->create($item);

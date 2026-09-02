@@ -25,18 +25,24 @@ export default function Checkout() {
   const checkoutEmail = user ? (user.email || '') : '';
   const checkoutPhone = user ? (user.phone || '') : '';
   const checkoutAddress = user ? (user.address || '') : '';
-  const checkoutCity = user ? (user.city || '') : '';
+  const checkoutCity = user ? (user.city_name || '') : '';
   const checkoutPostalCode = user ? (user.postal_code || '') : '';
 
   const [citySearch, setCitySearch] = useState(checkoutCity);
   const [cityResults, setCityResults] = useState([]);
   const [showCityDropdown, setShowCityDropdown] = useState(false);
-  const [selectedCity, setSelectedCity] = useState(null);
+  const [selectedCity, setSelectedCity] = useState(user?.city_id ? { id: user.city_id, name: user.city_name || '', postcode: user.postal_code || '' } : null);
   const [selectedPostalCode, setSelectedPostalCode] = useState(checkoutPostalCode);
   const [shippingOptions, setShippingOptions] = useState([]);
   const [selectedShipping, setSelectedShipping] = useState(null);
   const [shippingLoading, setShippingLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  
+  const [nameState, setNameState] = useState(checkoutName);
+  const [emailState, setEmailState] = useState(checkoutEmail);
+  const [phoneState, setPhoneState] = useState(checkoutPhone);
+  const [addressState, setAddressState] = useState(checkoutAddress);
+  const [notesState, setNotesState] = useState('');
   const cityRef = useRef(null);
   const searchTimeout = useRef(null);
 
@@ -66,6 +72,18 @@ export default function Checkout() {
     const unitPrice = isSizeOverXxl(c.size) ? (p.priceMoreXxl || p.price || 0) : (p.priceLessXxl || p.price || 0);
     return s + unitPrice * c.qty;
   }, 0);
+
+  useEffect(() => {
+    setNameState(checkoutName);
+    setEmailState(checkoutEmail);
+    setPhoneState(checkoutPhone);
+    setAddressState(checkoutAddress);
+    setCitySearch(checkoutCity);
+    setSelectedPostalCode(checkoutPostalCode);
+    if (user?.city_id) {
+      setSelectedCity({ id: user.city_id, name: user.city_name || '', postcode: user.postal_code || '' });
+    }
+  }, [checkoutName, checkoutEmail, checkoutPhone, checkoutAddress, checkoutCity, checkoutPostalCode, user]);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -98,13 +116,7 @@ export default function Checkout() {
     }, 500);
   };
 
-  const selectCity = async (city) => {
-    const displayName = city.label || city.city_name;
-    setCitySearch(displayName);
-    setSelectedPostalCode(String(city.zip_code || ''));
-    setSelectedCity({ id: city.id, name: displayName });
-    setShowCityDropdown(false);
-
+  const fetchShipping = async (cityId) => {
     setShippingLoading(true);
     setSelectedShipping(null);
     try {
@@ -112,7 +124,7 @@ export default function Checkout() {
         const p = data.PRODUCTS.find(x => x.id === c.id);
         return sum + ((p?.weight || 1000) * c.qty);
       }, 0);
-      const result = await ShippingService.getCost(city.id, Math.max(totalWeight, 100));
+      const result = await ShippingService.getCost(cityId, Math.max(totalWeight, 100));
       const regOnly = (result.results || []).filter(o => o.service && o.service.toUpperCase().includes('REG'));
       setShippingOptions(regOnly);
       if (regOnly.length > 0) {
@@ -122,6 +134,22 @@ export default function Checkout() {
       setShippingOptions([]);
     }
     setShippingLoading(false);
+  };
+
+  useEffect(() => {
+    if (selectedCity?.id && shippingOptions.length === 0) {
+      fetchShipping(selectedCity.id);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCity?.id]);
+
+  const selectCity = async (city) => {
+    const displayName = city.label || city.city_name;
+    setCitySearch(displayName);
+    setSelectedPostalCode(String(city.zip_code || ''));
+    setSelectedCity({ id: city.id, name: displayName });
+    setShowCityDropdown(false);
+    await fetchShipping(city.id);
   };
 
   const shipping = selectedShipping ? selectedShipping.cost : 0;
@@ -182,8 +210,8 @@ export default function Checkout() {
         }
       }
 
-      const name = (authName || user?.name || '').trim() || 'Member';
-      const email = (authEmail || user?.email || '').trim();
+      const finalName = checkoutIsRegister ? (authName || '').trim() || 'Member' : nameState;
+      const finalEmail = checkoutIsRegister ? (authEmail || '').trim() : emailState;
       const code = 'ASC-' + Date.now().toString(36).toUpperCase() + Math.floor(Math.random() * 100);
       const today = new Date();
       const dateStr = today.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
@@ -203,25 +231,28 @@ export default function Checkout() {
 
       const orderData = {
         code,
-        customer: name,
+        customer: finalName,
         total: subtotal + shipping,
         date: dateStr,
         type: 'ready',
         status: 'Awaiting',
         user_id: user?.id || null,
-        phone: user?.phone || '',
-        email,
-        address: '',
-        city_id: user ? (selectedCity?.id || null) : null,
+        phone: phoneState,
+        email: finalEmail,
+        address: addressState,
+        city_id: selectedCity?.id || null,
+        city_name: selectedCity?.name || selectedCity?.city_name || selectedCity?.label || '',
+        postal_code: selectedPostalCode || '',
         shipping_cost: shipping,
         payment_method: state.payMethod || '',
-        notes: '',
+        notes: notesState,
         order_items: orderItems
       };
 
       const result = await OrderService.create(orderData);
       if (user) {
         try { await CartService.clear(); } catch (e) {}
+        try { await useStore.getState().loadUser(); } catch (e) {}
       }
 
       updateState({ checkoutStep: 'done', orderId: code, cart: [], checkoutMode: 'guest', authName: '', authEmail: '' });
@@ -308,17 +339,17 @@ export default function Checkout() {
                   {checkoutIsRegister ? (
                     <input className="ck-span-full" placeholder="Nama lengkap" value={authName} onChange={(e) => updateState({ authName: e.target.value })} style={{ gridColumn: '1/3', padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
                   ) : (
-                    <input className="ck-span-full" placeholder="Nama lengkap" defaultValue={checkoutName} style={{ gridColumn: '1/3', padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
+                    <input className="ck-span-full" placeholder="Nama lengkap" value={nameState} onChange={(e) => setNameState(e.target.value)} style={{ gridColumn: '1/3', padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
                   )}
-                  <input placeholder="No. Telp / WhatsApp" defaultValue={checkoutPhone} style={{ padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
+                  <input placeholder="No. Telp / WhatsApp" value={phoneState} onChange={(e) => setPhoneState(e.target.value)} style={{ padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
 
                   {checkoutIsRegister ? (
                     <input placeholder="Email" value={authEmail} onChange={(e) => updateState({ authEmail: e.target.value })} style={{ padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
                   ) : (
-                    <input placeholder="Email" defaultValue={checkoutEmail} style={{ padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
+                    <input placeholder="Email" value={emailState} onChange={(e) => setEmailState(e.target.value)} style={{ padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
                   )}
 
-                  <input className="ck-span-full" placeholder="Alamat lengkap" defaultValue={checkoutAddress} style={{ gridColumn: '1/3', padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
+                  <input className="ck-span-full" placeholder="Alamat lengkap" value={addressState} onChange={(e) => setAddressState(e.target.value)} style={{ gridColumn: '1/3', padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
                   <div ref={cityRef} style={{ position: 'relative' }}>
                     <input placeholder="Kota / Kabupaten" value={citySearch} onChange={e => searchCity(e.target.value)} onFocus={() => cityResults.length > 0 && setShowCityDropdown(true)} style={{ width: '100%', padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px', boxSizing: 'border-box' }} />
                     {showCityDropdown && cityResults.length > 0 && (
@@ -339,7 +370,7 @@ export default function Checkout() {
                   {checkoutIsRegister && (
                     <input className="ck-span-full" type="password" placeholder="Password (untuk akun baru)" style={{ gridColumn: '1/3', padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
                   )}
-                  <textarea className="ck-span-full" placeholder="Keterangan (opsional) — ukuran, warna, catatan kurir…" rows="2" style={{ gridColumn: '1/3', padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px', resize: 'vertical' }}></textarea>
+                  <textarea className="ck-span-full" placeholder="Keterangan (opsional) — ukuran, warna, catatan kurir…" rows="2" value={notesState} onChange={(e) => setNotesState(e.target.value)} style={{ gridColumn: '1/3', padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px', resize: 'vertical' }}></textarea>
                 </div>
 
                 <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', letterSpacing: '0.14em', textTransform: 'uppercase', color: '#14110D', fontWeight: 700, marginBottom: '14px' }}>02 / Pengiriman (JNE)</div>
