@@ -17,4 +17,10 @@ export default {
         const res = await apiClient.get('/me');
         return res.data;
     },
+    updateProfile: async (data) => {
+        const res = await apiClient.post('/profile', data, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        return res.data;
+    },
 };

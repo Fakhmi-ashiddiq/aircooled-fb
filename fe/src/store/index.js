@@ -395,7 +395,7 @@ export const useStore = create((set, get) => ({
     },
 
     // Submit Pre-Order
-    submitPreOrder: async ({ product, items, shippingCost, name, email, phone, address, cityId, notes, userId }) => {
+    submitPreOrder: async ({ product, items, shippingCost, name, email, phone, address, cityId, cityName, postalCode, notes, userId }) => {
         try {
             const totalQty = items.reduce((a, it) => a + (it.qty || 1), 0);
             const subtotal = (product.price || 0) * totalQty;
@@ -427,6 +427,8 @@ export const useStore = create((set, get) => ({
                 email,
                 address,
                 city_id: cityId || null,
+                city_name: cityName || '',
+                postal_code: postalCode || '',
                 shipping_cost: shippingCost,
                 notes: notes || '',
                 order_items: orderItems
@@ -434,6 +436,9 @@ export const useStore = create((set, get) => ({
 
             const result = await OrderService.create(orderData);
             await get().fetchInitialData();
+            if (userId) {
+                try { await get().loadUser(); } catch (e) {}
+            }
             return { success: true, orderId: code, data: result.data };
         } catch (error) {
             get().showToast(error.response?.data?.message || 'Gagal mengirim pesanan');
