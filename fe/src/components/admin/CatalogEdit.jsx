@@ -82,7 +82,12 @@ export default function CatalogEdit() {
         if (e.priceLessDiscount) fd.append('price_less_xxl_discount', parseInt(e.priceLessDiscount));
         fd.append('price_more_xxl_discount', showDualPrice ? (e.priceMoreDiscount ? parseInt(e.priceMoreDiscount) : '') : (e.priceLessDiscount ? parseInt(e.priceLessDiscount) : ''));
 
-        fd.append('product_parent_id', e.parentId || '');
+        if (e.parentId === 'other' && e.newSku) {
+          fd.append('new_sku', e.newSku);
+        } else {
+          fd.append('product_parent_id', e.parentId || '');
+        }
+        
         fd.append('print_type', e.printType || 'logo');
         fd.append('colors', JSON.stringify((e.selectedColors || []).map(c => ({ name: c.name, hex: c.hex }))));
         fd.append('defaultImg', e.defaultImg || 0);
@@ -125,7 +130,13 @@ export default function CatalogEdit() {
         updated.defaultImg = e.defaultImg || 0;
         const def = updated.images[updated.defaultImg];
         if (def && def.src) updated.heroImg = def.src;
-        updated.product_parent_id = e.parentId || null;
+        
+        if (e.parentId === 'other' && e.newSku) {
+          updated.new_sku = e.newSku;
+        } else {
+          updated.product_parent_id = e.parentId || null;
+        }
+        
         updated.print_type = e.printType || 'logo';
         updated.colors = (e.selectedColors || []).map(c => ({ name: c.name, hex: c.hex }));
         updated.target = parseInt(e.target) || 0;
@@ -314,7 +325,13 @@ export default function CatalogEdit() {
                 {(data.productParents || []).map((pp) => (
                   <option key={pp.id} value={pp.id}>{pp.sku}</option>
                 ))}
+                <option value="other">— Pilihan Lainnya (Input SKU Baru) —</option>
               </select>
+              {e.parentId === 'other' && (
+                <div style={{ marginTop: '8px' }}>
+                  <input placeholder="mis. ARCL-001" value={e.newSku || ''} onChange={(ev) => setEdit({ newSku: ev.target.value })} style={{ ...inputStyle, borderColor: '#F2C015' }} />
+                </div>
+              )}
             </div>
           </div>
 

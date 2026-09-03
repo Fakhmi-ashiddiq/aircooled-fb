@@ -244,6 +244,7 @@ export default function Checkout() {
         city_name: selectedCity?.name || selectedCity?.city_name || selectedCity?.label || '',
         postal_code: selectedPostalCode || '',
         shipping_cost: shipping,
+        shipping_service: selectedShipping?.service || '',
         payment_method: state.payMethod || '',
         notes: notesState,
         order_items: orderItems

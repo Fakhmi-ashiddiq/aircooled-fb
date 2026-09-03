@@ -55,7 +55,14 @@ class ProductController extends Controller
 
     public function store(Request $request)
     {
-        $data = Product::create($request->except(['images', 'defaultImg', 'heroImg']));
+        $input = $request->except(['images', 'defaultImg', 'heroImg', 'new_sku']);
+        
+        if ($request->filled('new_sku')) {
+            $parent = \App\Models\ProductParent::create(['sku' => $request->new_sku]);
+            $input['product_parent_id'] = $parent->id;
+        }
+
+        $data = Product::create($input);
 
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $idx => $file) {
@@ -107,7 +114,14 @@ class ProductController extends Controller
     public function update(Request $request, $id)
     {
         $data = Product::where('id', $id)->orWhere('code', $id)->firstOrFail();
-        $data->update($request->except(['images', 'defaultImg', 'heroImg', 'existingImages', 'removedImages']));
+        $input = $request->except(['images', 'defaultImg', 'heroImg', 'existingImages', 'removedImages', 'new_sku']);
+        
+        if ($request->filled('new_sku')) {
+            $parent = \App\Models\ProductParent::create(['sku' => $request->new_sku]);
+            $input['product_parent_id'] = $parent->id;
+        }
+
+        $data->update($input);
 
         $hasNewFiles = $request->hasFile('images') && count(array_filter($request->file('images'), fn($f) => $f && $f->isValid())) > 0;
         $existingImages = $request->input('existingImages', []);
