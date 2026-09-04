@@ -209,6 +209,7 @@ export const useStore = create((set, get) => ({
       if (openSession) {
           result.preorder = {
               id: openSession.id,
+              productId: p.db_id,
               sessionName: openSession.session_name,
               opens: formatDbDate(openSession.opened_at),
               closes: formatDbDate(openSession.closed_at),
@@ -224,6 +225,7 @@ export const useStore = create((set, get) => ({
       
       result.sessionHistory = sessions.filter(s => s.status === 'done').map(s => ({
           id: s.id,
+          productId: p.db_id,
           sessionName: s.session_name,
           opens: formatDbDate(s.opened_at),
           closes: formatDbDate(s.closed_at),
@@ -236,6 +238,7 @@ export const useStore = create((set, get) => ({
       
       result.productionSessions = sessions.map(s => ({
           id: s.id,
+          productId: p.db_id,
           sessionName: s.session_name,
           opens: formatDbDate(s.opened_at),
           closes: formatDbDate(s.closed_at),
@@ -490,6 +493,28 @@ export const useStore = create((set, get) => ({
     },
 
     poBuyers: (sess) => {
+        const _this = get();
+        const pid = sess.productId;
+        
+        if (pid && _this.data.orders) {
+            const out = [];
+            _this.data.orders.forEach(o => {
+                const poItems = (o.items || []).filter(it => it.product_id == pid && it.type === 'preorder');
+                if (poItems.length > 0) {
+                    out.push({
+                        id: o.id,
+                        name: o.customer || 'Member',
+                        items: poItems.map(it => ({ size: it.size || '-', color: it.color || '-', qty: it.qty || 1 })),
+                        pay: o.status === 'Paid' || o.status === 'Shipped' || o.status === 'Packing' ? 'Lunas' : (o.status === 'Awaiting' ? 'Belum Lunas' : 'Batal'),
+                        ship: o.status === 'Shipped' ? 'Terkirim' : (o.status === 'Packing' ? 'Proses' : 'Belum Kirim'),
+                        payAmount: o.total || 0,
+                        shipCost: o.shipping_cost || 0
+                    });
+                }
+            });
+            if (out.length > 0) return out;
+        }
+
         if (sess.buyers && sess.buyers.length) return sess.buyers;
         const n = Math.min(sess.committed || 0, 8);
         const names = ['Agus S.', 'Budi P.', 'Citra L.', 'Doni R.', 'Eka W.', 'Fitri N.', 'Gilang A.', 'Hana M.'];

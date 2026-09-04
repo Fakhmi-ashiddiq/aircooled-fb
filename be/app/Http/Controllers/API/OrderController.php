@@ -63,7 +63,7 @@ class OrderController extends Controller
         if ($previousStatus !== 'Paid' && $request->input('status') === 'Paid') {
             $items = $order->items()->with('product')->get();
             foreach ($items as $item) {
-                if ($item->product && $item->product->type === 'ready' && !empty($item->size)) {
+                if ($item->product && !empty($item->size)) {
                     $product = $item->product;
                     $rawStock = $product->getRawOriginal('stock');
                     $stock = is_string($rawStock) ? json_decode($rawStock, true) : (is_array($rawStock) ? $rawStock : []);

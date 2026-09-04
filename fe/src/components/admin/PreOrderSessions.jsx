@@ -17,7 +17,7 @@ export default function PreOrderSessions() {
   // label & aksi tombol cepat ubah status — mengikuti tahap 4-langkah yang sama dengan SessionDetail
   const advanceLabel = (status) => {
     const cur = normStage(status);
-    if (cur === 'open') return 'Tutup Sesi → Produksi';
+    if (cur === 'open') return 'Tutup Sesi -> Produksi';
     if (cur === 'production') return 'Lanjut ke Pengiriman';
     if (cur === 'shipping') return 'Tandai Selesai';
     return 'Sesi Selesai';
@@ -86,7 +86,7 @@ export default function PreOrderSessions() {
 
               <div style={{ padding: '20px' }}>
                 <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#6b655a' }}>
-                  {sess.sessionName} · {sess.opens} → {sess.closes}
+                  {sess.sessionName} &middot; {sess.opens} &rarr; {sess.closes}
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginTop: '16px' }}>

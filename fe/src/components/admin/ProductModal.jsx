@@ -104,7 +104,7 @@ export default function ProductModal() {
       fd.append('sizes', JSON.stringify(finalSizes));
       fd.append('colors', JSON.stringify(finalColors));
       fd.append('print_type', np.print);
-      fd.append('stock', JSON.stringify(isPre ? {} : np.stockSizes));
+      fd.append('stock', JSON.stringify(np.stockSizes));
       fd.append('weight', Number(np.weight) || 1000);
       fd.append('costs', JSON.stringify({
         production: Number(np.produksi||0),
@@ -186,13 +186,7 @@ export default function ProductModal() {
             </div>
           </div>
 
-          {np.type === 'preorder' && (
-            <div>
-              <div style={labelStyle}>Target Unit</div>
-              <input type="number" placeholder="mis. 50" min="0" value={np.targetUnit} onChange={set('targetUnit')} style={{ ...inputStyle, maxWidth: '200px' }} />
-              <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#6b655a', marginTop: '4px' }}>Jumlah unit yang ingin diproduksi</div>
-            </div>
-          )}
+
 
           <div className="prodmodal-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
             <div>
