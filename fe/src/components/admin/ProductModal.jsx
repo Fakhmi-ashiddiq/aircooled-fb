@@ -4,7 +4,7 @@ import { hasOverXxlSizes } from '../../hooks/useProductVM';
 
 const blankProd = () => ({
   name: '', cat: 'Kaos', type: 'ready', price: '',
-  parentId: '',
+  parentId: '', newSku: '',
   sizeType: 'reg', manualSizes: 'S,M,L,XL',
   selectedColors: [],
   images: [],
@@ -93,7 +93,13 @@ export default function ProductModal() {
       fd.append('category', np.cat);
       fd.append('type', np.type);
       fd.append('price', Number(np.price));
-      fd.append('product_parent_id', np.parentId || '');
+      
+      if (np.parentId === 'other' && np.newSku) {
+        fd.append('new_sku', np.newSku);
+      } else {
+        fd.append('product_parent_id', np.parentId || '');
+      }
+      
       fd.append('target', np.type === 'preorder' ? Number(np.targetUnit) || 0 : 0);
       fd.append('sizes', JSON.stringify(finalSizes));
       fd.append('colors', JSON.stringify(finalColors));
@@ -156,8 +162,16 @@ export default function ProductModal() {
               {(data.productParents || []).map((pp) => (
                 <option key={pp.id} value={pp.id}>{pp.sku}</option>
               ))}
+              <option value="other">— Pilihan Lainnya (Input SKU Baru) —</option>
             </select>
           </div>
+
+          {np.parentId === 'other' && (
+            <div>
+              <div style={labelStyle}>Input SKU Baru</div>
+              <input placeholder="mis. ARCL-001" value={np.newSku || ''} onChange={set('newSku')} style={{ ...inputStyle, borderColor: '#F2C015' }} />
+            </div>
+          )}
 
           <div>
             <div style={labelStyle}>Nama Produk</div>
