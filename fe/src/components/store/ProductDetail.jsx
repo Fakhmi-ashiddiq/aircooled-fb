@@ -4,7 +4,7 @@ import useProductVM from '../../hooks/useProductVM';
 import ProductService from '../../services/ProductService';
 
 export default function ProductDetail() {
-  const { state, updateState, data, openProduct, addToCart, go } = useStore();
+  const { state, updateState, data, dataLoading, openProduct, addToCart, go } = useStore();
   const { getProductVM } = useProductVM();
 
   const ap = data.PRODUCTS.find(x => x.id === state.activeId);
@@ -14,6 +14,41 @@ export default function ProductDetail() {
       ProductService.getById(ap.db_id).catch(() => {});
     }
   }, [ap?.db_id]);
+
+  if (!ap && dataLoading) {
+    return (
+      <main style={{ padding: '32px 48px 64px' }}>
+        <style>{`
+          @keyframes skelPulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+          .pd-skel-box { animation: skelPulse 1.5s ease-in-out infinite; }
+          @media (max-width: 768px) {
+            .pd-skel-grid { grid-template-columns: 1fr !important; gap: 28px !important; }
+          }
+        `}</style>
+        <div className="pd-skel-box" style={{ height: '16px', width: '140px', background: '#ddd5c4', marginBottom: '24px' }}></div>
+        <div className="pd-skel-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '48px' }}>
+          <div>
+            <div className="pd-skel-box" style={{ aspectRatio: 1, background: '#ddd5c4', border: '2px solid #14110D' }}></div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '10px', marginTop: '12px' }}>
+              {[0,1,2,3].map(i => <div key={i} className="pd-skel-box" style={{ aspectRatio: 1, background: '#ddd5c4', border: '2px solid #c9c1ad' }}></div>)}
+            </div>
+          </div>
+          <div>
+            <div className="pd-skel-box" style={{ height: '14px', width: '80px', background: '#ddd5c4', marginBottom: '12px' }}></div>
+            <div className="pd-skel-box" style={{ height: '36px', width: '80%', background: '#ddd5c4', marginBottom: '8px' }}></div>
+            <div className="pd-skel-box" style={{ height: '12px', width: '120px', background: '#ddd5c4', marginBottom: '16px' }}></div>
+            <div className="pd-skel-box" style={{ height: '20px', width: '140px', background: '#ddd5c4', marginBottom: '14px' }}></div>
+            <div className="pd-skel-box" style={{ height: '60px', width: '100%', background: '#ddd5c4', marginBottom: '24px' }}></div>
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
+              {[0,1,2].map(i => <div key={i} className="pd-skel-box" style={{ width: '48px', height: '44px', background: '#ddd5c4', border: '2px solid #c9c1ad' }}></div>)}
+            </div>
+            <div className="pd-skel-box" style={{ height: '48px', width: '100%', background: '#ddd5c4', border: '2px solid #14110D', marginBottom: '12px' }}></div>
+            <div className="pd-skel-box" style={{ height: '14px', width: '200px', background: '#ddd5c4' }}></div>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   if (!ap) return null;
 
@@ -135,8 +170,8 @@ export default function ProductDetail() {
               ⤢ {activeGalleryLabel} — Klik perbesar
             </div>
             {ap.heroImg && <img src={ap.heroImg} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} alt="" />}
-            {!ap.heroImg && activeP.images && activeP.images.length > 0 && activeP.images[0].src && activeP.images[0].src !== '/logo.jpg' ? (
-                <img src={activeP.images[0].src} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
+            {!ap.heroImg && activeP.images && activeP.images.length > 0 && activeP.images[activeImgIdx]?.src && activeP.images[activeImgIdx].src !== '/logo.jpg' ? (
+                <img src={activeP.images[activeImgIdx].src} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
               ) : !ap.heroImg && activeP.printLogo && (
                 <img src="/assets/logo.png" style={{ width: '50%' }} alt="" />
               )}

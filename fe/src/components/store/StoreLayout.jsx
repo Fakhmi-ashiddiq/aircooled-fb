@@ -29,7 +29,7 @@ export default function StoreLayout() {
 
       {route === 'home' && <Home />}
       {route === 'shop' && <Shop />}
-      {route === 'product' && <ProductDetail />}
+      {route.startsWith('product/') && <ProductDetail />}
       {route === 'checkout' && <Checkout />}
       {route.startsWith('invoice/') && <InvoiceTrack />}
       {route === 'orders' && <MyOrders />}

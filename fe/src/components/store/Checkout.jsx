@@ -43,6 +43,7 @@ export default function Checkout() {
   const [phoneState, setPhoneState] = useState(checkoutPhone);
   const [addressState, setAddressState] = useState(checkoutAddress);
   const [notesState, setNotesState] = useState('');
+  const [checkoutPassword, setCheckoutPassword] = useState('');
   const cityRef = useRef(null);
   const searchTimeout = useRef(null);
 
@@ -185,14 +186,16 @@ export default function Checkout() {
 
   const checkoutLogin = async () => {
     const em = (authEmail || '').trim();
+    const pw = (checkoutPassword || '').trim();
     if (!em) return;
     try {
-      await login(em, 'password');
+      await login(em, pw || 'password');
       updateState({ checkoutMode: 'guest', authName: '', authEmail: '' });
+      setCheckoutPassword('');
     } catch (err) {
-      // If login fails, just use email as guest
       const name = (authName || '').trim() || (em.split('@')[0]) || 'Member';
       updateState({ user: { name, email: em }, checkoutMode: 'guest', authName: '', authEmail: '' });
+      setCheckoutPassword('');
     }
   };
 
@@ -325,7 +328,7 @@ export default function Checkout() {
                 <p style={{ fontSize: '13px', color: '#6b655a', margin: '8px 0 16px' }}>Checkout lebih cepat &amp; alamat terisi otomatis.</p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   <input placeholder="Email" value={authEmail} onChange={(e) => updateState({ authEmail: e.target.value })} style={{ padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
-                  <input type="password" placeholder="Password" style={{ padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
+                  <input type="password" placeholder="Password" value={checkoutPassword} onChange={(e) => setCheckoutPassword(e.target.value)} style={{ padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
                   <button onClick={checkoutLogin} style={{ background: '#F2C015', color: '#14110D', border: 'none', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '13px', letterSpacing: '0.06em', textTransform: 'uppercase', padding: '15px' }}>
                     Masuk &amp; Lanjut Checkout
                   </button>
