@@ -27,10 +27,12 @@ export default function Profile() {
 
   // Status
   const [saving, setSaving] = useState(false);
+  const [avatarFile, setAvatarFile] = useState(null);
+  const [avatarPreview, setAvatarPreview] = useState(null);
 
   useEffect(() => {
-    if (!user) {
-      navigate('/admin/login');
+    if (!user && !localStorage.getItem('auth_token')) {
+      navigate('/');
     }
   }, [user, navigate]);
 
@@ -72,9 +74,6 @@ export default function Profile() {
     setSelectedCity({ id: city.id, name: displayName, postcode: city.zip_code });
     setShowCityDropdown(false);
   };
-
-  const [avatarFile, setAvatarFile] = useState(null);
-  const [avatarPreview, setAvatarPreview] = useState(null);
 
   const handleAvatarChange = (e) => {
     const file = e.target.files[0];
