@@ -1,4 +1,4 @@
-﻿import React, { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { useStore } from '../../store';
 import { rp } from '../../utils/helpers';
 
@@ -14,15 +14,15 @@ function MultiSelect({ label, options, value, onChange }) {
   const isAll = value.length === 0;
   const display = isAll ? 'Semua' : (value.length === 1 ? value[0] : `${value.length} terpilih`);
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '130px 1fr', borderBottom: '2px solid #14110D', background: '#F2EEE4', alignItems: 'stretch' }}>
-      <div style={{ padding: '8px 12px', fontSize: '11px', fontFamily: "'Space Mono', monospace", fontWeight: 700, color: '#14110D', display: 'flex', alignItems: 'center', textTransform: 'uppercase' }}>{label}</div>
-      <div ref={ref} style={{ position: 'relative', background: '#fff', borderLeft: '2px solid #14110D' }}>
-        <div onClick={() => setOpen(!open)} style={{ padding: '8px 12px', fontSize: '12px', fontFamily: "'Archivo'", fontWeight: 700, cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '100%', color: '#14110D' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', justifyContent: 'center', border: 'none', background: '#fff', padding: '16px' }}>
+      <div style={{ fontSize: '11px', fontFamily: "'Space Mono', monospace", fontWeight: 700, color: '#6b655a', textTransform: 'uppercase', marginBottom: '12px', letterSpacing: '0.05em' }}>{label}</div>
+      <div ref={ref} style={{ position: 'relative' }}>
+        <div onClick={() => setOpen(!open)} style={{ padding: '8px 12px', fontSize: '14px', fontFamily: "'Archivo'", fontWeight: 900, cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '2px solid #14110D', background: '#F2EEE4', color: '#14110D' }}>
           <span>{display}</span><span style={{ fontSize: '10px' }}>&#9660;</span>
         </div>
         {open && (
-          <div style={{ position: 'absolute', top: '100%', left: '-2px', right: '-2px', background: '#fff', border: '2px solid #14110D', zIndex: 10, maxHeight: '200px', overflowY: 'auto' }}>
-            <div onClick={() => { onChange([]); setOpen(false); }} style={{ padding: '8px 12px', fontSize: '12px', fontFamily: "'Archivo'", cursor: 'pointer', background: isAll ? '#F2EEE4' : '#fff', fontWeight: isAll ? 800 : 500, borderBottom: '1px solid #14110D' }}>Semua</div>
+          <div style={{ position: 'absolute', top: '100%', left: '-2px', right: '-2px', background: '#fff', border: '2px solid #14110D', zIndex: 10, maxHeight: '200px', overflowY: 'auto', marginTop: '-2px' }}>
+            <div onClick={() => { onChange([]); setOpen(false); }} style={{ padding: '8px 12px', fontSize: '12px', fontFamily: "'Archivo'", cursor: 'pointer', background: isAll ? '#F2C015' : '#fff', fontWeight: isAll ? 800 : 500, borderBottom: '1px solid #14110D' }}>Semua</div>
             {options.map(opt => (
               <div key={opt} onClick={() => toggle(opt)} style={{ padding: '8px 12px', fontSize: '12px', fontFamily: "'Archivo'", cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid #14110D' }}>
                 <input type="checkbox" checked={value.includes(opt)} readOnly style={{ margin: 0, accentColor: '#14110D' }} />{opt}
@@ -37,39 +37,40 @@ function MultiSelect({ label, options, value, onChange }) {
 
 function DateSelect({ label, value, onChange }) {
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '130px 1fr', borderBottom: '2px solid #14110D', background: '#F2EEE4', alignItems: 'stretch' }}>
-      <div style={{ padding: '8px 12px', fontSize: '11px', fontFamily: "'Space Mono', monospace", fontWeight: 700, color: '#14110D', display: 'flex', alignItems: 'center', textTransform: 'uppercase' }}>{label}</div>
-      <div style={{ background: '#fff', borderLeft: '2px solid #14110D' }}>
-        <input type="date" value={value} onChange={e => onChange(e.target.value)} style={{ width: '100%', border: 'none', background: 'transparent', padding: '8px 12px', fontSize: '12px', fontFamily: "'Archivo'", fontWeight: 700, color: '#14110D', outline: 'none' }} />
-      </div>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', justifyContent: 'center', border: 'none', background: '#fff', padding: '16px' }}>
+      <div style={{ fontSize: '11px', fontFamily: "'Space Mono', monospace", fontWeight: 700, color: '#6b655a', textTransform: 'uppercase', marginBottom: '12px', letterSpacing: '0.05em' }}>{label}</div>
+      <input type="date" value={value} onChange={e => onChange(e.target.value)} style={{ width: '100%', border: '2px solid #14110D', background: '#F2EEE4', padding: '8px 12px', fontSize: '14px', fontFamily: "'Archivo'", fontWeight: 900, color: '#14110D', outline: 'none', boxSizing: 'border-box' }} />
     </div>
   );
 }
 
 function SummaryCard({ title, data, isEvent }) {
   const CardValue = ({ label, val, sub }) => (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', borderRight: '2px solid #14110D', padding: '20px 8px' }}>
-      <div style={{ fontSize: '10px', fontFamily: "'Space Mono', monospace", fontWeight: 700, color: '#6b655a', textTransform: 'uppercase', marginBottom: '8px', textAlign: 'center', letterSpacing: '0.05em' }}>{label}</div>
-      <div style={{ fontSize: '22px', fontFamily: "'Archivo'", fontWeight: 900, color: '#14110D', letterSpacing: '-0.02em' }}>{val}</div>
-      {sub && <div style={{ fontSize: '9px', fontFamily: "'Space Mono', monospace", color: '#6b655a', marginTop: '6px', textAlign: 'center' }}>{sub}</div>}
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center', border: '2px solid #14110D', background: '#fff', padding: '24px' }}>
+      <div style={{ fontSize: '11px', fontFamily: "'Space Mono', monospace", fontWeight: 700, color: '#6b655a', textTransform: 'uppercase', marginBottom: '16px', letterSpacing: '0.05em' }}>{label}</div>
+      <div style={{ fontSize: '28px', fontFamily: "'Archivo'", fontWeight: 900, color: '#14110D', letterSpacing: '-0.02em', marginBottom: sub ? '8px' : '0' }}>{val}</div>
+      {sub && <div style={{ fontSize: '11px', fontFamily: "'Space Mono', monospace", color: '#047857', fontWeight: 600 }}>{sub}</div>}
     </div>
   );
 
   return (
-    <div style={{ marginBottom: '32px', background: '#fff', border: '2px solid #14110D' }}>
-      <div style={{ background: '#14110D', color: '#F2EEE4', padding: '12px 16px', fontSize: '14px', fontFamily: "'Archivo'", fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.02em' }}>{title}</div>
+    <div style={{ marginBottom: '40px' }}>
+      <div style={{ marginBottom: '16px' }}>
+        <div style={{ fontSize: '12px', fontFamily: "'Space Mono', monospace", color: '#6b655a', textTransform: 'uppercase', fontWeight: 700 }}>RINGKASAN</div>
+        <div style={{ fontSize: '32px', fontFamily: "'Archivo'", fontWeight: 900, color: '#14110D', textTransform: 'uppercase', lineHeight: 1.2 }}>{title}</div>
+      </div>
       <div className={isEvent ? 'dash-summary-grid-event' : 'dash-summary-grid'}>
         <CardValue label="Barang Terjual (PCS)" val={data.terjual} />
-        {!isEvent && <CardValue label="Total Uang Masuk (Rp)" val={rp(data.uangMasuk)} sub="(harga barang + ongkir)" />}
-        {isEvent && <CardValue label="Total Penjualan (Rp)" val={rp(data.totalPenjualan)} sub="(event, tanpa ongkir)" />}
-        {!isEvent && <CardValue label="Total Ongkir Real (Rp)" val={rp(data.totalOngkir)} />}
-        <CardValue label="Total HPP (Rp)" val={rp(data.totalHpp)} />
+        {!isEvent && <CardValue label="Total Uang Masuk" val={rp(data.uangMasuk)} sub="(harga barang + ongkir)" />}
+        {isEvent && <CardValue label="Total Penjualan" val={rp(data.totalPenjualan)} sub="(event, tanpa ongkir)" />}
+        {!isEvent && <CardValue label="Total Ongkir Real" val={rp(data.totalOngkir)} />}
+        <CardValue label="Total HPP" val={rp(data.totalHpp)} />
       </div>
       <div className={isEvent ? 'dash-summary-grid-event-bottom' : 'dash-summary-grid-bottom'}>
-        <CardValue label="Total Keuntungan (Rp)" val={rp(data.keuntungan)} />
-        <CardValue label="Margin Keuntungan (%)" val={data.margin.toFixed(1) + '%'} />
-        {!isEvent && <CardValue label="Selisih Ongkir (Rp)" val={rp(data.selisihOngkir)} />}
-        <CardValue label="Rata-Rata Untung/Pcs (Rp)" val={rp(data.rataUntung)} />
+        <CardValue label="Total Keuntungan" val={rp(data.keuntungan)} />
+        <CardValue label="Margin Keuntungan" val={data.margin.toFixed(1) + '%'} />
+        {!isEvent && <CardValue label="Selisih Ongkir" val={rp(data.selisihOngkir)} />}
+        <CardValue label="Rata-Rata Untung/Pcs" val={rp(data.rataUntung)} />
       </div>
     </div>
   );
@@ -539,10 +540,13 @@ function GrandTotalTable({ data, biayaLainnya, setBiayaLainnya }) {
     </div>
   );
 }
+const initialFilter = { sku: [], product: [], paketUkuran: [], ukuran: [], pengiriman: [], metodeBayar: [], statusKirim: [], statusBayar: [], periodeDari: '', periodeSampai: '', sumberPenjualan: [] };
+
 export default function Dashboard() {
   const { data } = useStore();
-    const [biayaLainnya, setBiayaLainnya] = useState(0);
-  const [f, setF] = useState({ sku: [], product: [], paketUkuran: [], ukuran: [], pengiriman: [], metodeBayar: [], statusKirim: [], statusBayar: [], periodeDari: '', periodeSampai: '', sumberPenjualan: [] });
+  const [biayaLainnya, setBiayaLainnya] = useState(0);
+  const [formFilter, setFormFilter] = useState(initialFilter);
+  const [f, setF] = useState(initialFilter);
 
   const orders = useMemo(() => data.orders || [], [data.orders]);
   const assetAgg = useMemo(() => {
@@ -718,7 +722,7 @@ export default function Dashboard() {
       if (f.sumberPenjualan.length > 0 && !f.sumberPenjualan.includes(stSumber)) return false;
       return true;
     });
-  }, [orders, f]);
+  }, [orders, JSON.stringify(f)]);
 
   const calcAgg = (isPo) => {
     let terjual = 0, uangMasuk = 0, totalOngkir = 0, totalHpp = 0, totalPenjualan = 0;
@@ -963,12 +967,12 @@ export default function Dashboard() {
   return (
     <>
       <style>{`
-        .dash-layout-grid { display: grid; grid-template-columns: 320px 1fr; gap: 32px; align-items: start; }
+        .dash-layout-grid { display: grid; grid-template-columns: 1fr; gap: 32px; align-items: start; }
         .dash-breakdown-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; }
-        .dash-summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); border-bottom: 2px solid #14110D; background: #fff; }
-        .dash-summary-grid-event { display: grid; grid-template-columns: repeat(3, 1fr); border-bottom: 2px solid #14110D; background: #fff; }
-        .dash-summary-grid-bottom { display: grid; grid-template-columns: repeat(4, 1fr); background: #fff; }
-        .dash-summary-grid-event-bottom { display: grid; grid-template-columns: repeat(3, 1fr); background: #fff; }
+        .dash-summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 16px; }
+        .dash-summary-grid-event { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 16px; }
+        .dash-summary-grid-bottom { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+        .dash-summary-grid-event-bottom { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
         
         @media (max-width: 900px) { 
           .dash-layout-grid { grid-template-columns: 1fr; } 
@@ -991,39 +995,50 @@ export default function Dashboard() {
         </div>
 
         <div className="dash-layout-grid">
-          <div style={{ border: '2px solid #14110D', background: '#fff' }}>
-            <div style={{ background: '#14110D', color: '#F2EEE4', padding: '12px', fontSize: '14px', fontFamily: "'Archivo'", fontWeight: 800, textAlign: 'center', letterSpacing: '0.05em' }}>FILTER</div>
-            <MultiSelect label="SKU" options={opts.sku} value={f.sku} onChange={v => setF({...f, sku: v})} />
-            <MultiSelect label="Product" options={opts.product} value={f.product} onChange={v => setF({...f, product: v})} />
-            <MultiSelect label="Paket Ukuran" options={opts.paketUkuran} value={f.paketUkuran} onChange={v => setF({...f, paketUkuran: v})} />
-            <MultiSelect label="Ukuran" options={opts.ukuran} value={f.ukuran} onChange={v => setF({...f, ukuran: v})} />
-            <MultiSelect label="Pengiriman" options={opts.pengiriman} value={f.pengiriman} onChange={v => setF({...f, pengiriman: v})} />
-            <MultiSelect label="Metode Bayar" options={opts.metodeBayar} value={f.metodeBayar} onChange={v => setF({...f, metodeBayar: v})} />
-            <MultiSelect label="Status Kirim" options={opts.statusKirim} value={f.statusKirim} onChange={v => setF({...f, statusKirim: v})} />
-            <MultiSelect label="Status Bayar" options={opts.statusBayar} value={f.statusBayar} onChange={v => setF({...f, statusBayar: v})} />
-            <DateSelect label="Periode Dari" value={f.periodeDari} onChange={v => setF({...f, periodeDari: v})} />
-            <DateSelect label="Periode Sampai" value={f.periodeSampai} onChange={v => setF({...f, periodeSampai: v})} />
-            <div style={{ borderBottom: 'none' }}>
-              <MultiSelect label="Sumber Penjualan" options={opts.sumberPenjualan} value={f.sumberPenjualan} onChange={v => setF({...f, sumberPenjualan: v})} />
+          <div style={{ marginBottom: '40px', border: '2px solid #14110D', background: '#fff' }}>
+            <div style={{ background: '#14110D', color: '#F2EEE4', padding: '12px 16px', fontSize: '14px', fontFamily: "'Archivo'", fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.02em', textAlign: 'left' }}>
+              FILTER
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1px', background: '#14110D' }}>
+              <div style={{ background: '#fff' }}><MultiSelect label="SKU" options={opts.sku} value={formFilter.sku} onChange={v => setFormFilter({...formFilter, sku: v})} /></div>
+              <div style={{ background: '#fff' }}><MultiSelect label="Product" options={opts.product} value={formFilter.product} onChange={v => setFormFilter({...formFilter, product: v})} /></div>
+              <div style={{ background: '#fff' }}><MultiSelect label="Paket Ukuran" options={opts.paketUkuran} value={formFilter.paketUkuran} onChange={v => setFormFilter({...formFilter, paketUkuran: v})} /></div>
+              <div style={{ background: '#fff' }}><MultiSelect label="Ukuran" options={opts.ukuran} value={formFilter.ukuran} onChange={v => setFormFilter({...formFilter, ukuran: v})} /></div>
+              <div style={{ background: '#fff' }}><MultiSelect label="Pengiriman" options={opts.pengiriman} value={formFilter.pengiriman} onChange={v => setFormFilter({...formFilter, pengiriman: v})} /></div>
+              <div style={{ background: '#fff' }}><MultiSelect label="Metode Bayar" options={opts.metodeBayar} value={formFilter.metodeBayar} onChange={v => setFormFilter({...formFilter, metodeBayar: v})} /></div>
+              <div style={{ background: '#fff' }}><MultiSelect label="Status Kirim" options={opts.statusKirim} value={formFilter.statusKirim} onChange={v => setFormFilter({...formFilter, statusKirim: v})} /></div>
+              <div style={{ background: '#fff' }}><MultiSelect label="Status Bayar" options={opts.statusBayar} value={formFilter.statusBayar} onChange={v => setFormFilter({...formFilter, statusBayar: v})} /></div>
+              <div style={{ background: '#fff' }}><DateSelect label="Periode Dari" value={formFilter.periodeDari} onChange={v => setFormFilter({...formFilter, periodeDari: v})} /></div>
+              <div style={{ background: '#fff' }}><DateSelect label="Periode Sampai" value={formFilter.periodeSampai} onChange={v => setFormFilter({...formFilter, periodeSampai: v})} /></div>
+              <div style={{ background: '#fff' }}><MultiSelect label="Sumber Penjualan" options={opts.sumberPenjualan} value={formFilter.sumberPenjualan} onChange={v => setFormFilter({...formFilter, sumberPenjualan: v})} /></div>
+              <div style={{ background: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'stretch', justifyContent: 'center', padding: '16px' }}>
+                <div style={{ fontSize: '11px', fontFamily: "'Space Mono', monospace", fontWeight: 700, color: 'transparent', userSelect: 'none', textTransform: 'uppercase', marginBottom: '12px', letterSpacing: '0.05em' }}>ACTION</div>
+                <div style={{ display: 'flex', gap: '8px', flex: 1 }}>
+                  <button onClick={() => { setFormFilter({...initialFilter}); setF({...initialFilter}); }} style={{ background: '#F2EEE4', color: '#14110D', border: '2px solid #14110D', padding: '8px 12px', fontSize: '14px', fontFamily: "'Archivo'", fontWeight: 900, cursor: 'pointer', flex: 1 }}>RESET</button>
+                  <button onClick={() => setF({...formFilter})} style={{ background: '#F2EEE4', color: '#14110D', border: '2px solid #14110D', padding: '8px 12px', fontSize: '14px', fontFamily: "'Archivo'", fontWeight: 900, cursor: 'pointer', flex: 1 }}>FILTER</button>
+                </div>
+              </div>
             </div>
           </div>
 
           <div style={{ minWidth: 0 }}>
-            <SummaryCard title="RINGKASAN (mengikuti filter) PO" data={po} isEvent={false} />
-            <SummaryCard title="RINGKASAN EVENT (mengikuti filter SKU, Produk, Metode Bayar, Status Bayar)" data={ev} isEvent={true} />
-            <GrandTotalTable data={bd.productFinancials.total.tot} biayaLainnya={biayaLainnya} setBiayaLainnya={setBiayaLainnya} />
+            <SummaryCard title="PREORDER" data={po} isEvent={false} />
+            <SummaryCard title="EVENT" data={ev} isEvent={true} />
+            <div style={{ display: 'none' }}>
+              <GrandTotalTable data={bd.productFinancials.total.tot} biayaLainnya={biayaLainnya} setBiayaLainnya={setBiayaLainnya} />
               <ProfitSharingTable bersih={bd.productFinancials.total.tot.keuntungan - biayaLainnya} />
             
-            <ProductFinancialTable data={bd.productFinancials} />
-            <ProductSizeTable data={bd.productSizes} />
+              <ProductFinancialTable data={bd.productFinancials} />
+              <ProductSizeTable data={bd.productSizes} />
 
-            <RecapInvoiceTable data={bd.productFinancials.total.tot} biayaLainnya={biayaLainnya} />
+              <RecapInvoiceTable data={bd.productFinancials.total.tot} biayaLainnya={biayaLainnya} />
               <AssetTable data={assetAgg} />
-            <div className="dash-breakdown-grid">
-              <BreakdownTable title="PER JENIS PENGIRIMAN / PENGAMBILAN" headerLabel="Jenis" data={bd.pengiriman} />
-              <BreakdownTable title="PER METODE PEMBAYARAN (PO + EVENT)" headerLabel="Metode" data={bd.pembayaran} />
-              <BreakdownTable title="PER STATUS BAYAR" headerLabel="Status" data={bd.statusBayar} />
-              <BreakdownTable title="PER STATUS KIRIM" headerLabel="Status" data={bd.statusKirim} />
+              <div className="dash-breakdown-grid">
+                <BreakdownTable title="PER JENIS PENGIRIMAN / PENGAMBILAN" headerLabel="Jenis" data={bd.pengiriman} />
+                <BreakdownTable title="PER METODE PEMBAYARAN (PO + EVENT)" headerLabel="Metode" data={bd.pembayaran} />
+                <BreakdownTable title="PER STATUS BAYAR" headerLabel="Status" data={bd.statusBayar} />
+                <BreakdownTable title="PER STATUS KIRIM" headerLabel="Status" data={bd.statusKirim} />
+              </div>
             </div>
           </div>
         </div>
