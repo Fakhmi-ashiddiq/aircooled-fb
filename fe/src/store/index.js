@@ -93,6 +93,10 @@ export const useStore = create((set, get) => ({
         const savedUser = localStorage.getItem('auth_user');
         if (token && savedUser) {
             try {
+                try {
+                    const cached = JSON.parse(savedUser);
+                    set((prev) => ({ state: { ...prev.state, user: cached } }));
+                } catch (e) {}
                 const user = await AuthService.me();
                 localStorage.setItem('auth_user', JSON.stringify(user));
                 set((prev) => ({ state: { ...prev.state, user } }));
@@ -100,8 +104,10 @@ export const useStore = create((set, get) => ({
             } catch (error) {
                 localStorage.removeItem('auth_token');
                 localStorage.removeItem('auth_user');
-                if (window.location.pathname.startsWith('/admin')) {
-                    window.location.href = '/admin/login';
+                set((prev) => ({ state: { ...prev.state, user: null } }));
+                if (window.location.pathname.startsWith('/admin') ||
+                    window.location.pathname === '/profile') {
+                    window.location.href = '/';
                 }
             }
         }
@@ -252,7 +258,9 @@ export const useStore = create((set, get) => ({
       
       result.costs = Object.keys(costs).length > 0 ? costs : (result.costs || {});
       
-
+      if (!result.preorder && p.type === 'preorder') {
+          result.preorder = null;
+      }
       if (!result.productionSessions && p.type === 'ready') {
           result.productionSessions = [{ name: 'PRODUKSI AWAL', date: 'Hari Ini', qty: result.stockTotal||0, sold: p.sold||0, status: 'active', price: p.price, compareAt: p.compare_at||0, sizes: sizes, costs: costs }];
       }
