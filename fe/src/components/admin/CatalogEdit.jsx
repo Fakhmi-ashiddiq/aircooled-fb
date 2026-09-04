@@ -12,6 +12,9 @@ function AnimatedNumber({ value, format, start }) {
 export default function CatalogEdit() {
   const { data, setData, state, updateState, unitsOf, committedOf, openProduct, poAggregate } = useStore();
 
+  // useState MUST be before any early return (React Rules of Hooks)
+  const [submitting, setSubmitting] = useState(false);
+
   const p = data.PRODUCTS.find((x) => x.id === state.adminProdId);
   if (!p) return null;
 
@@ -25,6 +28,7 @@ export default function CatalogEdit() {
     sizeType: (data.sizeSets || []).find(s => JSON.stringify(s.sizes) === JSON.stringify(p.sizes))?.code || ((data.sizeSets || [])[0]?.code || ''),
     manualSizes: (p.sizes || []).join(','),
     stock: typeof p.stock === 'object' ? p.stock : {},
+    target: String(p.target || ''),
     weight: String(p.weight || 1000),
     produksi: String(p.costs?.production || ''),
     kemasan: String(p.costs?.kemasan || ''),
@@ -50,7 +54,6 @@ export default function CatalogEdit() {
   const e = state.editProd || defaultDraft;
   const setEdit = (patch) => updateState({ editProd: { ...e, ...patch } });
 
-  const [submitting, setSubmitting] = useState(false);
   const cancel = () => updateState({ adminRoute: 'catalog', adminProdId: null, editProd: null });
 
   const save = async () => {
@@ -91,6 +94,7 @@ export default function CatalogEdit() {
         fd.append('print_type', e.printType || 'logo');
         fd.append('colors', JSON.stringify((e.selectedColors || []).map(c => ({ name: c.name, hex: c.hex }))));
         fd.append('defaultImg', e.defaultImg || 0);
+        fd.append('target', parseInt(e.target) || 0);
 
         const existingPaths = (e.images || []).filter(im => im.src && !im.file && !im._deleted).map(im => im.src);
         fd.append('existingImages', JSON.stringify(existingPaths));
@@ -421,13 +425,7 @@ export default function CatalogEdit() {
             <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#6b655a', marginTop: '4px' }}>Default 1000 gram (1 kg)</div>
           </div>
 
-          {isPre && (
-            <div>
-              <div style={labelStyle}>Target Unit</div>
-              <input type="number" placeholder="mis. 50" min="0" value={p.target || ''} onChange={(ev) => updateState({ editProd: { ...e, target: ev.target.value } })} style={{ ...inputStyle, maxWidth: '200px' }} />
-              <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#6b655a', marginTop: '4px' }}>Jumlah unit yang ingin diproduksi</div>
-            </div>
-          )}
+
 
           {/* {isPre ? (
             <div style={{ background: '#F2EEE4', border: '2px solid #14110D', padding: '13px 16px', fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#6b655a', lineHeight: 1.5 }}>
@@ -630,7 +628,7 @@ export default function CatalogEdit() {
                   </div>
                   <div style={{ padding: '14px 16px' }}>
                     <div className="ce-session-stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '14px' }}>
-                      <div><div style={labelStyle}>Periode</div><div style={{ fontFamily: "'Space Mono', monospace", fontSize: '13px', marginTop: '3px' }}>{s.opens} Ã¢â€ â€™ {s.closes}</div></div>
+                      <div><div style={labelStyle}>Periode</div><div style={{ fontFamily: "'Space Mono', monospace", fontSize: '13px', marginTop: '3px' }}>{s.opens} &rarr; {s.closes}</div></div>
                       <div><div style={labelStyle}>Estimasi Kirim</div><div style={{ fontFamily: "'Space Mono', monospace", fontSize: '13px', marginTop: '3px' }}>{s.eta}</div></div>
                       <div>
                         <div style={labelStyle}>Harga</div>

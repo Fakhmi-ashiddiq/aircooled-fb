@@ -147,7 +147,7 @@ export default function SessionDetail() {
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
             <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.06em', textTransform: 'uppercase', fontWeight: 700, padding: '4px 9px', ...curStyle }}>{curLabel}</span>
-            <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#6b655a' }}>{sess.sessionName} · {sess.opens} → {sess.closes}</span>
+            <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#6b655a' }}>{sess.sessionName} &middot; {sess.opens} &rarr; {sess.closes}</span>
           </div>
           <h1 style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '32px', margin: '8px 0 0', textTransform: 'uppercase', lineHeight: 1 }}>{p.name}</h1>
         </div>
@@ -159,7 +159,7 @@ export default function SessionDetail() {
           <div style={{ fontFamily: "'Archivo'", fontWeight: 800, fontSize: '16px', textTransform: 'uppercase' }}>Status Sesi</div>
           {nextStage && (
             <button onClick={() => advanceSess(p.id, sess.sessionName)} style={{ background: '#F2C015', color: '#14110D', border: 'none', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '12px', letterSpacing: '0.05em', textTransform: 'uppercase', padding: '11px 18px' }}>
-              Lanjut ke {nextStage[1]} →
+              Lanjut ke {nextStage[1]} &rarr;
             </button>
           )}
         </div>

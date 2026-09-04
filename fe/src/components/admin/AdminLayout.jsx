@@ -22,11 +22,43 @@ import ShipModal from './ShipModal';
 import Preloader from '../shared/Preloader';
 import ScrollToTop from '../shared/ScrollToTop';
 
+const ADMIN_ROUTE_KEY = 'admin_route';
+const ADMIN_ROUTE_EXTRA_KEY = 'admin_route_extra';
+
 export default function AdminLayout() {
-  const { state, isAdmin } = useStore();
+  const { state, isAdmin, updateState } = useStore();
   const navigate = useNavigate();
   const route = state.adminRoute;
   const isEditingProduct = route === 'catalog-edit' && !!state.adminProdId;
+
+  // Restore route from sessionStorage on first mount
+  useEffect(() => {
+    const savedRoute = sessionStorage.getItem(ADMIN_ROUTE_KEY);
+    if (savedRoute && savedRoute !== 'dashboard') {
+      try {
+        const extra = JSON.parse(sessionStorage.getItem(ADMIN_ROUTE_EXTRA_KEY) || '{}');
+        updateState({ adminRoute: savedRoute, ...extra });
+      } catch (e) {
+        updateState({ adminRoute: savedRoute });
+      }
+    }
+  }, []);
+
+  // Save route to sessionStorage whenever it changes
+  useEffect(() => {
+    if (route) {
+      sessionStorage.setItem(ADMIN_ROUTE_KEY, route);
+      // Save extra context needed to restore certain pages
+      const extra = {};
+      if (route === 'catalog-edit' && state.adminProdId) {
+        extra.adminProdId = state.adminProdId;
+      }
+      if (route === 'sessdetail' && state.sessView) {
+        extra.sessView = state.sessView;
+      }
+      sessionStorage.setItem(ADMIN_ROUTE_EXTRA_KEY, JSON.stringify(extra));
+    }
+  }, [route, state.adminProdId, state.sessView]);
 
   useEffect(() => {
     if (!state.user || !isAdmin()) {

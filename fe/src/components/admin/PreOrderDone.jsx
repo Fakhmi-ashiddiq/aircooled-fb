@@ -128,7 +128,7 @@ export default function PreOrderDone() {
               <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.06em', textTransform: 'uppercase', fontWeight: 700, padding: '4px 9px', ...statusStyle(sess.status) }}>
                 {statusLabel(sess.status)}
               </span>
-              <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#6b655a' }}>{sess.sessionName} · {sess.opens} → {sess.closes}</span>
+              <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#6b655a' }}>{sess.sessionName} &middot; {sess.opens} &rarr; {sess.closes}</span>
             </div>
             <h1 style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '32px', margin: '8px 0 0', textTransform: 'uppercase', lineHeight: 1 }}>{p.name}</h1>
           </div>
@@ -260,7 +260,7 @@ export default function PreOrderDone() {
                     <span style={{ fontFamily: "'Archivo'", fontWeight: 700, fontSize: '14px' }}>{p.name}</span>
                   </div>
                   <div style={{ ...listCell, fontFamily: "'Space Mono', monospace", fontSize: '13px', cursor: 'pointer' }} onClick={() => openPO(p.id, sess.sessionName)}>{sess.sessionName}</div>
-                  <div style={{ ...listCell, fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#6b655a', cursor: 'pointer' }} onClick={() => openPO(p.id, sess.sessionName)}>{sess.opens} → {sess.closes}</div>
+                  <div style={{ ...listCell, fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#6b655a', cursor: 'pointer' }} onClick={() => openPO(p.id, sess.sessionName)}>{sess.opens} &rarr; {sess.closes}</div>
                   <div style={{ ...listCell, justifyContent: 'flex-end', fontFamily: "'Space Mono', monospace", fontSize: '13px', cursor: 'pointer' }} onClick={() => openPO(p.id, sess.sessionName)}>{units}</div>
                   <div style={{ ...listCell, justifyContent: 'flex-end', fontFamily: "'Space Mono', monospace", fontSize: '13px', fontWeight: 700, cursor: 'pointer' }} onClick={() => openPO(p.id, sess.sessionName)}>{rp(revenue)}</div>
                   <div style={{ ...listCell, paddingRight: 0 }}>
