@@ -11,7 +11,7 @@ import Toast from './components/shared/Toast';
 function SyncRouter() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { state, updateState } = useStore();
+  const { state, updateState, data, dataLoading } = useStore();
   const [hasSynced, setHasSynced] = useState(false);
   
   // Sync URL to Zustand (when user types URL or uses Back/Forward button)
@@ -25,13 +25,30 @@ function SyncRouter() {
             updateState({ view: 'admin', adminRoute: adminRoute || 'dashboard' });
         }
      } else {
-        let storeRoute = location.pathname === '/' ? 'home' : location.pathname.replace('/', '');
-        if (state.view !== 'store' || state.route !== storeRoute) {
-            updateState({ view: 'store', route: storeRoute || 'home' });
+        const pathParts = location.pathname.replace(/^\//, '').split('/');
+        if (pathParts[0] === 'product' && pathParts[1]) {
+            const slug = pathParts[1];
+            const found = data.PRODUCTS.find(p => p.id === slug || p.code === slug);
+            if (found) {
+                if (state.activeId !== found.id) {
+                    updateState({ view: 'store', route: 'product/' + found.id, activeId: found.id, activeImg: 0 });
+                }
+            } else if (!dataLoading) {
+                updateState({ view: 'store', route: 'product/' + slug, activeId: null });
+            } else {
+                if (state.route !== 'product/' + slug) {
+                    updateState({ view: 'store', route: 'product/' + slug });
+                }
+            }
+        } else {
+            let storeRoute = location.pathname === '/' ? 'home' : pathParts[0] || 'home';
+            if (state.view !== 'store' || state.route !== storeRoute) {
+                updateState({ view: 'store', route: storeRoute || 'home' });
+            }
         }
      }
      if (!hasSynced) setHasSynced(true);
-  }, [location.pathname]);
+  }, [location.pathname, data.PRODUCTS.length, dataLoading]);
 
   // Sync Zustand to URL (when components call updateState)
   useEffect(() => {
@@ -42,6 +59,8 @@ function SyncRouter() {
      if (state.view === 'admin') {
          expectedPath = '/admin/' + (state.adminRoute === 'dashboard' ? '' : state.adminRoute);
          if (expectedPath === '/admin/') expectedPath = '/admin';
+     } else if (state.route.startsWith('product/')) {
+         expectedPath = '/' + state.route;
      } else {
          expectedPath = state.route === 'home' ? '/' : '/' + state.route;
      }

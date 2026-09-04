@@ -469,7 +469,7 @@ export const useStore = create((set, get) => ({
             setData({ ...data, PRODUCTS: updatedProducts });
         }
         updateState({
-            route: 'product',
+            route: 'product/' + id,
             activeId: id,
             qty: 1,
             selectedSize: (p && p.sizes && p.sizes.length === 1) ? p.sizes[0] : null,
@@ -618,7 +618,8 @@ export const useStore = create((set, get) => ({
     loadCartFromDB: async () => {
         try {
             const items = await CartService.getAll();
-            const cart = items.map(item => {
+            const localCart = get().state.cart || [];
+            const dbCart = items.map(item => {
                 const p = get().data.PRODUCTS.find(x => x.db_id === item.product_id);
                 const pid = p ? p.id : 'product-' + item.product_id;
                 return {
@@ -630,7 +631,17 @@ export const useStore = create((set, get) => ({
                     dbId: item.id
                 };
             });
-            set((prev) => ({ state: { ...prev.state, cart } }));
+            const merged = [...localCart];
+            dbCart.forEach(dbItem => {
+                const existing = merged.find(m => m.key === dbItem.key);
+                if (existing) {
+                    existing.qty = Math.max(existing.qty, dbItem.qty);
+                    existing.dbId = dbItem.dbId;
+                } else {
+                    merged.push(dbItem);
+                }
+            });
+            set((prev) => ({ state: { ...prev.state, cart: merged } }));
         } catch (e) {}
     },
 
