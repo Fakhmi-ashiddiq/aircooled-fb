@@ -11,7 +11,13 @@ export default function AdminLogin() {
 
   useEffect(() => {
     if (state.user && isAdmin()) {
-      navigate('/admin');
+      const saved = sessionStorage.getItem('admin_route');
+      if (saved && saved !== 'dashboard') {
+        updateState({ adminRoute: saved });
+        navigate('/admin/' + saved);
+      } else {
+        navigate('/admin');
+      }
     }
   }, [state.user, isAdmin, navigate]);
 

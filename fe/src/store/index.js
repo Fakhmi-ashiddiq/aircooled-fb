@@ -17,17 +17,41 @@ const deepClone = (obj) => {
     return JSON.parse(JSON.stringify(obj));
 };
 
+// Inisialisasi rute dari URL saat halaman dimuat ulang (refresh). Dengan ini,
+// state langsung memakai halaman yang sedang dibuka sejak render pertama,
+// jadi tidak ada jendela waktu di mana halaman melompat balik ke home/dashboard.
+const initFromUrl = () => {
+    const base = { view: 'store', route: 'home', adminRoute: 'dashboard', activeId: 'lemans-tee' };
+    if (typeof window === 'undefined' || !window.location) return base;
+    const path = window.location.pathname || '/';
+    if (path === '/profile') return { ...base, view: 'store', route: 'profile' };
+    if (path.startsWith('/admin')) {
+        const adminRoute = path.replace('/admin', '').replace(/^\/+/, '') || 'dashboard';
+        return { ...base, view: 'admin', adminRoute };
+    }
+    const parts = path.replace(/^\/+/, '').split('/');
+    if (parts[0] === 'product' && parts[1]) {
+        return { ...base, view: 'store', route: 'product/' + parts[1], activeId: null };
+    }
+    if (parts[0] === 'invoice' && parts[1]) {
+        return { ...base, view: 'store', route: 'invoice/' + parts[1] };
+    }
+    return { ...base, view: 'store', route: parts[0] || 'home' };
+};
+
 export const useStore = create((set, get) => ({
     // Data from API (replacing data.js)
     data: { PRODUCTS: [], categories: [], sizeSets: [], colorOptions: [], owners: [], orders: [], productParents: [] },
     dataLoading: true,
+    authHydrated: false,
     setData: (updater) => set((prev) => ({ data: typeof updater === 'function' ? updater(prev.data) : updater })),
     
     // UI State
     state: {
+        ...initFromUrl(),
         appReady: false,
-        view: 'store', route: 'home', adminRoute: 'dashboard', adminProdId: null, editProd: null, poView: null, sessView: null,
-        activeId: 'lemans-tee', qty: 1, selectedSize: null, selectedColor: null, activeImg: 0, lightbox: false, sizeGuideOpen: false,
+        adminProdId: null, editProd: null, poView: null, sessView: null,
+        qty: 1, selectedSize: null, selectedColor: null, activeImg: 0, lightbox: false, sizeGuideOpen: false,
         cart: [], cartOpen: false, shopFilter: 'all', shopCat: 'all', shopSearch: '',
         catalogTab: 'ready', catalogSearch: '', catalogCat: 'all', catalogSort: 'terbaru',
         payModal: null, payForm: { amount: '', method: 'Transfer BCA', date: '', proof: '' },
@@ -91,24 +115,28 @@ export const useStore = create((set, get) => ({
     loadUser: async () => {
         const token = localStorage.getItem('auth_token');
         const savedUser = localStorage.getItem('auth_user');
-        if (token && savedUser) {
+        if (!token || !savedUser) {
+            set((prev) => ({ state: { ...prev.state, authHydrated: true } }));
+            return;
+        }
+        try {
             try {
-                try {
-                    const cached = JSON.parse(savedUser);
-                    set((prev) => ({ state: { ...prev.state, user: cached } }));
-                } catch (e) {}
-                const user = await AuthService.me();
-                localStorage.setItem('auth_user', JSON.stringify(user));
-                set((prev) => ({ state: { ...prev.state, user } }));
-                await get().loadCartFromDB();
-            } catch (error) {
-                localStorage.removeItem('auth_token');
-                localStorage.removeItem('auth_user');
-                set((prev) => ({ state: { ...prev.state, user: null } }));
-                if (window.location.pathname.startsWith('/admin') ||
-                    window.location.pathname === '/profile') {
-                    window.location.href = '/';
-                }
+                const cached = JSON.parse(savedUser);
+                set((prev) => ({ state: { ...prev.state, user: cached, authHydrated: true } }));
+            } catch (e) {
+                set((prev) => ({ state: { ...prev.state, authHydrated: true } }));
+            }
+            const user = await AuthService.me();
+            localStorage.setItem('auth_user', JSON.stringify(user));
+            set((prev) => ({ state: { ...prev.state, user, authHydrated: true } }));
+            await get().loadCartFromDB();
+        } catch (error) {
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('auth_user');
+            set((prev) => ({ state: { ...prev.state, user: null, authHydrated: true } }));
+            if (window.location.pathname.startsWith('/admin') ||
+                window.location.pathname === '/profile') {
+                window.location.href = '/';
             }
         }
     },
