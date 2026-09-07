@@ -1,4 +1,4 @@
-import React, { useContext, useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { useStore } from '../../store';
 import { rp, fmt } from '../../utils/helpers';
 import useCountUp from '../../hooks/useCountUp';
@@ -9,7 +9,6 @@ function AnimatedNumber({ value, format, start }) {
   return <>{format ? format(animated) : animated}</>;
 }
 
-const PER_PAGE = 10;
 
 export default function Finance() {
   const { data, state, unitsOf } = useStore();
@@ -35,16 +34,7 @@ export default function Finance() {
     const profit = gross - totalCost;
 
     return { id: p.id, name: p.name, units, gross, production, kemasan, stiker, totalCost, profit };
-  }), [products, unitsOf]);
-
-  const filteredRows = useMemo(() => {
-    if (!financeSearch.trim()) return rows;
-    const q = financeSearch.toLowerCase();
-    return rows.filter(r => r.name.toLowerCase().includes(q));
-  }, [rows, financeSearch]);
-
-  const financeTotalPages = Math.ceil(filteredRows.length / PER_PAGE);
-  const pagedRows = filteredRows.slice((financePage - 1) * PER_PAGE, financePage * PER_PAGE);
+  });
 
   const filteredRows = search.trim()
     ? rows.filter(r => r.name.toLowerCase().includes(search.toLowerCase()))
