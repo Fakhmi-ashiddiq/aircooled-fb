@@ -302,7 +302,7 @@ export default function Checkout() {
             <button onClick={() => updateState({ cartOpen: true })} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontSize: '12px', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#6b655a', marginBottom: '16px' }}>
               ← Kembali ke Keranjang
             </button>
-            <h1 className="ck-title" style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '44px', margin: '0 0 28px', textTransform: 'uppercase' }}>Checkout</h1>
+            <h1 className="ck-title" style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '44px', margin: '0 0 28px', textTransform: 'uppercase' }}>Pembayaran</h1>
 
             {checkoutNotLoggedIn && (
               <div style={{ display: 'flex', gap: '10px', marginBottom: '22px', flexWrap: 'wrap' }}>
@@ -325,7 +325,7 @@ export default function Checkout() {
             {checkoutShowLogin && (
               <div style={{ border: '2px solid #14110D', background: '#fff', padding: '24px' }}>
                 <div style={{ fontFamily: "'Archivo'", fontWeight: 800, fontSize: '18px', textTransform: 'uppercase' }}>Masuk ke Akun</div>
-                <p style={{ fontSize: '13px', color: '#6b655a', margin: '8px 0 16px' }}>Checkout lebih cepat &amp; alamat terisi otomatis.</p>
+                <p style={{ fontSize: '13px', color: '#6b655a', margin: '8px 0 16px' }}>Pembayaran lebih cepat &amp; alamat terisi otomatis.</p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   <input placeholder="Surel" value={authEmail} onChange={(e) => updateState({ authEmail: e.target.value })} style={{ padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
                   <input type="password" placeholder="Kata Sandi" value={checkoutPassword} onChange={(e) => setCheckoutPassword(e.target.value)} style={{ padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />

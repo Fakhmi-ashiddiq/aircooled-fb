@@ -1,12 +1,15 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useMemo } from 'react';
 import { useStore } from '../../store';
-import { rp } from '../../utils/helpers';
+import { rp, fmt } from '../../utils/helpers';
 import useCountUp from '../../hooks/useCountUp';
+import Pagination from '../shared/Pagination';
 
 function AnimatedNumber({ value, format, start }) {
   const animated = useCountUp(value, 1200, start);
   return <>{format ? format(animated) : animated}</>;
 }
+
+const PER_PAGE = 10;
 
 export default function Finance() {
   const { data, state, unitsOf } = useStore();
@@ -19,8 +22,11 @@ export default function Finance() {
     platform: 20
   });
 
-  const rows = products.map(p => {
-    const units = unitsOf ? unitsOf(p) : 0;
+  const [financeSearch, setFinanceSearch] = useState('');
+  const [financePage, setFinancePage] = useState(1);
+
+  const rows = useMemo(() => products.map(p => {
+    const units = Number(unitsOf ? unitsOf(p) : 0) || 0;
     const gross = p.price * units;
     const production = (p.costs?.production || 0) * units;
     const kemasan = (p.costs?.kemasan || 0) * units;
@@ -29,7 +35,16 @@ export default function Finance() {
     const profit = gross - totalCost;
 
     return { id: p.id, name: p.name, units, gross, production, kemasan, stiker, totalCost, profit };
-  });
+  }), [products, unitsOf]);
+
+  const filteredRows = useMemo(() => {
+    if (!financeSearch.trim()) return rows;
+    const q = financeSearch.toLowerCase();
+    return rows.filter(r => r.name.toLowerCase().includes(q));
+  }, [rows, financeSearch]);
+
+  const financeTotalPages = Math.ceil(filteredRows.length / PER_PAGE);
+  const pagedRows = filteredRows.slice((financePage - 1) * PER_PAGE, financePage * PER_PAGE);
 
   const totalUnits = rows.reduce((a, r) => a + r.units, 0);
   const totalGross = rows.reduce((a, r) => a + r.gross, 0);
@@ -86,8 +101,14 @@ export default function Finance() {
       </h1>
 
       <div style={{ border: '2px solid #14110D', background: '#fff', marginBottom: '28px' }}>
-        <div style={{ padding: '14px 20px', borderBottom: '2px solid #14110D', fontFamily: "'Archivo'", fontWeight: 800, fontSize: '16px', textTransform: 'uppercase' }}>
-          Rekap Biaya Produksi per Produk
+        <div style={{ padding: '14px 20px', borderBottom: '2px solid #14110D', fontFamily: "'Archivo'", fontWeight: 800, fontSize: '16px', textTransform: 'uppercase', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
+          <span>Rekap Biaya Produksi per Produk</span>
+          <input
+            placeholder="Cari produk..."
+            value={financeSearch}
+            onChange={(e) => { setFinanceSearch(e.target.value); setFinancePage(1); }}
+            style={{ width: '200px', padding: '10px 14px', border: '2px solid #14110D', background: '#fff', fontSize: '13px', fontFamily: "'Space Mono', monospace" }}
+          />
         </div>
         <div className="finance-table-scroll">
           <div className="finance-table-grid" style={{ padding: '0 20px', display: 'grid', gridTemplateColumns: gridTable }}>
@@ -99,10 +120,10 @@ export default function Finance() {
             <div style={{ ...headCell, justifyContent: 'flex-end' }}>Stiker & Aks.</div>
             <div style={{ ...headCell, justifyContent: 'flex-end', paddingRight: 0 }}>Laba Kotor</div>
 
-            {rows.map((r, i) => (
+            {pagedRows.map((r, i) => (
               <React.Fragment key={i}>
                 <div style={{ ...dataCell, fontFamily: "'Archivo'", fontWeight: 700, fontSize: '14px' }}>{r.name}</div>
-                <div style={{ ...dataCell, justifyContent: 'flex-end' }}>{r.units}</div>
+                <div style={{ ...dataCell, justifyContent: 'flex-end' }}>{fmt(r.units)}</div>
                 <div style={{ ...dataCell, justifyContent: 'flex-end' }}>{rp(r.gross)}</div>
                 <div style={{ ...dataCell, justifyContent: 'flex-end', color: costColor }}>{rp(r.production)}</div>
                 <div style={{ ...dataCell, justifyContent: 'flex-end', color: costColor }}>{rp(r.kemasan)}</div>
@@ -112,13 +133,16 @@ export default function Finance() {
             ))}
 
             <div style={{ ...totalCell, fontFamily: "'Archivo'", fontWeight: 900, fontSize: '15px', textTransform: 'uppercase' }}>Total</div>
-            <div style={{ ...totalCell, justifyContent: 'flex-end' }}>{totalUnits}</div>
+            <div style={{ ...totalCell, justifyContent: 'flex-end' }}>{fmt(totalUnits)}</div>
             <div style={{ ...totalCell, justifyContent: 'flex-end' }}>{rp(totalGross)}</div>
             <div style={{ ...totalCell, justifyContent: 'flex-end', color: costColor }}>{rp(totalProduction)}</div>
             <div style={{ ...totalCell, justifyContent: 'flex-end', color: costColor }}>{rp(totalKemasan)}</div>
             <div style={{ ...totalCell, justifyContent: 'flex-end', color: costColor }}>{rp(totalStiker)}</div>
             <div style={{ ...totalCell, justifyContent: 'flex-end', fontSize: '14px', paddingRight: 0 }}>{rp(totalProfit)}</div>
           </div>
+        </div>
+        <div style={{ padding: '0 20px 16px' }}>
+          <Pagination currentPage={financePage} totalPages={financeTotalPages} onPageChange={setFinancePage} />
         </div>
       </div>
 

@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useStore } from '../../store';
-import { rp } from '../../utils/helpers';
+import { rp, fmt } from '../../utils/helpers';
 import Pagination from '../shared/Pagination';
 import OrderService from '../../services/OrderService';
 
@@ -24,7 +24,7 @@ export default function Sales() {
         typeColor: p.type === 'preorder' ? '#9a7a10' : '#3d382f',
         units,
         price: p.price,
-        revenue: p.totalRevenue || 0
+        revenue: Number(p.totalRevenue) || 0
       };
     }).sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
   }, [data.PRODUCTS, unitsOf]);
@@ -35,8 +35,8 @@ export default function Sales() {
     return salesRows.filter(r => r.name.toLowerCase().includes(q));
   }, [salesRows, productSearch]);
 
-  const totalUnits = salesRows.reduce((sum, row) => sum + row.units, 0);
-  const totalRevenue = salesRows.reduce((sum, row) => sum + row.revenue, 0);
+  const totalUnits = salesRows.reduce((sum, row) => sum + (Number(row.units) || 0), 0);
+  const totalRevenue = salesRows.reduce((sum, row) => sum + (Number(row.revenue) || 0), 0);
 
   const productTotalPages = Math.ceil(filteredProducts.length / PER_PAGE);
   const pagedProducts = filteredProducts.slice((productPage - 1) * PER_PAGE, productPage * PER_PAGE);
@@ -123,7 +123,7 @@ export default function Sales() {
               <React.Fragment key={idx}>
                 <div style={{ ...cell1, fontSize: '14px', fontWeight: 600 }}>{r.name}</div>
                 <div style={{ ...cell1, fontFamily: "'Space Mono', monospace", fontSize: '11px', color: r.typeColor }}>{r.type}</div>
-                <div style={{ ...cellTerjual, justifyContent: 'flex-end', fontFamily: "'Space Mono', monospace", fontSize: '13px' }}>{r.units}</div>
+                <div style={{ ...cellTerjual, justifyContent: 'flex-end', fontFamily: "'Space Mono', monospace", fontSize: '13px' }}>{fmt(r.units)}</div>
                 <div style={{ ...cell1, justifyContent: 'flex-end', fontFamily: "'Space Mono', monospace", fontSize: '13px' }}>{rp(r.price)}</div>
                 <div style={{ ...cell1, justifyContent: 'flex-end', fontFamily: "'Space Mono', monospace", fontSize: '13px', fontWeight: 700, paddingRight: 0 }}>{rp(r.revenue)}</div>
               </React.Fragment>
@@ -131,7 +131,7 @@ export default function Sales() {
 
             <div style={{ padding: '14px 12px 14px 0', fontFamily: "'Archivo'", textTransform: 'uppercase', fontWeight: 800 }}>Total</div>
             <div style={{ padding: '14px 12px 14px 0' }}></div>
-            <div style={{ padding: '14px 24px 14px 0', textAlign: 'right', fontFamily: "'Space Mono', monospace", fontSize: '13px', fontWeight: 800 }}>{totalUnits}</div>
+            <div style={{ padding: '14px 24px 14px 0', textAlign: 'right', fontFamily: "'Space Mono', monospace", fontSize: '13px', fontWeight: 800 }}>{fmt(totalUnits)}</div>
             <div style={{ padding: '14px 12px 14px 0' }}></div>
             <div style={{ padding: '14px 0', textAlign: 'right', fontFamily: "'Space Mono', monospace", fontSize: '14px', fontWeight: 800 }}>{rp(totalRevenue)}</div>
           </div>

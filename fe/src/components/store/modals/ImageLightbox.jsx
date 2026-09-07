@@ -97,7 +97,7 @@ export default function ImageLightbox() {
         <div onClick={(e) => e.stopPropagation()} style={{ width: 'min(72vh,640px)', aspectRatio: 1, background: pDisplayGarment, border: '2px solid #F2EEE4', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', position: 'relative' }}>
           {ap.heroImg && <img src={ap.heroImg} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />}
           {!ap.heroImg && activeImgSrc && <img src={activeImgSrc} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />}
-          {!ap.heroImg && !activeImgSrc && pPrintLogo && <img src="/assets/logo.png" style={{ width: '50%' }} alt="" />}
+          {!ap.heroImg && !activeImgSrc && !pPrintText && <img src="/assets/logo.png" style={{ width: '50%' }} alt="" />}
           {!ap.heroImg && !activeImgSrc && pPrintText && (
             <div style={{ color: '#F2C015', fontFamily: "'Archivo'", fontWeight: 900, fontSize: '60px', lineHeight: 0.9, textAlign: 'center', textTransform: 'uppercase' }}>
               Aircooled<br/>Syndicate

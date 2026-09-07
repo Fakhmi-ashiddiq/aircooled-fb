@@ -1001,7 +1001,7 @@ export default function Dashboard() {
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1px', background: '#14110D' }}>
               <div style={{ background: '#fff' }}><MultiSelect label="SKU" options={opts.sku} value={formFilter.sku} onChange={v => setFormFilter({...formFilter, sku: v})} /></div>
-              <div style={{ background: '#fff' }}><MultiSelect label="Product" options={opts.product} value={formFilter.product} onChange={v => setFormFilter({...formFilter, product: v})} /></div>
+              <div style={{ background: '#fff' }}><MultiSelect label="Produk" options={opts.product} value={formFilter.product} onChange={v => setFormFilter({...formFilter, product: v})} /></div>
               <div style={{ background: '#fff' }}><MultiSelect label="Paket Ukuran" options={opts.paketUkuran} value={formFilter.paketUkuran} onChange={v => setFormFilter({...formFilter, paketUkuran: v})} /></div>
               <div style={{ background: '#fff' }}><MultiSelect label="Ukuran" options={opts.ukuran} value={formFilter.ukuran} onChange={v => setFormFilter({...formFilter, ukuran: v})} /></div>
               <div style={{ background: '#fff' }}><MultiSelect label="Pengiriman" options={opts.pengiriman} value={formFilter.pengiriman} onChange={v => setFormFilter({...formFilter, pengiriman: v})} /></div>

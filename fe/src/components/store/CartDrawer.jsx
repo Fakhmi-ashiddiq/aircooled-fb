@@ -81,7 +81,9 @@ export default function CartDrawer() {
                   <img src="/assets/logo.png" style={{ width: '60%' }} />
                 ) : ln.printText ? (
                   <div style={{ color: '#F2C015', fontFamily: "'Archivo'", fontWeight: 900, fontSize: '9px', lineHeight: 0.9, textAlign: 'center', textTransform: 'uppercase' }}>AC<br/>SYND</div>
-                ) : null}
+                ) : (
+                  <img src="/assets/logo.png" style={{ width: '60%' }} />
+                )}
               </div>
               <div style={{ flex: 1 }}>
                 <div style={{ fontFamily: "'Archivo'", fontWeight: 700, fontSize: '14px', textTransform: 'uppercase', lineHeight: 1.05 }}>{ln.name}</div>
@@ -105,7 +107,7 @@ export default function CartDrawer() {
               <span>Subtotal</span><span style={{ fontFamily: "'Space Mono', monospace" }}>{rp(subtotal)}</span>
             </div>
             <button onClick={goCheckout} style={{ width: '100%', background: '#F2C015', color: '#14110D', border: 'none', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '14px', letterSpacing: '0.06em', textTransform: 'uppercase', padding: '16px' }}>
-              Checkout →
+              Lanjut ke Pembayaran →
             </button>
           </div>
         )}
