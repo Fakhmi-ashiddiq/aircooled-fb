@@ -56,7 +56,7 @@ export default function Checkout() {
     if (c.color) metaParts.push(c.color);
     if (p.sizes.length > 1) metaParts.push('Ukuran ' + c.size);
     if (p.type === 'preorder') metaParts.push('Pre-Order');
-    else metaParts.push('Ready Stock');
+    else metaParts.push('Stok Tersedia');
     const unitPrice = isSizeOverXxl(c.size) ? (p.priceMoreXxl || p.price || 0) : (p.priceLessXxl || p.price || 0);
     return {
       name: p.name,
@@ -327,8 +327,8 @@ export default function Checkout() {
                 <div style={{ fontFamily: "'Archivo'", fontWeight: 800, fontSize: '18px', textTransform: 'uppercase' }}>Masuk ke Akun</div>
                 <p style={{ fontSize: '13px', color: '#6b655a', margin: '8px 0 16px' }}>Checkout lebih cepat &amp; alamat terisi otomatis.</p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  <input placeholder="Email" value={authEmail} onChange={(e) => updateState({ authEmail: e.target.value })} style={{ padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
-                  <input type="password" placeholder="Password" value={checkoutPassword} onChange={(e) => setCheckoutPassword(e.target.value)} style={{ padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
+                  <input placeholder="Surel" value={authEmail} onChange={(e) => updateState({ authEmail: e.target.value })} style={{ padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
+                  <input type="password" placeholder="Kata Sandi" value={checkoutPassword} onChange={(e) => setCheckoutPassword(e.target.value)} style={{ padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
                   <button onClick={checkoutLogin} style={{ background: '#F2C015', color: '#14110D', border: 'none', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '13px', letterSpacing: '0.06em', textTransform: 'uppercase', padding: '15px' }}>
                     Masuk &amp; Lanjut Checkout
                   </button>
@@ -348,9 +348,9 @@ export default function Checkout() {
                   <input placeholder="No. Telp / WhatsApp" value={phoneState} onChange={(e) => setPhoneState(e.target.value)} style={{ padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
 
                   {checkoutIsRegister ? (
-                    <input placeholder="Email" value={authEmail} onChange={(e) => updateState({ authEmail: e.target.value })} style={{ padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
+                    <input placeholder="Surel" value={authEmail} onChange={(e) => updateState({ authEmail: e.target.value })} style={{ padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
                   ) : (
-                    <input placeholder="Email" value={emailState} onChange={(e) => setEmailState(e.target.value)} style={{ padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
+                    <input placeholder="Surel" value={emailState} onChange={(e) => setEmailState(e.target.value)} style={{ padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
                   )}
 
                   <input className="ck-span-full" placeholder="Alamat lengkap" value={addressState} onChange={(e) => setAddressState(e.target.value)} style={{ gridColumn: '1/3', padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
@@ -372,7 +372,7 @@ export default function Checkout() {
                   <input placeholder="Kode pos" value={selectedPostalCode} readOnly style={{ padding: '14px', border: '2px solid #14110D', background: selectedCity ? '#e4ddcd' : '#fff', fontSize: '14px', cursor: selectedCity ? 'not-allowed' : 'text' }} />
 
                   {checkoutIsRegister && (
-                    <input className="ck-span-full" type="password" placeholder="Password (untuk akun baru)" style={{ gridColumn: '1/3', padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
+                    <input className="ck-span-full" type="password" placeholder="Kata Sandi (untuk akun baru)" style={{ gridColumn: '1/3', padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
                   )}
                   <textarea className="ck-span-full" placeholder="Keterangan (opsional) — ukuran, warna, catatan kurir…" rows="2" value={notesState} onChange={(e) => setNotesState(e.target.value)} style={{ gridColumn: '1/3', padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px', resize: 'vertical' }}></textarea>
                 </div>

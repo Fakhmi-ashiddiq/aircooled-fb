@@ -48,13 +48,13 @@ export default function AdminLogin() {
           <div style={{ width: '56px', height: '56px', background: '#14110D', margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <span style={{ color: '#F2C015', fontFamily: "'Archivo'", fontWeight: 900, fontSize: '14px', textTransform: 'uppercase', lineHeight: 0.9, textAlign: 'center' }}>AC<br/>SYND</span>
           </div>
-          <h1 style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '24px', textTransform: 'uppercase', margin: 0, letterSpacing: '0.02em' }}>Admin Panel</h1>
+          <h1 style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '24px', textTransform: 'uppercase', margin: 0, letterSpacing: '0.02em' }}>Panel Admin</h1>
           <p style={{ fontSize: '12px', color: '#6b655a', marginTop: '6px' }}>Masuk untuk mengelola toko</p>
         </div>
 
         <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
           <div>
-            <label style={{ display: 'block', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#6b655a', marginBottom: '6px' }}>Email</label>
+            <label style={{ display: 'block', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#6b655a', marginBottom: '6px' }}>Surel</label>
             <input
               type="email"
               value={email}
@@ -66,7 +66,7 @@ export default function AdminLogin() {
             />
           </div>
           <div>
-            <label style={{ display: 'block', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#6b655a', marginBottom: '6px' }}>Password</label>
+            <label style={{ display: 'block', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#6b655a', marginBottom: '6px' }}>Kata Sandi</label>
             <input
               type="password"
               value={password}
@@ -92,7 +92,7 @@ export default function AdminLogin() {
 
         <div style={{ borderTop: '1px solid #ddd5c4', marginTop: '24px', paddingTop: '16px', textAlign: 'center' }}>
           <button onClick={() => navigate('/')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#6b655a', letterSpacing: '0.04em' }}>
-            ← Kembali ke Store
+            ← Kembali ke Toko
           </button>
         </div>
       </div>

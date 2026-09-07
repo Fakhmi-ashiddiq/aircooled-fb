@@ -43,7 +43,7 @@ export default function SessionDetail() {
 
   const labelStyle = { fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#6b655a' };
 
-  const curLabel = cur === 'open' ? 'OPEN' : cur === 'production' ? 'PRODUKSI' : cur === 'shipping' ? 'PENGIRIMAN' : 'SELESAI';
+  const curLabel = cur === 'open' ? 'DIBUKA' : cur === 'production' ? 'PRODUKSI' : cur === 'shipping' ? 'PENGIRIMAN' : 'SELESAI';
   const curStyle = cur === 'open'
     ? { background: '#F2C015', color: '#14110D' }
     : cur === 'production'
@@ -235,7 +235,7 @@ export default function SessionDetail() {
         <div style={{ padding: '14px 20px', borderBottom: '2px solid #14110D', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '14px', flexWrap: 'wrap' }}>
           <div style={{ fontFamily: "'Archivo'", fontWeight: 800, fontSize: '16px', textTransform: 'uppercase' }}>Daftar Pemesanan ({buyers.length})</div>
           <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.04em', textTransform: 'uppercase', color: '#6b655a' }}>
-            {cur === 'open' ? 'Tahap OPEN — klik status bayar untuk mengelola pembayaran.'
+            {cur === 'open' ? 'Tahap DIBUKA — klik status bayar untuk mengelola pembayaran.'
               : cur === 'production' ? 'Tahap PRODUKSI — pembayaran terkunci; pesanan belum lunas otomatis dibatalkan.'
               : cur === 'shipping' ? 'Tahap PENGIRIMAN — klik status kirim untuk input resi & bukti.'
               : 'Sesi SELESAI — pengelolaan pesanan ditutup.'}

@@ -159,7 +159,7 @@ export default function ProductDetail() {
       `}</style>
 
       <button onClick={() => go('shop')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontSize: '12px', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#6b655a', marginBottom: '24px' }}>
-        â† Kembali ke Shop
+        ← Kembali ke Toko
       </button>
       <div className="pd-main-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '48px', alignItems: 'start' }}>
 

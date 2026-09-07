@@ -272,7 +272,7 @@ export default function CatalogEdit() {
           </div>
           <div>
             <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.06em', textTransform: 'uppercase', padding: '4px 9px', fontWeight: 700, background: isPre ? '#F2C015' : '#14110D', color: isPre ? '#14110D' : '#F2EEE4' }}>
-              {isPre ? 'Pre-Order' : 'Ready Stock'}
+              {isPre ? 'Pre-Order' : 'Stok Tersedia'}
             </span>
             <h1 style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '32px', margin: '8px 0 0', textTransform: 'uppercase', lineHeight: 1 }}>{p.name}</h1>
             <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#6b655a', marginTop: '5px' }}>
@@ -576,7 +576,7 @@ export default function CatalogEdit() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
               {activeOpen && (
                 <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '10px', color: '#9a3a2a', maxWidth: '300px', textAlign: 'right', lineHeight: 1.4 }}>
-                  Sesi {p.preorder.sessionName} masih OPEN — tutup sesi (mulai produksi) sebelum membuat sesi baru.
+                  Sesi {p.preorder.sessionName} masih DIBUKA — tutup sesi (mulai produksi) sebelum membuat sesi baru.
                 </span>
               )}
               <button
@@ -598,7 +598,7 @@ export default function CatalogEdit() {
               const com = s.active ? committedOf(p) : s.committed;
               const pct = Math.min(100, Math.round((com / (s.target || 1)) * 100));
               const ns = s.status === 'closed' ? 'done' : (s.status || 'open');
-              const stLabel = ns === 'open' ? 'OPEN' : ns === 'production' ? 'PRODUKSI' : ns === 'shipping' ? 'PENGIRIMAN' : 'SELESAI';
+              const stLabel = ns === 'open' ? 'DIBUKA' : ns === 'production' ? 'PRODUKSI' : ns === 'shipping' ? 'PENGIRIMAN' : 'SELESAI';
               const stStyle = ns === 'open'
                 ? { background: '#F2C015', color: '#14110D' }
                 : ns === 'production'

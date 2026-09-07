@@ -205,7 +205,7 @@ export default function PreOrderDone() {
             </div>
             <div style={{ padding: '16px 20px' }}>
               <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#6b655a', marginBottom: '14px' }}>
-                Dasar: {isHarga ? 'Nilai Pesanan' : 'Gross Profit'} — {rp(base)}
+                Dasar: {isHarga ? 'Nilai Pesanan' : 'Laba Kotor'} — {rp(base)}
               </div>
               {splitRows.map((sp2, i) => (
                 <div key={i} style={{ padding: '11px 0', borderBottom: '1px solid #ddd5c4' }}>

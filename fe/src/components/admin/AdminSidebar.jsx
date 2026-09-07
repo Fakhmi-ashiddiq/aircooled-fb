@@ -23,7 +23,7 @@ export default function AdminSidebar() {
   })();
 
   const currentLabel = {
-    dashboard: 'Dashboard', catalog: 'Katalog Produk', sales: 'Penjualan & Pesanan',
+    dashboard: 'Dasbor', catalog: 'Katalog Produk', sales: 'Penjualan & Pesanan',
     sessions: 'Sesi Pre-Order', podone: 'Pre-Order Selesai', finance: 'Keuangan & Profit',
     sizes: 'Ukuran', colors: 'Warna', roles: 'Peran'
   }[activeSection] || '';
@@ -53,7 +53,7 @@ export default function AdminSidebar() {
     style: navStyle(id, false)
   });
 
-  const adminNavTop = [['dashboard', 'Dashboard'], ['catalog', 'Katalog Produk']].map(mkNav);
+  const adminNavTop = [['dashboard', 'Dasbor'], ['catalog', 'Katalog Produk']].map(mkNav);
   const adminNavBottom = [['sales', 'Penjualan & Pesanan'], ['sessions', 'Sesi Pre-Order'], ['podone', 'Pre-Order Selesai'], ['finance', 'Keuangan & Profit']].map(mkNav);
   const settingsSub = [['sizes', 'Ukuran'], ['colors', 'Warna'], ['roles', 'Peran']].map(([id, label]) => ({
     id, label,
@@ -170,7 +170,7 @@ export default function AdminSidebar() {
           <div>
             <img src="/assets/logo-white.png" style={{ height: '46px', display: 'block' }} alt="Logo" />
             <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.16em', textTransform: 'uppercase', color: '#F2C015', marginTop: '12px' }}>
-              ADMIN PANEL
+              PANEL ADMIN
             </div>
           </div>
           <button
@@ -193,7 +193,7 @@ export default function AdminSidebar() {
         </nav>
 
         <div style={{ padding: '16px 22px', borderTop: '1px solid #2c2820', fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#6b655a' }}>
-          Signed in as<br /><span style={{ color: '#F2EEE4' }}>admin@aircooled</span>
+          Masuk sebagai<br /><span style={{ color: '#F2EEE4' }}>admin@aircooled</span>
         </div>
       </aside>
     </>

@@ -66,14 +66,14 @@ export default function ShipModal() {
               <input value={state.shipForm.resi} onChange={setField('resi')} placeholder="mis. JNE0012345" style={{ ...inputStyle, marginTop: '5px' }} />
             </div>
             <div style={{ gridColumn: '1/3' }}>
-              <label style={labelStyle}>Real Ongkos Kirim (Rp) — sesuai resi</label>
+              <label style={labelStyle}>Ongkos Kirim Aktual (Rp) — sesuai resi</label>
               <input type="number" value={state.shipForm.cost} onChange={setField('cost')} placeholder="mis. 22000" style={{ ...inputStyle, marginTop: '5px' }} />
             </div>
             <div style={{ gridColumn: '1/3' }}>
               <label style={labelStyle}>Bukti Pengiriman</label>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '5px', flexWrap: 'wrap' }}>
                 <label style={{ cursor: 'pointer', background: '#14110D', color: '#F2EEE4', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '11px', letterSpacing: '0.04em', textTransform: 'uppercase', padding: '11px 16px', whiteSpace: 'nowrap' }}>
-                  Upload File
+                  Unggah File
                   <input type="file" accept="image/*" onChange={onProof} style={{ display: 'none' }} />
                 </label>
                 <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#6b655a' }}>{state.shipForm.proof || '(belum ada file)'}</span>

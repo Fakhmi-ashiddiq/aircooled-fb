@@ -14,13 +14,13 @@ export default function StoreFooter() {
           <div style={{ maxWidth: '340px' }}>
             <img src="/assets/logo-white.png" alt="Aircooled Syndicate" style={{ height: '58px', display: 'block' }} />
             <p style={{ fontSize: '13px', lineHeight: 1.6, marginTop: '14px' }}>
-              E-magazine &amp; merchandise untuk pemuja Porsche &amp; VW aircooled. Keep them cool.
+              E-magazine &amp; merchandise untuk pemuja Porsche &amp; VW aircooled. Tetap keren.
             </p>
           </div>
           <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', letterSpacing: '0.06em', textTransform: 'uppercase', lineHeight: 2 }}>
             <div style={{ color: '#F2C015', marginBottom: '6px' }}>WWW.AIRCOOLEDSYNDICATE.COM</div>
             <div>Instagram</div>
-            <div>Shipping &amp; Returns</div>
+            <div>Pengiriman &amp; Pengembalian</div>
             <div>Hubungi Kami</div>
           </div>
         </div>
