@@ -40,6 +40,11 @@ function SyncRouter() {
                     updateState({ view: 'store', route: 'product/' + slug });
                 }
             }
+        } else if (pathParts[0] === 'invoice' && pathParts[1]) {
+            const invoiceRoute = 'invoice/' + pathParts[1];
+            if (state.view !== 'store' || state.route !== invoiceRoute) {
+                updateState({ view: 'store', route: invoiceRoute });
+            }
         } else {
             let storeRoute = location.pathname === '/' ? 'home' : pathParts[0] || 'home';
             if (state.view !== 'store' || state.route !== storeRoute) {
