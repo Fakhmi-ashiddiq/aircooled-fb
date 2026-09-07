@@ -80,13 +80,13 @@ export default function SessionModal() {
   const isGross = ns.profitBase === 'gross';
   const base = isGross ? gross : price;
 
-  const roleOptions = () => [{ value: '', label: '— select role —' }].concat(roles.map((r) => ({ value: r.id, label: r.name })));
+  const roleOptions = () => [{ value: '', label: '— pilih peran —' }].concat(roles.map((r) => ({ value: r.id, label: r.name })));
 
   const profitRows = [
     { label: 'Media Platform', hasRole: true, pctKey: 'mediaPct', roleKey: 'mediaRole' },
-    { label: 'Design & Creative', hasRole: true, pctKey: 'desainPct', roleKey: 'desainRole' },
-    { label: 'Production & Shipping', hasRole: true, pctKey: 'prodPct', roleKey: 'prodRole' },
-    { label: 'Store Platform', hasRole: false, pctKey: 'storePct', roleKey: null }
+    { label: 'Desain & Kreatif', hasRole: true, pctKey: 'desainPct', roleKey: 'desainRole' },
+    { label: 'Produksi & Pengiriman', hasRole: true, pctKey: 'prodPct', roleKey: 'prodRole' },
+    { label: 'Platform Toko', hasRole: false, pctKey: 'storePct', roleKey: null }
   ];
 
   const totalPct = (Number(ns.mediaPct) || 0) + (Number(ns.desainPct) || 0) + (Number(ns.prodPct) || 0) + (Number(ns.storePct) || 0);
@@ -151,7 +151,7 @@ export default function SessionModal() {
       updateState({ sessionModal: false, sessionModalPid: null });
     } catch (e) {
       console.error(e);
-      alert('Failed to create session');
+      alert('Gagal membuat sesi');
     }
   };
 
@@ -186,7 +186,7 @@ export default function SessionModal() {
             bersama konten — sama seperti pola di ProductModal.jsx */}
         <div style={{ padding: '18px 24px', borderBottom: '2px solid #14110D', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, background: '#F2EEE4', zIndex: 1 }}>
           <div style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '20px', textTransform: 'uppercase' }}>
-            New Pre-Order Session
+            Sesi Pre-Order Baru
           </div>
           <button onClick={close} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '24px', lineHeight: 1 }}>×</button>
         </div>
@@ -194,14 +194,14 @@ export default function SessionModal() {
         <div className="sessmodal-body" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {state.adminRoute === 'catalog-edit' ? (
             <div>
-              <div style={labelStyle}>Product</div>
+              <div style={labelStyle}>Produk</div>
               <div style={{ ...inputStyle, background: '#e4ddcd', color: '#6b655a' }}>
-                {data.PRODUCTS.find(prod => String(prod.id) === String(pid))?.name || 'Loading...'}
+                {data.PRODUCTS.find(prod => String(prod.id) === String(pid))?.name || 'Memuat...'}
               </div>
             </div>
           ) : (
             <div>
-              <div style={labelStyle}>Product</div>
+              <div style={labelStyle}>Produk</div>
               <select
                 value={pid}
                 onChange={(ev) => updateState({ sessionModalPid: ev.target.value })}
@@ -209,7 +209,7 @@ export default function SessionModal() {
                 disabled={preorderProducts.length === 0}
               >
                 {preorderProducts.length === 0 ? (
-                  <option value="">-- All products have active sessions --</option>
+                  <option value="">-- Semua produk sudah punya sesi aktif --</option>
                 ) : (
                   preorderProducts.map((prod) => (
                     <option key={prod.id} value={prod.id}>{prod.name}</option>
@@ -220,13 +220,13 @@ export default function SessionModal() {
           )}
 
           <div>
-            <div style={labelStyle}>Session Name / Drop</div>
+            <div style={labelStyle}>Nama Sesi / Drop</div>
             <input placeholder="e.g. DROP 04" value={ns.sessionName} onChange={set('sessionName')} style={inputStyle} />
           </div>
 
           <div className="sessmodal-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
             <div>
-              <div style={labelStyle}>Opened</div>
+              <div style={labelStyle}>Dibuka</div>
               <input type="date" value={ns.opens} onChange={set('opens')} style={inputStyle} />
             </div>
             <div>
@@ -237,7 +237,7 @@ export default function SessionModal() {
 
           <div className="sessmodal-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
             <div>
-              <div style={labelStyle}>Target Min. (units)</div>
+              <div style={labelStyle}>Target Min. (unit)</div>
               <input type="number" placeholder="40" value={ns.target} onChange={set('target')} style={inputStyle} />
             </div>
             <div>
@@ -247,22 +247,22 @@ export default function SessionModal() {
           </div>
 
           <div style={{ borderTop: '1px solid #ddd5c4', paddingTop: '14px', fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#14110D', fontWeight: 700 }}>
-            Session Price &amp; Variants
+            Harga Sesi &amp; Varian
           </div>
 
           <div className="sessmodal-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
             <div>
-              <div style={labelStyle}>Selling Price (Rp)</div>
+              <div style={labelStyle}>Harga Jual (Rp)</div>
               <input type="number" placeholder="220000" value={ns.price} onChange={set('price')} style={inputStyle} />
             </div>
             <div>
-              <div style={labelStyle}>Compare at Price (optional)</div>
-              <input type="number" placeholder="leave blank if no discount" value={ns.compareAt} onChange={set('compareAt')} style={inputStyle} />
+              <div style={labelStyle}>Harga Banding (opsional)</div>
+              <input type="number" placeholder="kosongkan jika tidak diskon" value={ns.compareAt} onChange={set('compareAt')} style={inputStyle} />
             </div>
           </div>
 
           <div>
-            <div style={labelStyle}>Size Set</div>
+            <div style={labelStyle}>Set Ukuran</div>
             <select value={ns.sizeSetId} onChange={set('sizeSetId')} style={inputStyle}>
               {sizeSets.map((s) => (
                 <option key={s.id} value={s.id}>{s.name} ({s.sizes.join(', ')})</option>
@@ -271,7 +271,7 @@ export default function SessionModal() {
           </div>
 
           <div>
-            <div style={labelStyle}>Color Options (click to select)</div>
+            <div style={labelStyle}>Pilihan Warna (klik untuk memilih)</div>
             <div style={{ display: 'flex', gap: '9px', flexWrap: 'wrap', marginTop: '8px' }}>
               {colorOptions.map((c) => {
                 const on = (ns.colors || []).some((x) => x.hex === c.hex);
@@ -293,41 +293,41 @@ export default function SessionModal() {
           </div>
 
           <div>
-            <div style={labelStyle}>Cost List per Unit</div>
+            <div style={labelStyle}>Daftar Biaya per Unit</div>
             <div className="sessmodal-cost-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
-              <input type="number" placeholder="Production" value={ns.produksi} onChange={set('produksi')} style={inputStyle} />
-              <input type="number" placeholder="Packaging" value={ns.kemasan} onChange={set('kemasan')} style={inputStyle} />
-              <input type="number" placeholder="Sticker & Acc." value={ns.stiker} onChange={set('stiker')} style={inputStyle} />
+              <input type="number" placeholder="Produksi" value={ns.produksi} onChange={set('produksi')} style={inputStyle} />
+              <input type="number" placeholder="Kemasan" value={ns.kemasan} onChange={set('kemasan')} style={inputStyle} />
+              <input type="number" placeholder="Stiker & Aks." value={ns.stiker} onChange={set('stiker')} style={inputStyle} />
             </div>
           </div>
 
           <div style={{ border: '2px solid #14110D', background: '#14110D', color: '#F2EEE4', padding: '16px' }}>
             <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#F2C015', marginBottom: '12px' }}>
-              Profit Split Estimation
+              Estimasi Pembagian Profit
             </div>
 
             <div style={{ display: 'flex', gap: 0, marginBottom: '12px' }}>
-              <button onClick={() => setNs({ ...ns, profitBase: 'harga' })} style={segStyleYellow(!isGross)}>From Selling Price</button>
-              <button onClick={() => setNs({ ...ns, profitBase: 'gross' })} style={segStyleYellow(isGross)}>From Gross Profit</button>
+              <button onClick={() => setNs({ ...ns, profitBase: 'harga' })} style={segStyleYellow(!isGross)}>Dari Harga Jual</button>
+              <button onClick={() => setNs({ ...ns, profitBase: 'gross' })} style={segStyleYellow(isGross)}>Dari Laba Kotor</button>
             </div>
 
             <div className="sessmodal-summary-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', fontFamily: "'Space Mono', monospace", fontSize: '11px', marginBottom: '14px' }}>
               <div style={{ background: '#1f1c17', padding: '9px 10px' }}>
-                <div style={{ color: '#9a9384', fontSize: '9px', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Selling Price</div>
+                <div style={{ color: '#9a9384', fontSize: '9px', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Harga Jual</div>
                 <div style={{ marginTop: '3px' }}>{rp(price)}</div>
               </div>
               <div style={{ background: '#1f1c17', padding: '9px 10px' }}>
-                <div style={{ color: '#9a9384', fontSize: '9px', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Total Cost</div>
+                <div style={{ color: '#9a9384', fontSize: '9px', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Total Biaya</div>
                 <div style={{ marginTop: '3px' }}>{rp(totalBiaya)}</div>
               </div>
               <div style={{ background: '#1f1c17', padding: '9px 10px' }}>
-                <div style={{ color: '#9a9384', fontSize: '9px', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Base Calc</div>
+                <div style={{ color: '#9a9384', fontSize: '9px', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Dasar Hitung</div>
                 <div style={{ marginTop: '3px', color: '#F2C015' }}>{rp(base)}</div>
               </div>
             </div>
 
             <div className="sessmodal-profit-head" style={{ display: 'grid', gridTemplateColumns: '1.3fr 1.3fr 0.7fr 1fr', gap: '8px', fontFamily: "'Space Mono', monospace", fontSize: '9px', letterSpacing: '0.05em', textTransform: 'uppercase', color: '#9a9384', paddingBottom: '6px', borderBottom: '1px solid #2c2820' }}>
-              <span>Party</span><span>Role</span><span style={{ textAlign: 'center' }}>%</span><span style={{ textAlign: 'right' }}>Nominal</span>
+              <span>Pihak</span><span>Peran</span><span style={{ textAlign: 'center' }}>%</span><span style={{ textAlign: 'right' }}>Nominal</span>
             </div>
 
             {profitRows.map((row) => {
@@ -361,7 +361,7 @@ export default function SessionModal() {
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px', flexWrap: 'wrap', gap: '6px' }}>
               <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: over ? '#ff6b53' : '#6b655a' }}>
-                {over ? `Total ${totalPct}% exceeds 100% — reduce one` : `Remaining unallocated: ${100 - totalPct}%`}
+                {over ? `Total ${totalPct}% melebihi 100% — kurangi salah satu` : `Sisa belum dialokasi: ${100 - totalPct}%`}
               </span>
               <span style={{ fontFamily: "'Archivo'", fontWeight: 800, fontSize: '15px' }}>
                 Total {totalPct}% · {rp(totalNominal)}
@@ -385,7 +385,7 @@ export default function SessionModal() {
               padding: '16px' 
             }}
           >
-            {preorderProducts.length === 0 ? 'No Products Available' : 'Open Pre-Order Session'}
+            {preorderProducts.length === 0 ? 'Tidak Ada Produk Tersedia' : 'Buka Sesi Pre-Order'}
           </button>
         </div>
       </div>

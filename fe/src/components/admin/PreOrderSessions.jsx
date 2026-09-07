@@ -7,7 +7,7 @@ export default function PreOrderSessions() {
 
   const poProducts = data.PRODUCTS.filter((p) => p.type === 'preorder' && p.preorder);
 
-  const statusLabel = (status) => (status === 'open' ? 'OPEN' : status === 'production' ? 'PRODUKSI' : status === 'shipping' ? 'PENGIRIMAN' : 'DITUTUP');
+  const statusLabel = (status) => (status === 'open' ? 'DIBUKA' : status === 'production' ? 'PRODUKSI' : status === 'shipping' ? 'PENGIRIMAN' : 'DITUTUP');
   const statusStyle = (status) => ({
     background: status === 'open' ? '#F2C015' : status === 'production' ? '#14110D' : status === 'shipping' ? '#2a5fb0' : '#fff',
     color: status === 'open' || status === 'production' || status === 'shipping' ? (status === 'open' ? '#14110D' : '#F2EEE4') : '#14110D',

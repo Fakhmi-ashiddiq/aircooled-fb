@@ -58,9 +58,9 @@ export default function UtilityBar() {
           justifyContent: 'space-between', padding: '9px 24px', borderBottom: '1px solid #2c2820', gap: '10px'
         }}
       >
-        <div className="utility-bar-label">AIRCOOLED SYNDICATE — OFFICIAL MERCH STORE</div>
+        <div className="utility-bar-label">AIRCOOLED SYNDICATE — TOKO MERCH RESMI</div>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }}>
-          <button onClick={() => { updateState({ view: 'store' }); navigate('/'); }} style={isStore ? tabActive : tabIdle}>STORE</button>
+          <button onClick={() => { updateState({ view: 'store' }); navigate('/'); }} style={isStore ? tabActive : tabIdle}>TOKO</button>
           <button onClick={handleAdminClick} style={isAdminView ? tabActive : tabIdle}>ADMIN</button>
           {user && (
             <>

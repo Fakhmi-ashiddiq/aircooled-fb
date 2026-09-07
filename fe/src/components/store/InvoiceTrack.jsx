@@ -73,7 +73,7 @@ export default function InvoiceTrack() {
       <div style={{ border: '2px solid #14110D', background: '#fff', padding: '32px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
           <div>
-            <h1 style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '28px', margin: 0, textTransform: 'uppercase' }}>Invoice</h1>
+            <h1 style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '28px', margin: 0, textTransform: 'uppercase' }}>Faktur</h1>
             <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '13px', color: '#6b655a', marginTop: '4px' }}>No. {order.code}</div>
           </div>
           <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', fontWeight: 700, padding: '6px 12px', borderRadius: '4px', textTransform: 'uppercase', background: status.bg, color: status.text }}>
@@ -92,7 +92,7 @@ export default function InvoiceTrack() {
           </div>
           {order.email && (
             <div>
-              <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '10px', color: '#6b655a', textTransform: 'uppercase', marginBottom: '4px' }}>Email</div>
+              <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '10px', color: '#6b655a', textTransform: 'uppercase', marginBottom: '4px' }}>Surel</div>
               <div style={{ fontSize: '14px' }}>{order.email}</div>
             </div>
           )}

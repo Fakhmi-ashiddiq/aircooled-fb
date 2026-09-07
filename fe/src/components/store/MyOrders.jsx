@@ -69,7 +69,7 @@ export default function MyOrders() {
                   </span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '13px', color: '#3d382f' }}>{order.type === 'preorder' ? 'Pre-Order' : 'Ready Stock'}</span>
+                  <span style={{ fontSize: '13px', color: '#3d382f' }}>{order.type === 'preorder' ? 'Pre-Order' : 'Stok Tersedia'}</span>
                   <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '14px', fontWeight: 700 }}>{rp(order.total || 0)}</span>
                 </div>
               </div>

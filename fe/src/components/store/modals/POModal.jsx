@@ -279,8 +279,8 @@ export default function POModal() {
 
             {poModeLogin && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <input placeholder="Email" value={authEmail} onChange={(e) => updateState({ authEmail: e.target.value })} style={{ padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
-                <input type="password" placeholder="Password" style={{ padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
+                <input placeholder="Surel" value={authEmail} onChange={(e) => updateState({ authEmail: e.target.value })} style={{ padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
+                <input type="password" placeholder="Kata Sandi" style={{ padding: '14px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
                 <button onClick={poLogin} style={{ background: '#F2C015', color: '#14110D', border: 'none', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '13px', letterSpacing: '0.06em', textTransform: 'uppercase', padding: '15px' }}>Masuk &amp; Lanjut Pesan</button>
               </div>
             )}
@@ -291,10 +291,10 @@ export default function POModal() {
 
                   <input placeholder="Nama lengkap" value={isLoggedIn ? poName : authName} onChange={(e) => !isLoggedIn && updateState({ authName: e.target.value })} readOnly={isLoggedIn} style={{ gridColumn: '1/3', padding: '13px', border: '2px solid #14110D', background: isLoggedIn ? '#e8e4da' : '#fff', fontSize: '14px', color: isLoggedIn ? '#3d382f' : '#14110D' }} />
                   <input placeholder="No. Telp / WhatsApp" value={inputPhone} onChange={(e) => setInputPhone(e.target.value)} style={{ padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
-                  <input placeholder="Email" value={isLoggedIn ? poEmail : authEmail} onChange={(e) => !isLoggedIn && updateState({ authEmail: e.target.value })} readOnly={isLoggedIn} style={{ padding: '13px', border: '2px solid #14110D', background: isLoggedIn ? '#e8e4da' : '#fff', fontSize: '14px', color: isLoggedIn ? '#3d382f' : '#14110D' }} />
+                  <input placeholder="Surel" value={isLoggedIn ? poEmail : authEmail} onChange={(e) => !isLoggedIn && updateState({ authEmail: e.target.value })} readOnly={isLoggedIn} style={{ padding: '13px', border: '2px solid #14110D', background: isLoggedIn ? '#e8e4da' : '#fff', fontSize: '14px', color: isLoggedIn ? '#3d382f' : '#14110D' }} />
                   <input className="ck-span-full" placeholder="Alamat lengkap" value={inputAddress} onChange={(e) => setInputAddress(e.target.value)} style={{ gridColumn: '1/3', padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
                   {poModeRegister && (
-                    <input className="ck-span-full" type="password" placeholder="Password (untuk akun baru)" style={{ gridColumn: '1/3', padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
+                    <input className="ck-span-full" type="password" placeholder="Kata Sandi (untuk akun baru)" style={{ gridColumn: '1/3', padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px' }} />
                   )}
                   <textarea className="ck-span-full" placeholder="Keterangan (opsional)" value={inputNotes} onChange={(e) => setInputNotes(e.target.value)} rows="2" style={{ gridColumn: '1/3', padding: '13px', border: '2px solid #14110D', background: '#fff', fontSize: '14px', resize: 'vertical' }}></textarea>
                 </div>

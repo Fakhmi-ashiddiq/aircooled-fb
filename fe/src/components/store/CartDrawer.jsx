@@ -15,7 +15,7 @@ export default function CartDrawer() {
     if (c.color) metaParts.push(c.color);
     if (p.sizes.length > 1) metaParts.push('Ukuran ' + c.size);
     if (p.type === 'preorder') metaParts.push('Pre-Order');
-    else metaParts.push('Ready Stock');
+    else metaParts.push('Stok Tersedia');
     const unitPrice = isSizeOverXxl(c.size) ? (p.priceMoreXxl || p.price || 0) : (p.priceLessXxl || p.price || 0);
     return {
       key: c.key,

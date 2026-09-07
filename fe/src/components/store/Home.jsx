@@ -17,7 +17,7 @@ export default function Home() {
   const allVM = data.PRODUCTS.map(getProductVM);
   const readyProducts = allVM.filter(p => !p.isPreorder);
   const preorderProducts = allVM.filter(p => p.isPreorder);
-  const featured = preorderProducts.find(p => p.statusLabel === 'PRE-ORDER OPEN') || preorderProducts[0];
+  const featured = preorderProducts.find(p => p.statusLabel === 'PRE-ORDER BUKA') || preorderProducts[0];
 
   const marquee = 'PORSCHE 911 ◦ VW BEETLE ◦ KARMANN GHIA ◦ TYPE 2 BUS ◦ 356 SPEEDSTER ◦ KEEP THEM COOL ◦ AIR-COOLED FOREVER ◦';
 
@@ -261,7 +261,7 @@ export default function Home() {
       </section>
       <section className="home-section-preorder" style={{ padding: '0 48px 64px' }}>
         <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: '28px', borderBottom: '2px solid #14110D', paddingBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
-          <h2 className="home-section-heading" style={{ fontFamily: "'Archivo', sans-serif", fontWeight: 900, fontSize: '38px', margin: 0, textTransform: 'uppercase', letterSpacing: '-0.01em' }}>Pre-Order — Open Now</h2>
+          <h2 className="home-section-heading" style={{ fontFamily: "'Archivo', sans-serif", fontWeight: 900, fontSize: '38px', margin: 0, textTransform: 'uppercase', letterSpacing: '-0.01em' }}>Pre-Order — Buka Sekarang</h2>
           <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#6b655a' }}>
             Produksi setelah sesi tutup
           </div>
