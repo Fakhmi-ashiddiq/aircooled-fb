@@ -673,7 +673,18 @@ export default function Dashboard() {
   const opts = useMemo(() => {
     const o = {
       sku: new Set(data.productParents?.map(p => p.sku).filter(Boolean) || []),
-      product: new Set((data.products || []).map(p => p.name).filter(Boolean)),
+      product: new Set([
+        'PYB White',
+        'PYB Black',
+        'WWBD White',
+        'WWBD Black',
+        'ACS-VWPRS White',
+        'ACS-VWPRS Black',
+        'LongSleeve ACS-VWPRS White - Rib',
+        'LongSleeve ACS-VWPRS White - Non Rib',
+        'LongSleeve ACS-VWPRS Black - Rib',
+        'Sticker ACS'
+      ]),
       ukuran: new Set(),
       paketUkuran: new Set(data.sizeSets?.map(ss => ss.name).filter(Boolean) || []),
       pengiriman: new Set(['Gratis/Ambil Sendiri']),
@@ -698,7 +709,7 @@ export default function Dashboard() {
 
     return { 
       sku: [...o.sku].sort(), 
-      product: [...o.product].sort(), 
+      product: [...o.product], 
       paketUkuran: [...o.paketUkuran].sort(),
       ukuran: [...o.ukuran], 
       pengiriman: [...o.pengiriman], 
@@ -1014,8 +1025,8 @@ export default function Dashboard() {
               <div style={{ background: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'stretch', justifyContent: 'center', padding: '16px' }}>
                 <div style={{ fontSize: '11px', fontFamily: "'Space Mono', monospace", fontWeight: 700, color: 'transparent', userSelect: 'none', textTransform: 'uppercase', marginBottom: '12px', letterSpacing: '0.05em' }}>ACTION</div>
                 <div style={{ display: 'flex', gap: '8px', flex: 1 }}>
-                  <button onClick={() => { setFormFilter({...initialFilter}); setF({...initialFilter}); }} style={{ background: '#F2EEE4', color: '#14110D', border: '2px solid #14110D', padding: '8px 12px', fontSize: '14px', fontFamily: "'Archivo'", fontWeight: 900, cursor: 'pointer', flex: 1 }}>RESET</button>
-                  <button onClick={() => setF({...formFilter})} style={{ background: '#F2EEE4', color: '#14110D', border: '2px solid #14110D', padding: '8px 12px', fontSize: '14px', fontFamily: "'Archivo'", fontWeight: 900, cursor: 'pointer', flex: 1 }}>FILTER</button>
+                  <button onClick={() => setF({...formFilter})} style={{ background: '#F2C015', color: '#14110D', border: '2px solid #14110D', padding: '8px 12px', fontSize: '14px', fontFamily: "'Archivo'", fontWeight: 900, cursor: 'pointer', flex: 1 }}>FILTER</button>
+                  <button onClick={() => { setFormFilter({...initialFilter}); setF({...initialFilter}); }} style={{ background: '#ef4444', color: '#fff', border: '2px solid #14110D', padding: '8px 12px', fontSize: '14px', fontFamily: "'Archivo'", fontWeight: 900, cursor: 'pointer', flex: 1 }}>RESET</button>
                 </div>
               </div>
             </div>
@@ -1024,7 +1035,7 @@ export default function Dashboard() {
           <div style={{ minWidth: 0 }}>
             <SummaryCard title="PREORDER" data={po} isEvent={false} />
             <SummaryCard title="EVENT" data={ev} isEvent={true} />
-            <div style={{ display: 'none' }}>
+            <div style={{ display: 'blocky' }}>
               <GrandTotalTable data={bd.productFinancials.total.tot} biayaLainnya={biayaLainnya} setBiayaLainnya={setBiayaLainnya} />
               <ProfitSharingTable bersih={bd.productFinancials.total.tot.keuntungan - biayaLainnya} />
             
