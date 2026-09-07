@@ -148,13 +148,26 @@ export const useStore = create((set, get) => ({
       let colors = typeof p.colors === 'string' ? JSON.parse(p.colors || '[]') : (p.colors || []);
       let images = [];
       if (p.product_images && p.product_images.length > 0) {
-          images = p.product_images.map(img => {
-              const src = typeof img === 'string' ? img : (img.src || '');
-              const fullSrc = src.startsWith('http') ? src : API_BASE + src;
-              return { src: fullSrc, name: img.name || '' };
-          });
+          images = p.product_images
+              .map(img => {
+                  const src = typeof img === 'string' ? img : (img.src || '');
+                  if (!src || src === '/logo.jpg' || src === 'logo.jpg') return null;
+                  const cleanSrc = src.replace(/^\/+/, '');
+                  const fullSrc = cleanSrc.startsWith('http') ? cleanSrc : API_BASE + cleanSrc;
+                  return { src: fullSrc, name: img.name || '' };
+              })
+              .filter(Boolean);
       } else {
           images = typeof p.images === 'string' ? JSON.parse(p.images || '[]') : (p.images || []);
+          images = images
+              .map(img => {
+                  const src = typeof img === 'string' ? img : (img.src || '');
+                  if (!src || src === '/logo.jpg' || src === 'logo.jpg') return null;
+                  const cleanSrc = src.replace(/^\/+/, '');
+                  const fullSrc = cleanSrc.startsWith('http') ? cleanSrc : API_BASE + cleanSrc;
+                  return { src: fullSrc, name: img.name || '' };
+              })
+              .filter(Boolean);
       }
       let costs = typeof p.costs === 'string' ? JSON.parse(p.costs || '{}') : (p.costs || {});
       
@@ -177,11 +190,11 @@ export const useStore = create((set, get) => ({
       result.sizes = sizes;
       result.colors = colors;
       result.stock = typeof p.stock === 'string' ? JSON.parse(p.stock || '{}') : (p.stock || {});
-      result.stockTotal = Object.values(result.stock).reduce((a, b) => a + (b || 0), 0);
+      result.stockTotal = Object.values(result.stock).reduce((a, b) => a + (Number(b) || 0), 0);
       result.sold = p.sold;
       result.weight = p.weight || 1000;
-      result.committed = p.committed || 0;
-      result.target = p.target || 0;
+      result.committed = Number(p.committed) || 0;
+      result.target = Number(p.target) || 0;
       result.hppLessXxlUnit = p.hpp_less_xxl_unit || 0;
       result.hppMoreXxlUnit = p.hpp_more_xxl_unit || 0;
       result.priceLessXxl = p.price_less_xxl || 0;
@@ -190,8 +203,8 @@ export const useStore = create((set, get) => ({
       result.priceMoreXxlDiscount = p.price_more_xxl_discount || null;
       result.parentId = p.product_parent_id || null;
       result.parentSku = p.product_parent?.sku || null;
-      result.totalSold = p.totalSold || 0;
-      result.totalRevenue = p.totalRevenue || 0;
+      result.totalSold = Number(p.totalSold) || 0;
+      result.totalRevenue = Number(p.totalRevenue) || 0;
       
       const sessions = p.preorder_sessions || [];
       const openSession = sessions.find(s => s.status !== 'done');
@@ -484,22 +497,28 @@ export const useStore = create((set, get) => ({
     committedOf: (p) => {
         if (!p) return 0;
         const o = get().state.committedOverride?.[p.id];
-        return o != null ? o : (p.committed || 0);
+        return Number(o != null ? o : (p.committed || 0)) || 0;
     },
 
     unitsOf: (p) => {
         if (!p || typeof p !== 'object') return 0;
-        return p.type === 'preorder' ? get().committedOf(p) : p.totalSold || 0;
+        return Number(p.type === 'preorder' ? get().committedOf(p) : p.totalSold || 0) || 0;
     },
 
     poBuyers: (sess) => {
         const _this = get();
         const pid = sess.productId;
-        
+        const sessName = (sess.sessionName || '').trim();
+
         if (pid && _this.data.orders) {
             const out = [];
             _this.data.orders.forEach(o => {
-                const poItems = (o.items || []).filter(it => it.product_id == pid && it.type === 'preorder');
+                const poItems = (o.items || []).filter(it => {
+                    if (String(it.product_id) !== String(pid)) return false;
+                    if (it.type && it.type !== 'preorder') return false;
+                    if (sessName && o.session_name && o.session_name !== sessName) return false;
+                    return true;
+                });
                 if (poItems.length > 0) {
                     out.push({
                         id: o.id,
@@ -512,15 +531,11 @@ export const useStore = create((set, get) => ({
                     });
                 }
             });
-            if (out.length > 0) return out;
+            return out;
         }
 
         if (sess.buyers && sess.buyers.length) return sess.buyers;
-        const n = Math.min(sess.committed || 0, 8);
-        const names = ['Agus S.', 'Budi P.', 'Citra L.', 'Doni R.', 'Eka W.', 'Fitri N.', 'Gilang A.', 'Hana M.'];
-        const out = [];
-        for (let i = 0; i < n; i++) out.push({ name: names[i % names.length], size: (sess.sizes && sess.sizes[0]) || '-', color: (sess.colors && sess.colors[0] && sess.colors[0].name) || '-', qty: 1, pay: 'Lunas', ship: 'Terkirim' });
-        return out;
+        return [];
     },
 
     buyerItems: (b) => {
@@ -535,8 +550,8 @@ export const useStore = create((set, get) => ({
         const _this = get();
         if (p.type !== 'preorder') return { committed: 0, paidIn: 0, target: 0, count: 0 };
         const allSess = [p.preorder].concat(p.sessionHistory || []).filter(Boolean);
-        const committed = allSess.reduce((a, sess) => a + (sess === p.preorder ? _this.committedOf(p) : (sess.committed || 0)), 0);
-        const target = allSess.reduce((a, sess) => a + (sess.target || 0), 0);
+        const committed = allSess.reduce((a, sess) => a + (sess === p.preorder ? _this.committedOf(p) : Number(sess.committed) || 0), 0);
+        const target = allSess.reduce((a, sess) => a + (Number(sess.target) || 0), 0);
         const paidIn = allSess.reduce((a, sess) => {
             const buyers = _this.poBuyers(sess);
             return a + buyers.reduce((x, b) => x + (b.pay === 'Lunas' ? (b.payAmount || (sess.price || 0) * _this.buyerQty(b)) : 0), 0);

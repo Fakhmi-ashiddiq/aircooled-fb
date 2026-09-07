@@ -110,7 +110,9 @@ export default function Shop() {
                   <div style={{ color: '#F2C015', fontFamily: "'Archivo'", fontWeight: 900, fontSize: '24px', lineHeight: 0.9, textAlign: 'center', textTransform: 'uppercase' }}>
                     Aircooled<br/>Syndicate
                   </div>
-                ) : null}
+                ) : (
+                  <img src="/assets/logo.png" style={{ width: '52%' }} />
+                )}
               </div>
               <div style={{ paddingTop: '12px' }}>
                 <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#6b655a' }}>{item.cat}</div>
