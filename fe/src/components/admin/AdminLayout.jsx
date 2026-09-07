@@ -31,8 +31,10 @@ export default function AdminLayout() {
   const route = state.adminRoute;
   const isEditingProduct = route === 'catalog-edit' && !!state.adminProdId;
 
-  // Restore route from sessionStorage on first mount
+  // Restore route from sessionStorage only when the URL does not already
+  // point to a specific admin page (URL is the source of truth on load).
   useEffect(() => {
+    if (state.adminRoute !== 'dashboard') return;
     const savedRoute = sessionStorage.getItem(ADMIN_ROUTE_KEY);
     if (savedRoute && savedRoute !== 'dashboard') {
       try {
@@ -61,10 +63,11 @@ export default function AdminLayout() {
   }, [route, state.adminProdId, state.sessView]);
 
   useEffect(() => {
+    if (!state.authHydrated) return;
     if (!state.user || !isAdmin()) {
       navigate('/admin/login');
     }
-  }, [state.user]);
+  }, [state.user, state.authHydrated]);
 
   if (!state.user || !isAdmin()) return null;
 

@@ -30,7 +30,7 @@ function SyncRouter() {
             const slug = pathParts[1];
             const found = data.PRODUCTS.find(p => p.id === slug || p.code === slug);
             if (found) {
-                if (state.activeId !== found.id) {
+                if (state.route !== 'product/' + found.id || state.activeId !== found.id) {
                     updateState({ view: 'store', route: 'product/' + found.id, activeId: found.id, activeImg: 0 });
                 }
             } else if (!dataLoading) {
