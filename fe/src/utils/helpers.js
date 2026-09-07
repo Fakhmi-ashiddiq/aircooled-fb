@@ -1,6 +1,11 @@
 export const rp = (n) => { 
   if (n == null) return 'Rp 0';
-  return 'Rp ' + Math.round(n).toLocaleString('id-ID'); 
+  return 'Rp ' + Math.round(Number(n)).toLocaleString('id-ID'); 
+};
+
+export const fmt = (n) => {
+  if (n == null || isNaN(n)) return '0';
+  return Math.round(Number(n)).toLocaleString('id-ID');
 };
 
 export const slugify = (s) => { 

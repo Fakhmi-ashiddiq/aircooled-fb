@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import { useStore } from '../../store';
-import { rp, normStage, stageOrder } from '../../utils/helpers';
+import { rp, fmt, normStage, stageOrder } from '../../utils/helpers';
 import useCountUp from '../../hooks/useCountUp';
 
 function AnimatedNumber({ value, format, start }) {
@@ -207,9 +207,9 @@ export default function SessionDetail() {
         <div style={{ border: '2px solid #14110D', background: '#fff', padding: '18px' }}>
           <div style={labelStyle}>Terpesan</div>
           <div style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '26px', marginTop: '6px' }}>
-            <AnimatedNumber value={committed} start={state.appReady} /> / {sess.target}
+            <AnimatedNumber value={committed} start={state.appReady} /> / {fmt(sess.target)}
           </div>
-          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#6b655a', marginTop: '2px' }}>{Math.min(100, Math.round((committed / (sess.target || 1)) * 100))}% target</div>
+          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#6b655a', marginTop: '2px' }}>{fmt(Math.min(100, Math.round((committed / (sess.target || 1)) * 100)))}% target</div>
         </div>
         <div style={{ border: '2px solid #14110D', background: '#fff', padding: '18px' }}>
           <div style={labelStyle}>Nilai Pesanan</div>

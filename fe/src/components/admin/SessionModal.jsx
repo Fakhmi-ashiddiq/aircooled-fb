@@ -25,6 +25,7 @@ const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', '
 export default function SessionModal() {
   const { data, setData, state, updateState, updateProduct } = useStore();
   const [ns, setNs] = useState(blankSession());
+  const [saving, setSaving] = useState(false);
 
   const preorderProducts = data.PRODUCTS.filter((x) => x.type === 'preorder' && !x.preorder);
   const pid = state.sessionModalPid || (preorderProducts.length > 0 ? preorderProducts[0].id : '');
@@ -109,6 +110,8 @@ export default function SessionModal() {
 
   const createSession = async () => {
     if (!p) return;
+    if (saving) return;
+    setSaving(true);
     const priceN = parseInt(ns.price) || 0;
     const ca = parseInt(ns.compareAt) || 0;
     const set_ = sizeSets.find((s) => s.id === ns.sizeSetId) || sizeSets[0];
@@ -149,9 +152,11 @@ export default function SessionModal() {
       await PreorderSessionService.create(payload);
       await useStore.getState().fetchInitialData();
       updateState({ sessionModal: false, sessionModalPid: null });
+      setSaving(false);
     } catch (e) {
       console.error(e);
       alert('Gagal membuat sesi');
+      setSaving(false);
     }
   };
 
@@ -371,12 +376,12 @@ export default function SessionModal() {
 
           <button
             onClick={createSession}
-            disabled={preorderProducts.length === 0}
+            disabled={preorderProducts.length === 0 || saving}
             style={{ 
-              background: preorderProducts.length === 0 ? '#d4cdbd' : '#F2C015', 
-              color: preorderProducts.length === 0 ? '#9a9384' : '#14110D', 
+              background: (preorderProducts.length === 0 || saving) ? '#d4cdbd' : '#F2C015', 
+              color: (preorderProducts.length === 0 || saving) ? '#9a9384' : '#14110D', 
               border: 'none', 
-              cursor: preorderProducts.length === 0 ? 'not-allowed' : 'pointer', 
+              cursor: (preorderProducts.length === 0 || saving) ? 'not-allowed' : 'pointer', 
               fontFamily: "'Space Mono', monospace", 
               fontWeight: 700, 
               fontSize: '14px', 
@@ -385,7 +390,7 @@ export default function SessionModal() {
               padding: '16px' 
             }}
           >
-            {preorderProducts.length === 0 ? 'Tidak Ada Produk Tersedia' : 'Buka Sesi Pre-Order'}
+            {(preorderProducts.length === 0) ? 'Tidak Ada Produk Tersedia' : saving ? 'Menyimpan...' : 'Buka Sesi Pre-Order'}
           </button>
         </div>
       </div>

@@ -26,28 +26,16 @@ class ProductController extends Controller
             ->get()
             ->keyBy('product_id');
 
-        $paidOrderIds = OrderItem::select('order_id')
+        $paidRevenue = OrderItem::select('product_id', DB::raw('SUM(price * qty) as total_revenue'))
             ->whereHas('order', fn($q) => $q->where('status', 'Paid'))
-            ->groupBy('order_id')
-            ->pluck('order_id');
-
-        $orderTotals = DB::table('orders')
-            ->whereIn('id', $paidOrderIds)
-            ->pluck('total', 'id');
-
-        $productOrders = OrderItem::select('product_id', 'order_id')
-            ->whereIn('order_id', $paidOrderIds)
-            ->groupBy('product_id', 'order_id')
-            ->get()
             ->groupBy('product_id')
-            ->map(fn($items) => $items->pluck('order_id')->toArray());
+            ->pluck('total_revenue', 'product_id');
 
-        $products->each(function ($p) use ($committed, $paidStats, $orderTotals, $productOrders) {
-            $p->committed = $committed->get($p->id, 0);
+        $products->each(function ($p) use ($committed, $paidStats, $paidRevenue) {
+            $p->committed = (int) $committed->get($p->id, 0);
             $stats = $paidStats->get($p->id);
-            $p->totalSold = $stats->total_sold ?? 0;
-            $orderIds = $productOrders->get($p->id, []);
-            $p->totalRevenue = collect($orderIds)->sum(fn($oid) => $orderTotals->get($oid, 0));
+            $p->totalSold = (int) ($stats->total_sold ?? 0);
+            $p->totalRevenue = (int) $paidRevenue->get($p->id, 0);
         });
 
         return response()->json($products);
@@ -94,19 +82,13 @@ class ProductController extends Controller
             ->selectRaw('SUM(qty) as total_sold')
             ->first();
 
-        $orderIds = OrderItem::where('product_id', $data->id)
+        $totalRevenue = OrderItem::where('product_id', $data->id)
             ->whereHas('order', fn($q) => $q->where('status', 'Paid'))
-            ->select('order_id')
-            ->distinct()
-            ->pluck('order_id');
+            ->sum(DB::raw('price * qty'));
 
-        $totalRevenue = DB::table('orders')
-            ->whereIn('id', $orderIds)
-            ->sum('total');
-
-        $data->committed = $committed;
-        $data->totalSold = $paidStats->total_sold ?? 0;
-        $data->totalRevenue = $totalRevenue;
+        $data->committed = (int) $committed;
+        $data->totalSold = (int) ($paidStats->total_sold ?? 0);
+        $data->totalRevenue = (int) $totalRevenue;
 
         return response()->json($data);
     }
