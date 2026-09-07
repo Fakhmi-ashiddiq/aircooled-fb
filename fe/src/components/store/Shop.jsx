@@ -24,7 +24,7 @@ export default function Shop() {
   const shopCatOptions = [{ value: 'all', label: 'Semua Kategori' }].concat(data.categories.map(c => ({ value: c, label: c })));
   const shopTypeOptions = [
     { value: 'all', label: 'Semua' },
-    { value: 'ready', label: 'Ready Stock' },
+    { value: 'ready', label: 'Stok Tersedia' },
     { value: 'preorder', label: 'Pre-Order' }
   ];
 
@@ -46,7 +46,7 @@ export default function Shop() {
         }
       `}</style>
 
-      <h1 className="shop-title" style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '52px', margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: '-0.02em' }}>Shop</h1>
+      <h1 className="shop-title" style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '52px', margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: '-0.02em' }}>Toko</h1>
       <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '13px', color: '#6b655a', marginBottom: '24px' }}>{shopCountLabel}</div>
 
       <div className="shop-filter-row" style={{ display: 'flex', gap: '12px', marginBottom: '32px', borderBottom: '2px solid #14110D', paddingBottom: '20px', flexWrap: 'wrap', alignItems: 'center' }}>

@@ -82,7 +82,7 @@ export default function Finance() {
         Rekap Biaya & Bagi Hasil
       </div>
       <h1 style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '40px', margin: '4px 0 28px', textTransform: 'uppercase' }}>
-        Keuangan &amp; Profit
+        Keuangan &amp; Laba
       </h1>
 
       <div style={{ border: '2px solid #14110D', background: '#fff', marginBottom: '28px' }}>
@@ -97,7 +97,7 @@ export default function Finance() {
             <div style={{ ...headCell, justifyContent: 'flex-end' }}>Produksi</div>
             <div style={{ ...headCell, justifyContent: 'flex-end' }}>Kemasan</div>
             <div style={{ ...headCell, justifyContent: 'flex-end' }}>Stiker & Aks.</div>
-            <div style={{ ...headCell, justifyContent: 'flex-end', paddingRight: 0 }}>Profit Kotor</div>
+            <div style={{ ...headCell, justifyContent: 'flex-end', paddingRight: 0 }}>Laba Kotor</div>
 
             {rows.map((r, i) => (
               <React.Fragment key={i}>
@@ -125,7 +125,7 @@ export default function Finance() {
       <div className="finance-bottom-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '24px', alignItems: 'start' }}>
         <div className="finance-left-box" style={{ border: '2px solid #14110D', background: '#14110D', color: '#F2EEE4', padding: '24px' }}>
           <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#F2C015' }}>
-            Total Profit Kotor
+            Total Laba Kotor
           </div>
           <div className="finance-left-value" style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '42px', marginTop: '6px', letterSpacing: '-0.01em' }}>
             <AnimatedNumber value={totalProfit} format={(v) => rp(v)} start={state.appReady} />
@@ -140,7 +140,7 @@ export default function Finance() {
 
         <div style={{ border: '2px solid #14110D', background: '#fff' }}>
           <div style={{ padding: '14px 20px', borderBottom: '2px solid #14110D', fontFamily: "'Archivo'", fontWeight: 800, fontSize: '16px', textTransform: 'uppercase' }}>
-            Pembagian Profit
+            Pembagian Laba
           </div>
 
           <div style={{ padding: '8px 20px 18px' }}>

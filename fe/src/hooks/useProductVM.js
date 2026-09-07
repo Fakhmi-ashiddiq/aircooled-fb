@@ -26,9 +26,9 @@ export default function useProductVM() {
     const hasDisc = !isPre && curDiscount && curDiscount > curPrice;
     const dpct = hasDisc ? Math.round(((curDiscount - curPrice) / curDiscount) * 100) : 0;
 
-    let lbl = isPre ? 'PRE-ORDER TUTUP' : 'Ready Stock';
+    let lbl = isPre ? 'PRE-ORDER TUTUP' : 'Stok Tersedia';
     if (isPre && p.preorder) {
-        lbl = p.preorder.status === 'open' ? 'PRE-ORDER OPEN' : p.preorder.status === 'production' ? 'PRODUKSI' : 'SELESAI';
+        lbl = p.preorder.status === 'open' ? 'PRE-ORDER BUKA' : p.preorder.status === 'production' ? 'PRODUKSI' : 'SELESAI';
     }
 
     return {
