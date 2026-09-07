@@ -1014,8 +1014,8 @@ export default function Dashboard() {
               <div style={{ background: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'stretch', justifyContent: 'center', padding: '16px' }}>
                 <div style={{ fontSize: '11px', fontFamily: "'Space Mono', monospace", fontWeight: 700, color: 'transparent', userSelect: 'none', textTransform: 'uppercase', marginBottom: '12px', letterSpacing: '0.05em' }}>ACTION</div>
                 <div style={{ display: 'flex', gap: '8px', flex: 1 }}>
-                  <button onClick={() => { setFormFilter({...initialFilter}); setF({...initialFilter}); }} style={{ background: '#F2EEE4', color: '#14110D', border: '2px solid #14110D', padding: '8px 12px', fontSize: '14px', fontFamily: "'Archivo'", fontWeight: 900, cursor: 'pointer', flex: 1 }}>RESET</button>
                   <button onClick={() => setF({...formFilter})} style={{ background: '#F2EEE4', color: '#14110D', border: '2px solid #14110D', padding: '8px 12px', fontSize: '14px', fontFamily: "'Archivo'", fontWeight: 900, cursor: 'pointer', flex: 1 }}>FILTER</button>
+                  <button onClick={() => { setFormFilter({...initialFilter}); setF({...initialFilter}); }} style={{ background: '#F2EEE4', color: '#14110D', border: '2px solid #14110D', padding: '8px 12px', fontSize: '14px', fontFamily: "'Archivo'", fontWeight: 900, cursor: 'pointer', flex: 1 }}>RESET</button>
                 </div>
               </div>
             </div>
@@ -1024,7 +1024,7 @@ export default function Dashboard() {
           <div style={{ minWidth: 0 }}>
             <SummaryCard title="PREORDER" data={po} isEvent={false} />
             <SummaryCard title="EVENT" data={ev} isEvent={true} />
-            <div style={{ display: 'none' }}>
+            <div style={{ display: 'blocky' }}>
               <GrandTotalTable data={bd.productFinancials.total.tot} biayaLainnya={biayaLainnya} setBiayaLainnya={setBiayaLainnya} />
               <ProfitSharingTable bersih={bd.productFinancials.total.tot.keuntungan - biayaLainnya} />
             
