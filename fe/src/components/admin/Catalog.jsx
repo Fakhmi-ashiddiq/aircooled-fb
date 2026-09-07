@@ -1,6 +1,6 @@
 import React, { useContext, useState, useMemo, useEffect } from 'react';
 import { useStore } from '../../store';
-import { rp } from '../../utils/helpers';
+import { rp, fmt } from '../../utils/helpers';
 import Pagination from '../shared/Pagination';
 
 const PER_PAGE = 10;
@@ -192,12 +192,12 @@ export default function Catalog() {
             const isPre = p.type === 'preorder';
             const agg = poAggregate(p);
             const sold = unitsOf(p);
-            const stockLabel = isPre ? `${agg.committed} terpesan` : `${p.stockTotal || 0} stok`;
+            const stockLabel = isPre ? `${fmt(agg.committed)} terpesan` : `${fmt(p.stockTotal || 0)} stok`;
             const revenueLabel = isPre
               ? `Pendapatan masuk ${rp(agg.paidIn)}`
-              : `Terjual ${p.totalSold || 0} · ${rp(p.totalRevenue || 0)}`;
+              : `Terjual ${fmt(p.totalSold || 0)} · ${rp(p.totalRevenue || 0)}`;
             const viewsLabel = `${(p.views || 0).toLocaleString('id-ID')} dilihat`;
-            const soldShort = isPre ? `· ${sold} terpesan` : `· ${sold} terjual`;
+            const soldShort = isPre ? `· ${fmt(sold)} terpesan` : `· ${fmt(sold)} terjual`;
 
             return (
               <div
@@ -217,7 +217,7 @@ export default function Catalog() {
                 <div className="cat-row-thumb" style={{ width: '48px', height: '48px', background: p.garment, border: '2px solid #14110D', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
                   {p.images && p.images.length > 0 && p.images[0].src && p.images[0].src !== '/logo.jpg' ? (
     <img src={p.images[0].src} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
-  ) : p.print === 'logo' && (
+  ) : (
     <img src="/assets/logo.png" style={{ width: '60%' }} alt="" />
   )}
                   {p.print === 'text' && (

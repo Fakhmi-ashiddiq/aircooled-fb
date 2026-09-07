@@ -1,6 +1,6 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useMemo } from 'react';
 import { useStore } from '../../store';
-import { rp } from '../../utils/helpers';
+import { rp, fmt } from '../../utils/helpers';
 import useCountUp from '../../hooks/useCountUp';
 import Pagination from '../shared/Pagination';
 
@@ -8,6 +8,8 @@ function AnimatedNumber({ value, format, start }) {
   const animated = useCountUp(value, 1200, start);
   return <>{format ? format(animated) : animated}</>;
 }
+
+const PER_PAGE = 10;
 
 export default function Finance() {
   const { data, state, unitsOf } = useStore();
@@ -33,7 +35,16 @@ export default function Finance() {
     const profit = gross - totalCost;
 
     return { id: p.id, name: p.name, units, gross, production, kemasan, stiker, totalCost, profit };
-  });
+  }), [products, unitsOf]);
+
+  const filteredRows = useMemo(() => {
+    if (!financeSearch.trim()) return rows;
+    const q = financeSearch.toLowerCase();
+    return rows.filter(r => r.name.toLowerCase().includes(q));
+  }, [rows, financeSearch]);
+
+  const financeTotalPages = Math.ceil(filteredRows.length / PER_PAGE);
+  const pagedRows = filteredRows.slice((financePage - 1) * PER_PAGE, financePage * PER_PAGE);
 
   const filteredRows = search.trim()
     ? rows.filter(r => r.name.toLowerCase().includes(search.toLowerCase()))
@@ -125,7 +136,7 @@ export default function Finance() {
             {pagedRows.map((r, i) => (
               <React.Fragment key={i}>
                 <div style={{ ...dataCell, fontFamily: "'Archivo'", fontWeight: 700, fontSize: '14px' }}>{r.name}</div>
-                <div style={{ ...dataCell, justifyContent: 'flex-end' }}>{r.units}</div>
+                <div style={{ ...dataCell, justifyContent: 'flex-end' }}>{fmt(r.units)}</div>
                 <div style={{ ...dataCell, justifyContent: 'flex-end' }}>{rp(r.gross)}</div>
                 <div style={{ ...dataCell, justifyContent: 'flex-end', color: costColor }}>{rp(r.production)}</div>
                 <div style={{ ...dataCell, justifyContent: 'flex-end', color: costColor }}>{rp(r.kemasan)}</div>
@@ -141,7 +152,7 @@ export default function Finance() {
             )}
 
             <div style={{ ...totalCell, fontFamily: "'Archivo'", fontWeight: 900, fontSize: '15px', textTransform: 'uppercase' }}>Total</div>
-            <div style={{ ...totalCell, justifyContent: 'flex-end' }}>{totalUnits}</div>
+            <div style={{ ...totalCell, justifyContent: 'flex-end' }}>{fmt(totalUnits)}</div>
             <div style={{ ...totalCell, justifyContent: 'flex-end' }}>{rp(totalGross)}</div>
             <div style={{ ...totalCell, justifyContent: 'flex-end', color: costColor }}>{rp(totalProduction)}</div>
             <div style={{ ...totalCell, justifyContent: 'flex-end', color: costColor }}>{rp(totalKemasan)}</div>

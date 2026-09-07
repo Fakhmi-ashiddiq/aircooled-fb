@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import { useStore } from '../../store';
-import { rp, normStage, stageOrder } from '../../utils/helpers';
+import { rp, fmt, normStage, stageOrder } from '../../utils/helpers';
 
 export default function PreOrderSessions() {
   const { data, state, updateState, committedOf, advanceSess } = useStore();
@@ -90,9 +90,9 @@ export default function PreOrderSessions() {
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginTop: '16px' }}>
-                  <span style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '34px' }}>{committed}</span>
+                  <span style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '34px' }}>{fmt(committed)}</span>
                   <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '13px', color: '#6b655a' }}>
-                    / {sess.target} unit (min. produksi)
+                    / {fmt(sess.target)} unit (min. produksi)
                   </span>
                 </div>
 

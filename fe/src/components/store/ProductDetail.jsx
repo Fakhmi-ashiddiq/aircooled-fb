@@ -2,6 +2,7 @@ import React, { useContext, useEffect } from 'react';
 import { useStore } from '../../store';
 import useProductVM from '../../hooks/useProductVM';
 import ProductService from '../../services/ProductService';
+import { fmt } from '../../utils/helpers';
 
 export default function ProductDetail() {
   const { state, updateState, data, dataLoading, openProduct, addToCart, go } = useStore();
@@ -50,7 +51,21 @@ export default function ProductDetail() {
     );
   }
 
-  if (!ap) return null;
+  if (!ap) {
+    return (
+      <main style={{ padding: '48px', textAlign: 'center' }}>
+        <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#6b655a', marginBottom: '12px' }}>Produk Tidak Ditemukan</div>
+        <div style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: 'clamp(34px, 5vw, 56px)', lineHeight: 1.05, textTransform: 'uppercase', marginBottom: '20px' }}>404</div>
+        <p style={{ color: '#6b655a', margin: '0 0 28px' }}>Produk yang Anda cari tidak tersedia atau link tidak valid.</p>
+        <button
+          onClick={() => go('shop')}
+          style={{ background: '#F2C015', color: '#14110D', border: '2px solid #14110D', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '14px', letterSpacing: '0.06em', textTransform: 'uppercase', padding: '16px 32px' }}
+        >
+          Lihat Semua Produk
+        </button>
+      </main>
+    );
+  }
 
   const activeP = getProductVM(ap, state.selectedSize);
 
@@ -172,14 +187,9 @@ export default function ProductDetail() {
             {ap.heroImg && <img src={ap.heroImg} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} alt="" />}
             {!ap.heroImg && activeP.images && activeP.images.length > 0 && activeP.images[activeImgIdx]?.src && activeP.images[activeImgIdx].src !== '/logo.jpg' ? (
                 <img src={activeP.images[activeImgIdx].src} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
-              ) : !ap.heroImg && activeP.printLogo && (
+              ) : !ap.heroImg && (
                 <img src="/assets/logo.png" style={{ width: '50%' }} alt="" />
               )}
-            {!ap.heroImg && activeP.images && activeP.images.some(im => im.src) ? null : !ap.heroImg && activeP.printText && (
-              <div style={{ color: '#F2C015', fontFamily: "'Archivo'", fontWeight: 900, fontSize: '44px', lineHeight: 0.9, textAlign: 'center', textTransform: 'uppercase' }}>
-                Aircooled<br/>Syndicate
-              </div>
-            )}
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '10px', marginTop: '12px' }}>
             {galleryVMs.map((g, idx) => (
@@ -188,13 +198,8 @@ export default function ProductDetail() {
                   <img src={activeP.images[idx].src} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} alt="" />
                 ) : !ap.heroImg && activeP.images && activeP.images[0]?.src && activeP.images[0].src !== '/logo.jpg' ? (
                   <img src={activeP.images[0].src} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} alt="" />
-                ) : !ap.heroImg && activeP.printLogo && (
+                ) : !ap.heroImg && (
                   <img src="/assets/logo.png" style={{ width: '54%' }} alt="" />
-                )}
-                {!ap.heroImg && (activeP.images && activeP.images.some(im => im.src)) ? null : !ap.heroImg && activeP.printText && (
-                  <div style={{ color: '#F2C015', fontFamily: "'Archivo'", fontWeight: 900, fontSize: '13px', lineHeight: 0.9, textAlign: 'center', textTransform: 'uppercase' }}>
-                    AC<br/>SYND
-                  </div>
                 )}
                 <span style={{ position: 'absolute', bottom: '4px', left: '4px', fontFamily: "'Space Mono', monospace", fontSize: '8px', letterSpacing: '0.06em', textTransform: 'uppercase', background: '#14110D', color: '#F2EEE4', padding: '2px 4px' }}>
                   {g.label}
@@ -226,7 +231,7 @@ export default function ProductDetail() {
           {activeP.isPreorder && (
             <div style={{ border: '2px solid #14110D', background: '#fff', padding: '22px', marginBottom: '24px' }}>
               <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', letterSpacing: '0.14em', textTransform: 'uppercase', color: '#F2C015', background: '#14110D', display: 'inline-block', padding: '5px 10px', fontWeight: 700 }}>
-                â— {activeP.statusLabel}
+                ● {activeP.statusLabel}
               </div>
               <div className="pd-preorder-panel-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginTop: '18px' }}>
                 <div><div style={{ fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#6b655a' }}>Sesi Dibuka</div><div style={{ fontFamily: "'Archivo'", fontWeight: 700, fontSize: '15px', marginTop: '3px' }}>{activeP.opens}</div></div>
@@ -238,8 +243,8 @@ export default function ProductDetail() {
                 <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${activeP.pct}%`, background: '#14110D' }}></div>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#3d382f', marginTop: '8px', flexWrap: 'wrap', gap: '4px' }}>
-                <span>{activeP.committed} / {activeP.target} unit terpesan</span>
-                <span>Min. {activeP.target} agar produksi jalan</span>
+                <span>{fmt(activeP.committed)} / {fmt(activeP.target)} unit terpesan</span>
+                <span>Min. {fmt(activeP.target)} agar produksi jalan</span>
               </div>
               {state.view === 'admin' && !activeP.preorder && (
                 <button onClick={() => { updateState({ sessionModal: true, sessionModalPid: activeP.id }) }} style={{ marginTop: '16px', width: '100%', background: '#fff', color: '#14110D', border: '2px dashed #14110D', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '11px', letterSpacing: '0.06em', textTransform: 'uppercase', padding: '11px' }}>
@@ -288,7 +293,7 @@ export default function ProductDetail() {
             <button onClick={onCta} style={{ ...ctaStyle, minWidth: '200px' }}>{ctaLabel}</button>
           </div>
           {ctaHint && (
-            <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#9a3a2a', marginBottom: '6px' }}>âš  {ctaHint}</div>
+            <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#9a3a2a', marginBottom: '6px' }}>⚠ {ctaHint}</div>
           )}
           <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#6b655a' }}>{stockNote}</div>
 
@@ -327,7 +332,9 @@ export default function ProductDetail() {
                   <div style={{ color: '#F2C015', fontFamily: "'Archivo'", fontWeight: 900, fontSize: '24px', lineHeight: 0.9, textAlign: 'center', textTransform: 'uppercase' }}>
                     Aircooled<br/>Syndicate
                   </div>
-                ) : null}
+                ) : (
+                  <img src="/assets/logo.png" style={{ width: '52%' }} alt="" />
+                )}
               </div>
               <div style={{ paddingTop: '12px' }}>
                 <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#6b655a' }}>{item.cat}</div>

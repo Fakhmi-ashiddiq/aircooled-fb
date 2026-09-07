@@ -4,6 +4,7 @@ import useProductVM from '../../hooks/useProductVM';
 import useCountUp from '../../hooks/useCountUp';
 import PingDot from '../shared/PingDot';
 import Reveal from '../shared/Reveal';
+import { fmt } from '../../utils/helpers';
 
 function AnimatedNumber({ value, format, start }) {
   const animated = useCountUp(value, 1200, start);
@@ -154,7 +155,7 @@ export default function Home() {
               <div style={{ background: '#F2EEE4', aspectRatio: '4/3', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #14110D', position: 'relative', overflow: 'hidden' }}>
                 {featured.images && featured.images.length > 0 && featured.images[0].src && featured.images[0].src !== '/logo.jpg' ? (
                   <img src={featured.images[0].src} alt="Featured Image" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                ) : featured.printLogo && (
+                ) : (
                   <img src="/assets/logo.png" alt="Featured Logo" style={{ width: '48%', opacity: 0.95 }} />
                 )}
                 {featured.printText && (
@@ -174,7 +175,7 @@ export default function Home() {
                   <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${featured.pct}%`, background: '#F2C015' }}></div>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#cfcabd', marginTop: '7px' }}>
-                  <span><AnimatedNumber value={featured.committed} start={state.appReady} /> / {featured.target} TERPESAN</span>
+                  <span><AnimatedNumber value={featured.committed} format={(v) => fmt(v)} start={state.appReady} /> / {fmt(featured.target)} TERPESAN</span>
                   <span>{featured.pct}%</span>
                 </div>
                 <button
@@ -201,7 +202,7 @@ export default function Home() {
       {/* READY STOCK */}
       <section className="home-section-ready" style={{ padding: '56px 48px' }}>
         <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: '28px', borderBottom: '2px solid #14110D', paddingBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
-          <h2 className="home-section-heading" style={{ fontFamily: "'Archivo', sans-serif", fontWeight: 900, fontSize: '38px', margin: 0, textTransform: 'uppercase', letterSpacing: '-0.01em' }}>Ready Stock</h2>
+          <h2 className="home-section-heading" style={{ fontFamily: "'Archivo', sans-serif", fontWeight: 900, fontSize: '38px', margin: 0, textTransform: 'uppercase', letterSpacing: '-0.01em' }}>Stok Tersedia</h2>
           <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#6b655a' }}>
             Kirim 1–2 hari kerja
           </div>
@@ -236,7 +237,9 @@ export default function Home() {
                       <div style={{ color: '#F2C015', fontFamily: "'Archivo', sans-serif", fontWeight: 900, fontSize: '24px', lineHeight: 0.9, textAlign: 'center', textTransform: 'uppercase' }}>
                         Aircooled<br />Syndicate
                       </div>
-                    ) : null
+                    ) : (
+                      <img src="/assets/logo.png" alt={item.name} style={{ width: '52%' }} />
+                    )
                   }
                 </div>
                 <div style={{ paddingTop: '12px' }}>
@@ -290,7 +293,7 @@ export default function Home() {
                   </div>
                   {item.images && item.images.length > 0 && item.images[0].src && item.images[0].src !== '/logo.jpg' ? (
                       <img src={item.images[0].src} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    ) : item.printLogo && (
+                    ) : (
                       <img src="/assets/logo.png" alt={item.name} style={{ width: '46%' }} />
                     )}
                   {item.printText && (
@@ -310,7 +313,7 @@ export default function Home() {
                     <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${item.pct}%`, background: '#14110D' }}></div>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#6b655a', marginTop: '7px' }}>
-                    <span>{item.committed}/{item.target} terpesan</span>
+                    <span>{fmt(item.committed)}/{fmt(item.target)} terpesan</span>
                     <span>Tutup {item.closes}</span>
                   </div>
                 </div>
