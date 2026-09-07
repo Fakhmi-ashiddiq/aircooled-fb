@@ -21,16 +21,16 @@ export default function Finance() {
     admin: 15,
     platform: 20
   });
+  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const perPage = 10;
 
-  const [financeSearch, setFinanceSearch] = useState('');
-  const [financePage, setFinancePage] = useState(1);
-
-  const rows = useMemo(() => products.map(p => {
+  const rows = products.map(p => {
     const units = Number(unitsOf ? unitsOf(p) : 0) || 0;
-    const gross = p.price * units;
-    const production = (p.costs?.production || 0) * units;
-    const kemasan = (p.costs?.kemasan || 0) * units;
-    const stiker = (p.costs?.stiker || 0) * units;
+    const gross = Number(p.price || 0) * units;
+    const production = Number(p.costs?.production || 0) * units;
+    const kemasan = Number(p.costs?.kemasan || 0) * units;
+    const stiker = Number(p.costs?.stiker || 0) * units;
     const totalCost = production + kemasan + stiker;
     const profit = gross - totalCost;
 
@@ -45,6 +45,14 @@ export default function Finance() {
 
   const financeTotalPages = Math.ceil(filteredRows.length / PER_PAGE);
   const pagedRows = filteredRows.slice((financePage - 1) * PER_PAGE, financePage * PER_PAGE);
+
+  const filteredRows = search.trim()
+    ? rows.filter(r => r.name.toLowerCase().includes(search.toLowerCase()))
+    : rows;
+
+  const totalPages = Math.max(1, Math.ceil(filteredRows.length / perPage));
+  const safePage = Math.min(page, totalPages);
+  const pagedRows = filteredRows.slice((safePage - 1) * perPage, safePage * perPage);
 
   const totalUnits = rows.reduce((a, r) => a + r.units, 0);
   const totalGross = rows.reduce((a, r) => a + r.gross, 0);
@@ -100,15 +108,20 @@ export default function Finance() {
         Keuangan &amp; Laba
       </h1>
 
-      <div style={{ border: '2px solid #14110D', background: '#fff', marginBottom: '28px' }}>
-        <div style={{ padding: '14px 20px', borderBottom: '2px solid #14110D', fontFamily: "'Archivo'", fontWeight: 800, fontSize: '16px', textTransform: 'uppercase', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
-          <span>Rekap Biaya Produksi per Produk</span>
+      <div style={{ display: 'flex', gap: '12px', marginBottom: '18px', flexWrap: 'wrap', alignItems: 'center' }}>
+        <div style={{ position: 'relative', flex: 1, minWidth: '220px' }}>
           <input
-            placeholder="Cari produk..."
-            value={financeSearch}
-            onChange={(e) => { setFinanceSearch(e.target.value); setFinancePage(1); }}
-            style={{ width: '200px', padding: '10px 14px', border: '2px solid #14110D', background: '#fff', fontSize: '13px', fontFamily: "'Space Mono', monospace" }}
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+            placeholder="Cari produk…"
+            style={{ width: '100%', padding: '13px 14px', border: '2px solid #14110D', background: '#fff', fontFamily: "'Space Mono', monospace", fontSize: '13px' }}
           />
+        </div>
+      </div>
+
+      <div style={{ border: '2px solid #14110D', background: '#fff', marginBottom: '28px' }}>
+        <div style={{ padding: '14px 20px', borderBottom: '2px solid #14110D', fontFamily: "'Archivo'", fontWeight: 800, fontSize: '16px', textTransform: 'uppercase' }}>
+          Rekap Biaya Produksi per Produk — {filteredRows.length} produk
         </div>
         <div className="finance-table-scroll">
           <div className="finance-table-grid" style={{ padding: '0 20px', display: 'grid', gridTemplateColumns: gridTable }}>
@@ -132,6 +145,12 @@ export default function Finance() {
               </React.Fragment>
             ))}
 
+            {pagedRows.length === 0 && (
+              <div style={{ gridColumn: '1 / -1', padding: '40px 0', textAlign: 'center', fontFamily: "'Space Mono', monospace", fontSize: '13px', color: '#6b655a' }}>
+                Tidak ada produk yang cocok dengan pencarian.
+              </div>
+            )}
+
             <div style={{ ...totalCell, fontFamily: "'Archivo'", fontWeight: 900, fontSize: '15px', textTransform: 'uppercase' }}>Total</div>
             <div style={{ ...totalCell, justifyContent: 'flex-end' }}>{fmt(totalUnits)}</div>
             <div style={{ ...totalCell, justifyContent: 'flex-end' }}>{rp(totalGross)}</div>
@@ -142,7 +161,7 @@ export default function Finance() {
           </div>
         </div>
         <div style={{ padding: '0 20px 16px' }}>
-          <Pagination currentPage={financePage} totalPages={financeTotalPages} onPageChange={setFinancePage} />
+          <Pagination currentPage={safePage} totalPages={totalPages} onPageChange={setPage} />
         </div>
       </div>
 

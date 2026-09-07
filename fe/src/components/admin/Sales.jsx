@@ -16,15 +16,15 @@ export default function Sales() {
 
   const salesRows = useMemo(() => {
     return data.PRODUCTS.map(p => {
-      const units = unitsOf ? unitsOf(p) : 0;
+      const units = Number(unitsOf ? unitsOf(p) : 0) || 0;
       return {
         id: p.id,
         name: p.name,
         type: p.type === 'preorder' ? 'Pre-Order' : 'Ready',
         typeColor: p.type === 'preorder' ? '#9a7a10' : '#3d382f',
         units,
-        price: p.price,
-        revenue: Number(p.totalRevenue) || 0
+        price: Number(p.price || 0),
+        revenue: Number(p.totalRevenue || 0)
       };
     }).sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
   }, [data.PRODUCTS, unitsOf]);
@@ -42,7 +42,7 @@ export default function Sales() {
   const pagedProducts = filteredProducts.slice((productPage - 1) * PER_PAGE, productPage * PER_PAGE);
 
   const filteredOrders = useMemo(() => {
-    let result = data.orders;
+    let result = (data.orders || []).map(o => ({ ...o, total: Number(o.total || 0) }));
     if (orderSearch.trim()) {
       const q = orderSearch.toLowerCase();
       result = result.filter(o =>

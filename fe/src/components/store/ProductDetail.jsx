@@ -182,7 +182,7 @@ export default function ProductDetail() {
         <div className="pd-visual-col" style={{ position: 'sticky', top: '90px' }}>
           <div onClick={() => updateState({ lightbox: true })} style={{ background: pDisplayGarment, aspectRatio: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #14110D', position: 'relative', overflow: 'hidden', cursor: 'zoom-in' }}>
             <div style={{ position: 'absolute', bottom: '12px', right: '12px', background: 'rgba(20,17,13,0.82)', color: '#F2EEE4', fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.08em', textTransform: 'uppercase', padding: '5px 10px', zIndex: 2 }}>
-              • {activeGalleryLabel} — Klik perbesar
+              ⤢ {activeGalleryLabel} — Klik perbesar
             </div>
             {ap.heroImg && <img src={ap.heroImg} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} alt="" />}
             {!ap.heroImg && activeP.images && activeP.images.length > 0 && activeP.images[activeImgIdx]?.src && activeP.images[activeImgIdx].src !== '/logo.jpg' ? (
