@@ -3,13 +3,10 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
+use App\Models\ProductParent;
 
 class ProductParentSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
         $parents = [
@@ -20,6 +17,8 @@ class ProductParentSeeder extends Seeder
             ['sku' => 'STCKR'],
         ];
 
-        DB::table('product_parents')->insert($parents);
+        foreach ($parents as $parent) {
+            ProductParent::create($parent);
+        }
     }
 }

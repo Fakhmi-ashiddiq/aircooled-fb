@@ -22,6 +22,15 @@ class UserSeeder extends Seeder
             'email' => 'user@aircooled.com',
             'password' => Hash::make('password'),
             'role' => '2',
+            'phone' => '08123123123',
+        ]);
+
+        User::create([
+            'name' => 'Dimas Maulana',
+            'email' => 'dimas@gmail.com',
+            'password' => Hash::make('password'),
+            'role' => 'user',
+            'phone' => '08123123123',
         ]);
     }
 }
