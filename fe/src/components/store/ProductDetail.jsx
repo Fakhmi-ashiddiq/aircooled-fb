@@ -77,13 +77,13 @@ export default function ProductDetail() {
     ? 'Produksi berjalan setelah sesi pre-order ditutup. Pembayaran di muka.'
     : (stockTotal > 0
       ? (state.selectedSize && selectedSizeStock !== undefined
-        ? `Stok ${state.selectedSize}: ${selectedSizeStock} unit Â· Kirim 1â€“2 hari kerja`
-        : `Total stok: ${stockTotal} unit Â· Kirim 1â€“2 hari kerja`)
+        ? `Stok ${state.selectedSize}: ${selectedSizeStock} unit · Kirim 1–2 hari kerja`
+        : `Total stok: ${stockTotal} unit · Kirim 1–2 hari kerja`)
       : 'Stok habis');
   const ctaLabel = ap.type === 'preorder' ? 'Pesan Pre-Order' : 'Tambah ke Keranjang';
   const specs = ap.type === 'preorder'
     ? [{ k: 'Kategori', v: ap.cat }, { k: 'Sesi', v: ap.preorder?.sessionName || '-' }, { k: 'Estimasi Kirim', v: ap.preorder?.eta || '-' }, { k: 'Pembayaran', v: 'Penuh di muka' }]
-    : [{ k: 'Kategori', v: ap.cat }, { k: 'Bahan', v: 'Premium' }, { k: 'Pengiriman', v: '1â€“2 hari kerja' }, { k: 'Stok', v: ap.sizes.map(sz => `${sz}: ${ap.stock?.[sz] || 0}`).join(' / ') + ' unit' }];
+    : [{ k: 'Kategori', v: ap.cat }, { k: 'Bahan', v: 'Premium' }, { k: 'Pengiriman', v: '1–2 hari kerja' }, { k: 'Stok', v: ap.sizes.map(sz => `${sz}: ${ap.stock?.[sz] || 0}`).join(' / ') + ' unit' }];
 
   const colorList = (ap.colors && ap.colors.length) ? ap.colors : [{ name: 'Default', hex: ap.garment }];
   const selColor = colorList.find(c => c.name === state.selectedColor);
@@ -167,7 +167,7 @@ export default function ProductDetail() {
         <div className="pd-visual-col" style={{ position: 'sticky', top: '90px' }}>
           <div onClick={() => updateState({ lightbox: true })} style={{ background: pDisplayGarment, aspectRatio: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #14110D', position: 'relative', overflow: 'hidden', cursor: 'zoom-in' }}>
             <div style={{ position: 'absolute', bottom: '12px', right: '12px', background: 'rgba(20,17,13,0.82)', color: '#F2EEE4', fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.08em', textTransform: 'uppercase', padding: '5px 10px', zIndex: 2 }}>
-              â¤¢ {activeGalleryLabel} â€” Klik perbesar
+              ⤢ {activeGalleryLabel} — Klik perbesar
             </div>
             {ap.heroImg && <img src={ap.heroImg} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} alt="" />}
             {!ap.heroImg && activeP.images && activeP.images.length > 0 && activeP.images[activeImgIdx]?.src && activeP.images[activeImgIdx].src !== '/logo.jpg' ? (
@@ -210,13 +210,13 @@ export default function ProductDetail() {
             {activeP.badgeLabel}
           </div>
           <h1 className="pd-title" style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '46px', margin: 0, textTransform: 'uppercase', lineHeight: 0.98, letterSpacing: '-0.02em' }}>{activeP.name}</h1>
-          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#6b655a', marginTop: '10px' }}>Kategori â€” {activeP.cat}</div>
+          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#6b655a', marginTop: '10px' }}>Kategori — {activeP.cat}</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '14px', flexWrap: 'wrap' }}>
             <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '22px', fontWeight: 700 }}>{activeP.priceFmt}</span>
             {activeP.hasDiscount && (
               <>
                 <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '16px', color: '#9a8f7a', textDecoration: 'line-through' }}>{activeP.compareFmt}</span>
-                <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', fontWeight: 700, background: '#F2C015', color: '#14110D', padding: '4px 9px', letterSpacing: '0.04em' }}>âˆ’{activeP.discountPct}%</span>
+                <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', fontWeight: 700, background: '#F2C015', color: '#14110D', padding: '4px 9px', letterSpacing: '0.04em' }}>−{activeP.discountPct}%</span>
               </>
             )}
           </div>
@@ -281,7 +281,7 @@ export default function ProductDetail() {
           {/* QTY + ADD */}
           <div style={{ display: 'flex', gap: '12px', alignItems: 'stretch', marginBottom: '14px', flexWrap: 'wrap' }}>
             <div style={{ display: 'flex', alignItems: 'center', border: '2px solid #14110D' }}>
-              <button onClick={() => updateState({ qty: Math.max(1, state.qty - 1) })} style={{ background: 'none', border: 'none', cursor: 'pointer', width: '44px', height: '52px', fontSize: '20px', fontWeight: 700 }}>âˆ’</button>
+              <button onClick={() => updateState({ qty: Math.max(1, state.qty - 1) })} style={{ background: 'none', border: 'none', cursor: 'pointer', width: '44px', height: '52px', fontSize: '20px', fontWeight: 700 }}>−</button>
               <div style={{ width: '44px', textAlign: 'center', fontFamily: "'Space Mono', monospace", fontSize: '16px', fontWeight: 700 }}>{state.qty}</div>
               <button onClick={() => updateState({ qty: state.qty + 1 })} style={{ background: 'none', border: 'none', cursor: 'pointer', width: '44px', height: '52px', fontSize: '20px', fontWeight: 700 }}>+</button>
             </div>
@@ -316,7 +316,7 @@ export default function ProductDetail() {
                 </div>
                 {item.hasDiscount && (
                   <div style={{ position: 'absolute', top: '10px', right: '10px', background: '#F2C015', color: '#14110D', fontFamily: "'Space Mono', monospace", fontSize: '11px', fontWeight: 700, padding: '4px 8px' }}>
-                    âˆ’{item.discountPct}%
+                    −{item.discountPct}%
                   </div>
                 )}
                 {item.images && item.images.length > 0 && item.images[0].src && item.images[0].src !== '/logo.jpg' ? (
