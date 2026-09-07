@@ -77,13 +77,13 @@ export default function ProductDetail() {
     ? 'Produksi berjalan setelah sesi pre-order ditutup. Pembayaran di muka.'
     : (stockTotal > 0
       ? (state.selectedSize && selectedSizeStock !== undefined
-        ? `Stok ${state.selectedSize}: ${selectedSizeStock} unit · Kirim 1–2 hari kerja`
-        : `Total stok: ${stockTotal} unit · Kirim 1–2 hari kerja`)
+        ? `Stok ${state.selectedSize}: ${selectedSizeStock} unit Â· Kirim 1â€“2 hari kerja`
+        : `Total stok: ${stockTotal} unit Â· Kirim 1â€“2 hari kerja`)
       : 'Stok habis');
   const ctaLabel = ap.type === 'preorder' ? 'Pesan Pre-Order' : 'Tambah ke Keranjang';
   const specs = ap.type === 'preorder'
     ? [{ k: 'Kategori', v: ap.cat }, { k: 'Sesi', v: ap.preorder?.sessionName || '-' }, { k: 'Estimasi Kirim', v: ap.preorder?.eta || '-' }, { k: 'Pembayaran', v: 'Penuh di muka' }]
-    : [{ k: 'Kategori', v: ap.cat }, { k: 'Bahan', v: 'Premium' }, { k: 'Pengiriman', v: '1–2 hari kerja' }, { k: 'Stok', v: ap.sizes.map(sz => `${sz}: ${ap.stock?.[sz] || 0}`).join(' / ') + ' unit' }];
+    : [{ k: 'Kategori', v: ap.cat }, { k: 'Bahan', v: 'Premium' }, { k: 'Pengiriman', v: '1â€“2 hari kerja' }, { k: 'Stok', v: ap.sizes.map(sz => `${sz}: ${ap.stock?.[sz] || 0}`).join(' / ') + ' unit' }];
 
   const colorList = (ap.colors && ap.colors.length) ? ap.colors : [{ name: 'Default', hex: ap.garment }];
   const selColor = colorList.find(c => c.name === state.selectedColor);
@@ -159,7 +159,7 @@ export default function ProductDetail() {
       `}</style>
 
       <button onClick={() => go('shop')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontSize: '12px', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#6b655a', marginBottom: '24px' }}>
-        ← Kembali ke Shop
+        â† Kembali ke Shop
       </button>
       <div className="pd-main-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '48px', alignItems: 'start' }}>
 
@@ -167,7 +167,7 @@ export default function ProductDetail() {
         <div className="pd-visual-col" style={{ position: 'sticky', top: '90px' }}>
           <div onClick={() => updateState({ lightbox: true })} style={{ background: pDisplayGarment, aspectRatio: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #14110D', position: 'relative', overflow: 'hidden', cursor: 'zoom-in' }}>
             <div style={{ position: 'absolute', bottom: '12px', right: '12px', background: 'rgba(20,17,13,0.82)', color: '#F2EEE4', fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.08em', textTransform: 'uppercase', padding: '5px 10px', zIndex: 2 }}>
-              ⤢ {activeGalleryLabel} — Klik perbesar
+              â¤¢ {activeGalleryLabel} â€” Klik perbesar
             </div>
             {ap.heroImg && <img src={ap.heroImg} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} alt="" />}
             {!ap.heroImg && activeP.images && activeP.images.length > 0 && activeP.images[activeImgIdx]?.src && activeP.images[activeImgIdx].src !== '/logo.jpg' ? (
@@ -210,13 +210,13 @@ export default function ProductDetail() {
             {activeP.badgeLabel}
           </div>
           <h1 className="pd-title" style={{ fontFamily: "'Archivo'", fontWeight: 900, fontSize: '46px', margin: 0, textTransform: 'uppercase', lineHeight: 0.98, letterSpacing: '-0.02em' }}>{activeP.name}</h1>
-          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#6b655a', marginTop: '10px' }}>Kategori — {activeP.cat}</div>
+          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#6b655a', marginTop: '10px' }}>Kategori â€” {activeP.cat}</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '14px', flexWrap: 'wrap' }}>
             <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '22px', fontWeight: 700 }}>{activeP.priceFmt}</span>
             {activeP.hasDiscount && (
               <>
                 <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '16px', color: '#9a8f7a', textDecoration: 'line-through' }}>{activeP.compareFmt}</span>
-                <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', fontWeight: 700, background: '#F2C015', color: '#14110D', padding: '4px 9px', letterSpacing: '0.04em' }}>−{activeP.discountPct}%</span>
+                <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', fontWeight: 700, background: '#F2C015', color: '#14110D', padding: '4px 9px', letterSpacing: '0.04em' }}>âˆ’{activeP.discountPct}%</span>
               </>
             )}
           </div>
@@ -226,7 +226,7 @@ export default function ProductDetail() {
           {activeP.isPreorder && (
             <div style={{ border: '2px solid #14110D', background: '#fff', padding: '22px', marginBottom: '24px' }}>
               <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', letterSpacing: '0.14em', textTransform: 'uppercase', color: '#F2C015', background: '#14110D', display: 'inline-block', padding: '5px 10px', fontWeight: 700 }}>
-                ● {activeP.statusLabel}
+                â— {activeP.statusLabel}
               </div>
               <div className="pd-preorder-panel-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginTop: '18px' }}>
                 <div><div style={{ fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#6b655a' }}>Sesi Dibuka</div><div style={{ fontFamily: "'Archivo'", fontWeight: 700, fontSize: '15px', marginTop: '3px' }}>{activeP.opens}</div></div>
@@ -281,14 +281,14 @@ export default function ProductDetail() {
           {/* QTY + ADD */}
           <div style={{ display: 'flex', gap: '12px', alignItems: 'stretch', marginBottom: '14px', flexWrap: 'wrap' }}>
             <div style={{ display: 'flex', alignItems: 'center', border: '2px solid #14110D' }}>
-              <button onClick={() => updateState({ qty: Math.max(1, state.qty - 1) })} style={{ background: 'none', border: 'none', cursor: 'pointer', width: '44px', height: '52px', fontSize: '20px', fontWeight: 700 }}>−</button>
+              <button onClick={() => updateState({ qty: Math.max(1, state.qty - 1) })} style={{ background: 'none', border: 'none', cursor: 'pointer', width: '44px', height: '52px', fontSize: '20px', fontWeight: 700 }}>âˆ’</button>
               <div style={{ width: '44px', textAlign: 'center', fontFamily: "'Space Mono', monospace", fontSize: '16px', fontWeight: 700 }}>{state.qty}</div>
               <button onClick={() => updateState({ qty: state.qty + 1 })} style={{ background: 'none', border: 'none', cursor: 'pointer', width: '44px', height: '52px', fontSize: '20px', fontWeight: 700 }}>+</button>
             </div>
             <button onClick={onCta} style={{ ...ctaStyle, minWidth: '200px' }}>{ctaLabel}</button>
           </div>
           {ctaHint && (
-            <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#9a3a2a', marginBottom: '6px' }}>⚠ {ctaHint}</div>
+            <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#9a3a2a', marginBottom: '6px' }}>âš  {ctaHint}</div>
           )}
           <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#6b655a' }}>{stockNote}</div>
 
@@ -316,15 +316,18 @@ export default function ProductDetail() {
                 </div>
                 {item.hasDiscount && (
                   <div style={{ position: 'absolute', top: '10px', right: '10px', background: '#F2C015', color: '#14110D', fontFamily: "'Space Mono', monospace", fontSize: '11px', fontWeight: 700, padding: '4px 8px' }}>
-                    −{item.discountPct}%
+                    âˆ’{item.discountPct}%
                   </div>
                 )}
-                {item.printLogo && <img src="/assets/logo.png" style={{ width: '52%' }} alt="" />}
-                {item.printText && (
+                {item.images && item.images.length > 0 && item.images[0].src && item.images[0].src !== '/logo.jpg' ? (
+                  <img src={item.images[0].src} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : item.printLogo ? (
+                  <img src="/assets/logo.png" style={{ width: '52%' }} alt="" />
+                ) : item.printText ? (
                   <div style={{ color: '#F2C015', fontFamily: "'Archivo'", fontWeight: 900, fontSize: '24px', lineHeight: 0.9, textAlign: 'center', textTransform: 'uppercase' }}>
                     Aircooled<br/>Syndicate
                   </div>
-                )}
+                ) : null}
               </div>
               <div style={{ paddingTop: '12px' }}>
                 <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#6b655a' }}>{item.cat}</div>
@@ -343,3 +346,5 @@ export default function ProductDetail() {
     </main>
   );
 }
+
+
