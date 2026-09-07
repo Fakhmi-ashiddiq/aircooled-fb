@@ -87,7 +87,7 @@ function BreakdownTable({ title, headerLabel, data }) {
           <thead style={{ background: '#F2EEE4', borderBottom: '2px solid #14110D', borderTop: '2px solid #14110D' }}>
           <tr>
             <th style={{ padding: '8px', borderRight: '1px solid #14110D', textAlign: 'left' }}>{headerLabel}</th>
-            <th style={{ padding: '8px', borderRight: '1px solid #14110D', textAlign: 'center' }}>Qty</th>
+            <th style={{ padding: '8px', borderRight: '1px solid #14110D', textAlign: 'center' }}>Jml</th>
             <th style={{ padding: '8px', borderRight: '1px solid #14110D', textAlign: 'right' }}>Penjualan (Rp)</th>
             <th style={{ padding: '8px', textAlign: 'right' }}>Untung (Rp)</th>
           </tr>
@@ -312,7 +312,7 @@ function RecapInvoiceTable({ data, biayaLainnya }) {
   return (
     <div style={{ background: '#fff', border: '2px solid #14110D', marginBottom: '32px' }}>
       <div style={{ background: '#14110D', color: '#F2EEE4', padding: '12px 16px', fontSize: '14px', fontFamily: "'Archivo'", fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.02em', textAlign: 'center' }}>
-        RECAP INVOICE ACS
+        REKAP INVOICE ACS
       </div>
       <div style={{ overflowX: 'auto' }}>
         <table style={{ width: '100%', minWidth: '100%', borderCollapse: 'collapse', fontSize: '13px', fontFamily: "'Archivo'" }}>
@@ -335,14 +335,14 @@ function RecapInvoiceTable({ data, biayaLainnya }) {
               <td style={{ padding: '8px 16px', textAlign: 'right', fontFamily: "'Space Mono', monospace", color: '#b45309' }}>{rp(biayaLainnya)}</td>
             </tr>
             <tr style={{ background: 'rgba(242, 192, 21, 0.15)', fontWeight: 800 }}>
-              <td style={{ padding: '10px 16px', borderRight: '1px solid #14110D' }}>Total Profit</td>
+              <td style={{ padding: '10px 16px', borderRight: '1px solid #14110D' }}>Total Keuntungan</td>
               <td style={{ padding: '10px 16px', textAlign: 'right', fontFamily: "'Space Mono', monospace", color: '#047857', fontSize: '15px' }}>{rp(totalProfit)}</td>
             </tr>
             <tr style={{ background: '#14110D', height: '16px' }}><td colSpan="2"></td></tr>
 
             {/* SECTION 2: PROFIT SHARING */}
             <tr>
-              <td style={{ padding: '8px 16px', borderRight: '1px solid #14110D' }}>Share Profit ACS - (35%)</td>
+              <td style={{ padding: '8px 16px', borderRight: '1px solid #14110D' }}>Bagi Hasil ACS - (35%)</td>
               <td style={{ padding: '8px 16px', textAlign: 'right', fontFamily: "'Space Mono', monospace", color: '#047857', fontWeight: 700 }}>{rp(shareAcs)}</td>
             </tr>
             <tr>
@@ -357,7 +357,7 @@ function RecapInvoiceTable({ data, biayaLainnya }) {
 
             {/* SECTION 3: TRANSFER */}
             <tr>
-              <td style={{ padding: '8px 16px', borderRight: '1px solid #14110D' }}>Profit ACS</td>
+              <td style={{ padding: '8px 16px', borderRight: '1px solid #14110D' }}>Keuntungan ACS</td>
               <td style={{ padding: '8px 16px', textAlign: 'right', fontFamily: "'Space Mono', monospace", fontWeight: 700 }}>{rp(shareAcs)}</td>
             </tr>
             {manualAdjustments.map((adj, idx) => (
@@ -439,7 +439,7 @@ function AssetTable({ data }) {
               <td style={{ padding: '8px 16px', textAlign: 'right', fontFamily: "'Space Mono', monospace" }}>{data.stokAkhir.baju}</td>
             </tr>
             <tr style={{ borderBottom: '1px solid #ddd5c4' }}>
-              <td style={{ padding: '8px 16px 8px 32px' }}>• Satuan / sticker (pcs)</td>
+              <td style={{ padding: '8px 16px 8px 32px' }}>• Satuan / stiker (pcs)</td>
               <td style={{ padding: '8px 16px', textAlign: 'right', fontFamily: "'Space Mono', monospace" }}>{data.stokAkhir.satuan}</td>
             </tr>
             <tr style={{ borderBottom: '1px solid #14110D' }}>
@@ -456,7 +456,7 @@ function AssetTable({ data }) {
               <td style={{ padding: '8px 16px', textAlign: 'right', fontFamily: "'Space Mono', monospace", color: '#14110D' }}>{rp(data.nilai.baju)}</td>
             </tr>
             <tr>
-              <td style={{ padding: '8px 16px 8px 32px' }}>• Nilai satuan / sticker (Rp)</td>
+              <td style={{ padding: '8px 16px 8px 32px' }}>• Nilai satuan / stiker (Rp)</td>
               <td style={{ padding: '8px 16px', textAlign: 'right', fontFamily: "'Space Mono', monospace", color: '#14110D' }}>{rp(data.nilai.satuan)}</td>
             </tr>
           </tbody>
@@ -476,7 +476,7 @@ function ProfitSharingTable({ bersih }) {
   return (
     <div style={{ background: '#fff', border: '2px solid #14110D', marginBottom: '32px' }}>
       <div style={{ background: '#14110D', color: '#F2EEE4', padding: '12px 16px', fontSize: '14px', fontFamily: "'Archivo'", fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.02em', textAlign: 'center' }}>
-        PROFIT SHARING (dari Total Untung)
+        PEMBAGIAN HASIL (dari Total Untung)
       </div>
       <div style={{ overflowX: 'auto' }}>
         <table style={{ width: '100%', minWidth: '100%', borderCollapse: 'collapse', fontSize: '13px', fontFamily: "'Archivo'" }}>
@@ -510,7 +510,7 @@ function GrandTotalTable({ data, biayaLainnya, setBiayaLainnya }) {
         <table style={{ width: '100%', minWidth: '100%', borderCollapse: 'collapse', fontSize: '13px', fontFamily: "'Archivo'" }}>
           <thead style={{ background: '#F2EEE4', borderBottom: '2px solid #14110D' }}>
             <tr>
-              <th style={{ padding: '12px', borderRight: '1px solid #14110D', textAlign: 'center', width: '20%' }}>Qty Terjual (pcs)</th>
+              <th style={{ padding: '12px', borderRight: '1px solid #14110D', textAlign: 'center', width: '20%' }}>Jml Terjual (pcs)</th>
               <th style={{ padding: '12px', borderRight: '1px solid #14110D', textAlign: 'center', width: '30%' }}>Total Uang Masuk (Rp)<br/><span style={{fontSize: '10px'}}>(harga barang + ongkir)</span></th>
               <th style={{ padding: '12px', borderRight: '1px solid #14110D', textAlign: 'center', width: '25%' }}>Biaya Lainnya</th>
               <th style={{ padding: '12px', textAlign: 'center', background: 'rgba(242, 192, 21, 0.15)', color: '#14110D', width: '25%' }}>Total Keuntungan (Rp)</th>

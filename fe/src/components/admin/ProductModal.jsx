@@ -181,7 +181,7 @@ export default function ProductModal() {
           <div>
             <div style={labelStyle}>Tipe Produk</div>
             <div style={{ display: 'flex' }}>
-              <button onClick={() => setNp({ ...np, type: 'ready' })} style={segStyle(np.type === 'ready')}>Ready Stock</button>
+              <button onClick={() => setNp({ ...np, type: 'ready' })} style={segStyle(np.type === 'ready')}>Stok Tersedia</button>
               <button onClick={() => setNp({ ...np, type: 'preorder' })} style={segStyle(np.type === 'preorder')}>Pre-Order</button>
             </div>
           </div>

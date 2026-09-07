@@ -203,7 +203,7 @@ export default function Profile() {
                   {user.email}
                 </div>
                 <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '10px', background: '#14110D', color: '#F2EEE4', padding: '6px 12px', marginTop: '16px', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 700 }}>
-                  {user.role === 'admin' ? 'Administrator' : 'Customer'}
+                  {user.role === 'admin' ? 'Administrator' : 'Pelanggan'}
                 </div>
               </div>
 

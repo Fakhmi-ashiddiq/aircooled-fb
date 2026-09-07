@@ -146,7 +146,7 @@ export default function Catalog() {
 
       <div style={{ display: 'flex', gap: '10px', marginBottom: '18px' }}>
         <button onClick={() => updateState({ catalogTab: 'ready' })} style={tabStyle(isReady)}>
-          Ready Stock
+          Stok Tersedia
         </button>
         <button onClick={() => updateState({ catalogTab: 'preorder' })} style={tabStyle(!isReady)}>
           Pre-Order
@@ -178,14 +178,14 @@ export default function Catalog() {
           style={selectStyle('200px')}
         >
           <option value="terbaru">Terbaru</option>
-          <option value="terpopuler">Terpopuler (views)</option>
+          <option value="terpopuler">Terpopuler (dilihat)</option>
           <option value="terlaris">Terlaris (terjual)</option>
         </select>
       </div>
 
       <div style={{ border: '2px solid #14110D', background: '#fff' }}>
         <div style={{ padding: '14px 20px', borderBottom: '2px solid #14110D', fontFamily: "'Archivo'", fontWeight: 800, fontSize: '16px', textTransform: 'uppercase' }}>
-          {isReady ? 'Ready Stock' : 'Pre-Order'} — {catalogCountLabel}
+          {isReady ? 'Stok Tersedia' : 'Pre-Order'} — {catalogCountLabel}
         </div>
         <div style={{ padding: '0 20px' }}>
           {pagedDisplay.map((p) => {
@@ -196,7 +196,7 @@ export default function Catalog() {
             const revenueLabel = isPre
               ? `Pendapatan masuk ${rp(agg.paidIn)}`
               : `Terjual ${p.totalSold || 0} · ${rp(p.totalRevenue || 0)}`;
-            const viewsLabel = `${(p.views || 0).toLocaleString('id-ID')} views`;
+            const viewsLabel = `${(p.views || 0).toLocaleString('id-ID')} dilihat`;
             const soldShort = isPre ? `· ${sold} terpesan` : `· ${sold} terjual`;
 
             return (

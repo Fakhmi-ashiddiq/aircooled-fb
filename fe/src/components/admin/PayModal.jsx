@@ -79,7 +79,7 @@ export default function PayModal() {
               <span>Ongkos Kirim</span><span>{rp(shipCost)}</span>
             </div>
             <div style={{ padding: '12px 14px', display: 'flex', justifyContent: 'space-between', borderTop: '2px solid #14110D', fontFamily: "'Archivo'", fontWeight: 800, fontSize: '16px', textTransform: 'uppercase' }}>
-              <span>Grand Total</span><span style={{ fontFamily: "'Space Mono', monospace" }}>{rp(grand)}</span>
+              <span>Total Akhir</span><span style={{ fontFamily: "'Space Mono', monospace" }}>{rp(grand)}</span>
             </div>
           </div>
 
@@ -103,7 +103,7 @@ export default function PayModal() {
               <label style={labelStyle}>Bukti Bayar</label>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '5px', flexWrap: 'wrap' }}>
                 <label style={{ cursor: 'pointer', background: '#14110D', color: '#F2EEE4', fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: '11px', letterSpacing: '0.04em', textTransform: 'uppercase', padding: '11px 16px', whiteSpace: 'nowrap' }}>
-                  Upload File
+                  Unggah File
                   <input type="file" accept="image/*" onChange={onProof} style={{ display: 'none' }} />
                 </label>
                 <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#6b655a' }}>{state.payForm.proof || '(belum ada file)'}</span>

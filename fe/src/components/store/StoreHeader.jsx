@@ -77,8 +77,8 @@ export default function StoreHeader() {
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
               <button onClick={() => setMenuOpen(false)} style={{ background: 'none', border: 'none', fontSize: '26px', cursor: 'pointer', lineHeight: 1 }}>×</button>
             </div>
-            <button onClick={goAnd(() => { updateState({ shopFilter: 'all' }); go('shop'); })} style={{ ...navBtnStyle, textAlign: 'left', padding: '14px 4px', fontWeight: isAll ? 700 : 400 }}>Shop</button>
-            <button onClick={goAnd(() => { updateState({ shopFilter: 'ready' }); go('shop'); })} style={{ ...navBtnStyle, textAlign: 'left', padding: '14px 4px', fontWeight: isReady ? 700 : 400, borderBottom: '1px solid #ddd5c4' }}>Ready Stock</button>
+            <button onClick={goAnd(() => { updateState({ shopFilter: 'all' }); go('shop'); })} style={{ ...navBtnStyle, textAlign: 'left', padding: '14px 4px', fontWeight: isAll ? 700 : 400 }}>Toko</button>
+            <button onClick={goAnd(() => { updateState({ shopFilter: 'ready' }); go('shop'); })} style={{ ...navBtnStyle, textAlign: 'left', padding: '14px 4px', fontWeight: isReady ? 700 : 400, borderBottom: '1px solid #ddd5c4' }}>Stok Tersedia</button>
             <button onClick={goAnd(() => { updateState({ shopFilter: 'preorder' }); go('shop'); })} style={{ ...navBtnStyle, textAlign: 'left', padding: '14px 4px', fontWeight: isPreorder ? 700 : 400 }}>Pre-Order</button>
             {user ? (
               <>
@@ -115,8 +115,8 @@ export default function StoreHeader() {
         </button>
 
         <nav className="store-nav-desktop">
-          <button onClick={() => { updateState({ shopFilter: 'all' }); go('shop'); }} style={isAll ? navBtnActive : navBtnStyle}>Shop</button>
-          <button onClick={() => { updateState({ shopFilter: 'ready' }); go('shop'); }} style={isReady ? navBtnActive : navBtnStyle}>Ready Stock</button>
+          <button onClick={() => { updateState({ shopFilter: 'all' }); go('shop'); }} style={isAll ? navBtnActive : navBtnStyle}>Toko</button>
+          <button onClick={() => { updateState({ shopFilter: 'ready' }); go('shop'); }} style={isReady ? navBtnActive : navBtnStyle}>Stok Tersedia</button>
           <button onClick={() => { updateState({ shopFilter: 'preorder' }); go('shop'); }} style={isPreorder ? navBtnActive : navBtnStyle}>Pre-Order</button>
           {user ? (
             <>
@@ -142,7 +142,7 @@ export default function StoreHeader() {
               display: 'flex', gap: '8px', alignItems: 'center'
             }}
           >
-            <span>CART</span>
+            <span>KERANJANG</span>
             <span style={{ background: '#F2C015', color: '#14110D', minWidth: '20px', height: '20px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', padding: '0 5px' }}>
               {cartCount}
             </span>
@@ -158,7 +158,7 @@ export default function StoreHeader() {
               fontFamily: "'Space Mono', monospace", fontSize: '11px', fontWeight: 700
             }}
           >
-            <span>CART</span>
+            <span>KERANJANG</span>
             <span style={{ background: '#F2C015', color: '#14110D', minWidth: '18px', height: '18px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', padding: '0 4px' }}>
               {cartCount}
             </span>
